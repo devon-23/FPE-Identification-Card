@@ -15,7 +15,7 @@ Unofficial fan project. Not affiliated with any artist or label.
 | Database | Cloudflare D1 (SQLite) |
 | Photos | Cloudflare R2 *(stage 5)* |
 | Frontend | Server-rendered HTML + one stylesheet. No framework, no build step, no web fonts. |
-| Type | `American Typewriter` where it exists, Courier everywhere else. |
+| Type | `Lucida Sans Typewriter`, falling back through Lucida Console and Monaco. |
 | Theme | Follows the system; an explicit choice is kept in `localStorage`. |
 
 Viewing a record uses **no JavaScript at all** — it is one request, ~4 KB, which
@@ -216,6 +216,17 @@ The session is a signed HttpOnly, SameSite=Strict cookie scoped to `/admin`:
 no session table, no accounts. Login is throttled to 10 attempts per 5 minutes
 per address, and addresses are stored only as a salted hash.
 
+## The look
+
+The page is black and its chrome is small white type. The record itself is a
+**document** -- paper, a centred letterhead, oxblood ink, a numbered box, a
+seal -- because that is what it is. Drawn from the look of the DEMA material
+rather than copied from it: no artwork is reproduced, and the only phrase
+taken from the canon is the letterhead itself.
+
+The theme switch changes the page the document sits on, not the document. A
+sheet of paper is a sheet of paper in either light.
+
 ## The card
 
 Reads as a charge sheet: *IDENTIFIED AS / FAILED PERIMETER ESCAPE / BY DEMA
@@ -233,14 +244,22 @@ Dates are written the way the archive writes them: `026 10MOON 17`.
 
 Four fields are the claimant's and all are optional:
 
-| Field | Shown as | Blank becomes |
+The card carries only **name, citizen ID, bishop and escape attempt** beside
+the photograph, plus the chosen line and the designation. Everything else is
+in the attached file.
+
+The citizen ID (`847986011_98`) is derived from the designation rather than
+stored -- the same number every time, on every device, unique across the set,
+with no column to migrate.
+
+| Field | Where it lands | Blank becomes |
 |---|---|---|
-| Shows attended | `ESCAPE ATTEMPT` | `01` |
-| Handle | `ALIAS` | `[REDACTED]` |
-| First show year | `FIRST BREACH` | `[REDACTED]` |
-| Hometown | `HOMETOWN` | `[REDACTED]` |
-| A line that means something | printed under the facts | `[REDACTED]` |
-| Statement | in the attached file | `[REDACTED]` |
+| Shows attended | card, `ESCAPE ATTEMPT` | `01` |
+| A line that means something | card, under the facts | `[REDACTED]` |
+| Handle | attached file, `ALIAS` | `[REDACTED]` |
+| First show year | attached file, `FIRST BREACH` | `[REDACTED]` |
+| Hometown | attached file | `[REDACTED]` |
+| Statement | attached file | `[REDACTED]` |
 
 The attached file is collapsed by default and also carries the generated
 detail and the record's **order of filing** for the night.

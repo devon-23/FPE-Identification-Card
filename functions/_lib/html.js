@@ -43,7 +43,7 @@ export function layout({ title, body, bodyClass = '', mastLeft = null, mastRight
     <a class="masthead__all" href="/archive">ALL RECORDS</a>
     <span class="bureau">${escapeHtml(mastLeft ?? FORM.bureau)}</span>
     <span class="formcode">${escapeHtml(mastRight ?? `FORM ${FORM.code} (${FORM.revision})`)}</span>
-    <button class="masthead__theme" type="button" data-theme-toggle aria-label="Switch between light and dark">LIGHT / DARK</button>
+    <button class="masthead__theme" type="button" data-theme-toggle aria-label="Switch between light and dark"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.5a6.5 6.5 0 0 0 0 13z" fill="currentColor"/></svg></button>
   </header>
 ${body}
   <footer class="colophon">

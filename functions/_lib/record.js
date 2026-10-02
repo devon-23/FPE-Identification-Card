@@ -26,6 +26,9 @@ function field(label, value) {
 function dossier(rec, rank) {
   const g = generate(rec.id);
   const rows = [
+    field('ALIAS', rec.handle ? `@${rec.handle}` : REDACTED),
+    field('HOMETOWN', rec.hometown || REDACTED),
+    field('FIRST BREACH', rec.first_show ? String(rec.first_show) : REDACTED),
     field('STATEMENT', rec.bio || REDACTED),
     field('DISTRICT', g.district),
     field('METHOD', g.method),
@@ -91,7 +94,6 @@ export function renderRecord(rec, { rank = null } = {}) {
       <a class="button" href="/f/${rec.id}/register" data-owner-only hidden>AMEND RECORD</a>
     </p>
     ${raw(dossier(rec, rank))}
-    <p class="standing">IF FOUND, RETURN TO DEMA.<br>DO NOT TRUST THE BISHOPS.</p>
   </main>
   <script src="/record.js" defer></script>`;
 

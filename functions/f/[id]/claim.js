@@ -53,7 +53,7 @@ export async function onRequestPost({ request, params, env }) {
     name || null, name ? 0 : 1, faction,
     handle || null, hometown || null, bio || null, attempts, firstShow, lyric || null,
     await hashToken(token), now, now,
-    EVENT.venue, EVENT.city, EVENT.dateDisplay,
+    EVENT.venue, EVENT.city, EVENT.date,
     id
   ).run();
 

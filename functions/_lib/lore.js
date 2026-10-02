@@ -52,6 +52,16 @@ export function redact(seed, min = 6, max = 11) {
   return '█'.repeat(min + (hash('redact' + seed) % (max - min + 1)));
 }
 
+/**
+ * The citizen number carried on the card. Derived from the designation rather
+ * than stored: the same number every time, on every device, with no column.
+ */
+export function citizenId(id) {
+  const a = hash('cid-a' + id) % 900000000 + 100000000;   // always nine digits
+  const b = hash('cid-b' + id) % 90 + 10;                 // always two
+  return `${a}_${b}`;
+}
+
 // Assigned when a claimant leaves the name field blank.
 export function assignedDesignation(id) {
   const letters = 'ABCDEFGHJKLMNPRSTVWXYZ'; // no I/O/Q/U -- ambiguous in print
