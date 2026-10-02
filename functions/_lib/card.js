@@ -3,7 +3,7 @@
 // Rendered server-side for the record page and updated in place by
 // public/claim.js for the live preview, so both share one markup contract.
 
-import { h, raw } from './html.js';
+import { h, raw, spread } from './html.js';
 import { generate, assignedDesignation, citizenId } from './lore.js';
 import { cityMark } from './glyph.js';
 import { EVENT, FORM, demaDate } from './config.js';
@@ -59,7 +59,7 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
   ].filter(Boolean).join(' ');
 
   return h`<article class="${raw(classes)}" data-fpe="${id}" data-bishop="${raw(String(g.bishopIdx))}">
-    <p class="card__letterhead">${FORM.letterhead}</p>
+    <p class="card__letterhead spread" data-plain="${FORM.letterhead}">${raw(spread(FORM.letterhead))}</p>
 
     <div class="card__seal">${raw(cityMark(g.bishopIdx))}</div>
 
@@ -94,7 +94,7 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
       <span>${city} &middot; ${date}</span>
     </p>
 
-    <p class="card__foot">${FORM.benediction}</p>
+    <p class="card__foot spread" data-plain="${FORM.benediction}">${raw(spread(FORM.benediction))}</p>
     <span class="card__faction" data-slot="faction" hidden>${faction}</span>
   </article>`;
 }

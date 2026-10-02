@@ -142,7 +142,5 @@ export async function onRequestGet({ request, params, env }) {
     title: `FPE-${id} — ${claimed ? 'AMEND' : 'REGISTER'}`,
     body,
     bodyClass: 'page-maker',
-    mastLeft: `RECORD ${id} / ${String(SET_SIZE).padStart(4, '0')}`,
-    mastRight: `FORM ${FORM.code}`,
   }), { headers: { 'cache-control': 'no-store' } });
 }

@@ -25,7 +25,17 @@ export function raw(html) {
   return s;
 }
 
-export function layout({ title, body, bodyClass = '', mastLeft = null, mastRight = null, hideAll = false }) {
+/**
+ * Letterspacing that fills the width exactly. CSS cannot justify between
+ * characters reliably across browsers, so each one becomes a flex item.
+ */
+export function spread(text) {
+  return [...String(text)]
+    .map((ch) => (ch === ' ' ? '<i></i>' : `<span>${escapeHtml(ch)}</span>`))
+    .join('');
+}
+
+export function layout({ title, body, bodyClass = '', mastLeft = null, hideAll = false }) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -35,22 +45,18 @@ export function layout({ title, body, bodyClass = '', mastLeft = null, mastRight
 <meta name="color-scheme" content="dark">
 <title>${escapeHtml(title)}</title>
 <link rel="stylesheet" href="/styles.css">
-<script>try{var t=localStorage.getItem('fpe:theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 </head>
 <body class="${escapeHtml(bodyClass)}">
 <div class="sheet">
   <header class="masthead">
     ${hideAll ? '' : '<a class="masthead__all" href="/">ALL RECORDS</a>'}
     <span class="bureau">${escapeHtml(mastLeft ?? FORM.bureau)}</span>
-    <span class="formcode">${escapeHtml(mastRight ?? `FORM ${FORM.code} (${FORM.revision})`)}</span>
-    <button class="masthead__theme" type="button" data-theme-toggle aria-label="Switch between light and dark"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.5a6.5 6.5 0 0 0 0 13z" fill="currentColor"/></svg></button>
   </header>
 ${body}
   <footer class="colophon">
     <p>UNOFFICIAL FAN-MADE RECORD. NOT AFFILIATED WITH ANY ARTIST OR LABEL.</p>
   </footer>
 </div>
-<script src="/theme.js" defer></script>
 </body>
 </html>`;
 }

@@ -7,6 +7,8 @@
   'use strict';
 
   var MONO = 'Courier, "Lucida Sans Typewriter", Lucida, monospace';
+  // Matches --display in the stylesheet.
+  var DISPLAY = '"Banknote Gothic", Copperplate, "Copperplate Gothic Light", "Lucida Sans", "Trebuchet MS", sans-serif';
 
   // The CSS card is 360px wide; 3x gives a 1080px export and lets every
   // measurement below be the CSS pixel value.
@@ -30,6 +32,30 @@
 
   function px(v) { return v * S; }
   function font(weight, size) { return weight + ' ' + px(size) + 'px ' + MONO; }
+  function display(weight, size) { return weight + ' ' + px(size) + 'px ' + DISPLAY; }
+
+  /**
+   * Lay a line out across the full measure, as .spread does in CSS. Spaces get
+   * an explicit width: canvas measures one as near zero, and with the slack
+   * spread evenly the words would run together.
+   */
+  function spreadText(ctx, text, left, right, baseline, size) {
+    var chars = String(text).split('');
+    var gap = px(size) * 0.45;
+    var widths = [];
+    var total = 0;
+    for (var i = 0; i < chars.length; i++) {
+      widths[i] = chars[i] === ' ' ? gap : ctx.measureText(chars[i]).width;
+      total += widths[i];
+    }
+    var slack = (right - left - total) / Math.max(1, chars.length - 1);
+    var x = left;
+    ctx.textAlign = 'left';
+    for (var j = 0; j < chars.length; j++) {
+      if (chars[j] !== ' ') ctx.fillText(chars[j], x, baseline);
+      x += widths[j] + slack;
+    }
+  }
   function centred(ctx, text, cx, y) { ctx.textAlign = 'center'; ctx.fillText(text, cx, y); }
 
   /** Greedy word wrap at a fixed size. */
@@ -135,9 +161,12 @@
   }
 
   function readCard(card) {
+    // A spread line renders each character as its own element and drops the
+    // spaces, so those carry their plain text in an attribute.
     var t = function (sel) {
       var el = card.querySelector(sel);
-      return el ? el.textContent.trim() : '';
+      if (!el) return '';
+      return (el.getAttribute('data-plain') || el.textContent).trim();
     };
     var charge = card.querySelectorAll('.card__charge span');
     var statute = card.querySelectorAll('.card__statute span');
@@ -219,11 +248,11 @@
     var cx = canvas.width / 2;
     var y = 18;
 
-    // letterhead
+    // letterhead, spread across the measure
     ctx.fillStyle = C.red;
-    ctx.font = font('400', 8);
-    for (var h = 0; h < headLines.length; h++) centred(ctx, headLines[h], cx, px(y + 9 + h * 13));
-    y += headLines.length * 13 + 2 + 6;
+    ctx.font = display('400', 8);
+    spreadText(ctx, d.letterhead, px(PAD), canvas.width - px(PAD), px(y + 9), 8);
+    y += 13 + 2 + 6;
 
     // seal
     seal(ctx, cx, px(y + 21), px(42), d.bishop);
@@ -232,20 +261,22 @@
     // the charge
     ctx.fillStyle = C.dim;
     ctx.font = font('400', 8);
+    ctx.font = display('400', 8);
     centred(ctx, d.chargeTop, cx, px(y + 9));
     y += 12 + 3;
     ctx.fillStyle = d.blank ? C.dim : C.ink;
+    ctx.font = display('700', 13);
     var mainFit = fit(ctx, d.chargeMain, px(inner), 13, '700', 8, false);
-    ctx.font = font('700', mainFit.size);
+    ctx.font = display('700', mainFit.size);
     centred(ctx, d.chargeMain, cx, px(y + 14));
     y += 18 + 3;
     ctx.fillStyle = C.dim;
-    ctx.font = font('400', 8);
+    ctx.font = display('400', 8);
     centred(ctx, d.chargeBy, cx, px(y + 9));
     y += 12 + 10;
 
-    ctx.fillStyle = C.faint;
-    ctx.font = font('400', 8);
+    ctx.fillStyle = C.dim;
+    ctx.font = display('400', 8);
     centred(ctx, d.statute[0], cx, px(y + 9));
     centred(ctx, d.statute[1], cx, px(y + 21));
     y += 24 + 16;
@@ -297,7 +328,7 @@
 
     function label(text, atY) {
       ctx.fillStyle = C.ink;
-      ctx.font = font('400', 7);
+      ctx.font = display('400', 7);
       ctx.fillText(text, px(factsX), px(atY + 7));
     }
 
@@ -347,11 +378,12 @@
     y += 12;
     ctx.fillStyle = C.dim;
     ctx.font = font('400', 9);
+    ctx.font = display('400', 9);
     var vFit2 = fit(ctx, d.venue, px(inner), 9, '400', 6, false);
-    ctx.font = font('400', vFit2.size);
+    ctx.font = display('400', vFit2.size);
     centred(ctx, d.venue, cx, px(y + 10));
-    ctx.fillStyle = C.faint;
-    ctx.font = font('400', 9);
+    ctx.fillStyle = C.ink;
+    ctx.font = display('400', 9);
     centred(ctx, d.when, cx, px(y + 25));
     y += 30 + 16;
 
@@ -361,10 +393,8 @@
     ctx.beginPath(); ctx.moveTo(px(PAD), px(y)); ctx.lineTo(canvas.width - px(PAD), px(y)); ctx.stroke();
     y += 12;
     ctx.fillStyle = C.red;
-    ctx.font = font('400', 7);
-    var benFit = fit(ctx, d.benediction, px(inner), 7, '400', 5, false);
-    ctx.font = font('400', benFit.size);
-    centred(ctx, d.benediction, cx, px(y + 7));
+    ctx.font = display('400', 7);
+    spreadText(ctx, d.benediction, px(PAD), canvas.width - px(PAD), px(y + 7), 7);
 
     return canvas;
   }

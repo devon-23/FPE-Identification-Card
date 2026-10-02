@@ -74,7 +74,6 @@ export function renderUnregistered(id, { claimingOpen = true } = {}) {
   </main>`;
   return layout({
     title: `FPE-${id} — UNREGISTERED`, body, bodyClass: 'page-record',
-    mastLeft: `RECORD ${id} / ${padId(SET_SIZE)}`, mastRight: `FORM ${FORM.code}`,
   });
 }
 
@@ -99,7 +98,6 @@ export function renderRecord(rec, { rank = null } = {}) {
 
   return layout({
     title: `FPE-${rec.id} — ${name}`, body, bodyClass: 'page-record',
-    mastLeft: `RECORD ${rec.id} / ${padId(SET_SIZE)}`, mastRight: `FORM ${FORM.code}`,
   });
 }
 

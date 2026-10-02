@@ -1,4 +1,4 @@
-import { h, raw, layout, htmlResponse } from './_lib/html.js';
+import { h, raw, layout, htmlResponse, spread } from './_lib/html.js';
 import { SET_SIZE, FORM, EVENT, demaDate } from './_lib/config.js';
 import { cityMark } from './_lib/glyph.js';
 
@@ -19,8 +19,8 @@ export async function onRequestGet({ env }) {
 
   // Written in the register's own voice, with the scan artefacts the archive's
   // documents carry. Light enough to stay readable on a phone.
-  const report = `At aporoximately 21:14 L.M.T, on the 17th day of 10MOON, 026
-    (Revised Dema Calendar), Municipal Sensors reglstered sustained thermal and
+  const report = `At aporoximately 21:14 L.M.T, on the 17th day of 10MOON, 026,
+    Municipal Sensors reglstered sustained thermal and
     acoustic disturbance at Grid Section OS-North, outslde Perimeter Sector
     Thoroughfare. On-site response units discovered an unsanctioned assembly of
     inhabitants within the boundary of the structure known locally as OHIO STATE
@@ -32,8 +32,8 @@ export async function onRequestGet({ env }) {
     Statute C-22.112(b).`;
 
   const body = h`  <main class="stage doc">
-    <p class="doc__letterhead">${FORM.letterhead}</p>
-    <div class="doc__seal">${raw(cityMark(4))}</div>
+    <p class="doc__letterhead spread">${raw(spread(FORM.letterhead))}</p>
+    <div class="doc__seal">${raw(cityMark(0, { allLit: true }))}</div>
 
     <h1 class="doc__title">INVESTIGATIVE SUMMARY &mdash; INCIDENT RPT</h1>
     <p class="doc__date">${demaDate(`${EVENT.date}T00:00:00Z`)}</p>
@@ -46,11 +46,10 @@ export async function onRequestGet({ env }) {
     <div class="grid">${raw(cells)}</div>
 
     <aside class="restricted">
-      <p class="restricted__head">${FORM.letterhead}</p>
       <div class="restricted__box">
         <span class="restricted__mark">DMA<br>ORG</span>
         <span class="restricted__shout">RESTRICTED CONTENT</span>
-        <span class="restricted__seal">${raw(cityMark(4, { className: 'mark mark--flat' }))}</span>
+        <span class="restricted__seal">${raw(cityMark(0, { className: 'mark mark--flat', allLit: true }))}</span>
         <span class="restricted__code">VIOLATION CODE<br><b>${FORM.violation}</b></span>
         <p class="restricted__body">THIS RECORD IS CLASSIFIED AND INTENDED EXCLUSIVELY FOR
           AUTHORIZED PERSONNEL OF DMAORG. UNAUTHORIZED VIEWING, POSSESSION, OR DISSEMINATION
@@ -58,7 +57,7 @@ export async function onRequestGet({ env }) {
           LAW AND WILL RESULT IN SEVERE PENALTIES, INCLUDING BUT NOT LIMITED TO CONFINEMENT
           OR PERMANENT BANISHMENT.</p>
       </div>
-      <p class="restricted__foot">${FORM.benediction}</p>
+      <p class="restricted__foot spread">${raw(spread(FORM.benediction))}</p>
     </aside>
   </main>`;
 
@@ -67,7 +66,6 @@ export async function onRequestGet({ env }) {
     body,
     bodyClass: 'page-index',
     mastLeft: 'DEMA ARCHIVES',
-    mastRight: `FORM ${FORM.code}`,
     hideAll: true,
   }), { headers: { 'cache-control': 'public, max-age=30' } });
 }

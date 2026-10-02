@@ -24,7 +24,7 @@ function block(cx, cy, r0, r1, a0, a1) {
 /**
  * @param bishopIdx  index into BISHOPS; that section is lit
  */
-export function cityMark(bishopIdx, { className = 'mark' } = {}) {
+export function cityMark(bishopIdx, { className = 'mark', allLit = false } = {}) {
   const CX = 50, CY = 50, R0 = 25, R1 = 44;
   const step = (Math.PI * 2) / SEGMENTS;
   const gap = step * 0.1;               // mortar between sections
@@ -36,7 +36,7 @@ export function cityMark(bishopIdx, { className = 'mark' } = {}) {
   for (let i = 0; i < SEGMENTS; i++) {
     const a0 = i * step + origin + gap / 2;
     const a1 = (i + 1) * step + origin - gap / 2;
-    const lit = i === bishopIdx ? ' mark__wall--lit' : '';
+    const lit = allLit || i === bishopIdx ? ' mark__wall--lit' : '';
     sections.push(`<path class="mark__wall${lit}" d="${block(CX, CY, R0, R1, a0, a1)}"/>`);
   }
 

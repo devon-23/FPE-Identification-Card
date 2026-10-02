@@ -15,8 +15,8 @@ Unofficial fan project. Not affiliated with any artist or label.
 | Database | Cloudflare D1 (SQLite) |
 | Photos | Cloudflare R2 *(stage 5)* |
 | Frontend | Server-rendered HTML + one stylesheet. No framework, no build step, no web fonts. |
-| Type | `Courier`, falling back through Lucida Sans Typewriter and Lucida. |
-| Theme | Follows the system; an explicit choice is kept in `localStorage`. |
+| Body type | `Courier`, falling back through Lucida Sans Typewriter and Lucida. |
+| Display type | `Banknote Gothic` where installed, else Copperplate / Copperplate Gothic Light. |
 
 Viewing a record uses **no JavaScript at all** — it is one request, ~4 KB, which
 is the point when the venue's network is saturated. The card *maker* does need
@@ -60,7 +60,6 @@ public/
   index.html            landing page
   404.html              unmatched paths
   styles.css            all styling, both themes
-  theme.js              the light/dark switch
   claim.js              card maker: live preview, photo processing, submit
   record.js             record page: owner controls, device-only photo
   cardimage.js          canvas export, loaded only when SAVE CARD is tapped
@@ -229,8 +228,14 @@ Fields are filled-in rather than labelled: the value sits on a dotted rule
 with its printed label beneath, the way a form looks after someone has
 completed it by hand.
 
-The theme switch changes the page a record sits on, not the record. A sheet of
-paper is a sheet of paper in either light.
+Letterheads and the benediction are set across the full measure: CSS cannot
+justify between characters reliably, so each one becomes a flex item. The
+plain text rides along in `data-plain` for the PNG exporter, which cannot read
+it back out of the spans.
+
+Banknote Gothic is a licensed face and cannot be served from here, so it is
+asked for first and falls back to the engraved gothics that ship with macOS,
+iOS and Windows.
 
 Drawn from the look of the DEMA material, not copied from it: no artwork is
 reproduced, and the canon phrases used are the letterhead and the benediction.
