@@ -1,0 +1,126 @@
+/* STAGE 1 PLACEHOLDER STYLES.
+   Structure only -- the real design pass happens in stage 4. */
+
+:root {
+  --ink: #141414;
+  --ground: #efece4;
+  --rule: #141414;
+  --muted: #6a675f;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.sheet {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem calc(2rem + env(safe-area-inset-bottom));
+}
+
+.masthead,
+.colophon {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.colophon {
+  border-top: 1px solid var(--rule);
+  margin-top: 2rem;
+  padding-top: 0.5rem;
+}
+
+.colophon p { margin: 0; }
+
+.kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+}
+
+.designation {
+  margin: 0.25rem 0 1.5rem;
+  font-size: clamp(2.25rem, 13vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+.fields { margin: 0; }
+
+.field {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.125rem;
+  padding: 0.625rem 0;
+  border-top: 1px solid var(--rule);
+}
+
+.field dt {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.field dd {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.field--status dd { font-weight: 700; letter-spacing: 0.06em; }
+.field--cont dt { display: none; }
+.field--cont { border-top: 0; padding-top: 0; margin-top: -0.5rem; }
+
+.note {
+  margin: 1.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.standing {
+  margin: 2rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+}
+
+.actions { margin: 1.5rem 0 0; }
+
+.button {
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:active { background: var(--ink); color: var(--ground); }

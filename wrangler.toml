@@ -1,0 +1,9 @@
+name = "fpe-archive"
+compatibility_date = "2025-09-01"
+pages_build_output_dir = "public"
+
+# Filled in by `wrangler d1 create fpe` -- see README, Stage 1 setup.
+[[d1_databases]]
+binding = "DB"
+database_name = "fpe"
+database_id = "REPLACE_ME"
