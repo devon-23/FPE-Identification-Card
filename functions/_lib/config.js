@@ -2,10 +2,10 @@
 // them later only affects records claimed after the change.
 
 export const EVENT = {
-  venue: 'VENUE PENDING',        // <-- TODO: set before the show
-  city: 'CITY PENDING',          // <-- TODO: set before the show
-  date: '2026-10-16',            // ISO, used for comparisons
-  dateDisplay: '16 OCT 2026',    // shown on the record
+  venue: 'OHIO STATE UNIVERSITY',
+  city: 'COLUMBUS, OH',
+  date: '2026-10-17',            // ISO, used for comparisons
+  dateDisplay: '17 OCT 2026',    // shown on the record
 };
 
 // Total number of FPE designations in the set.

@@ -86,23 +86,84 @@ npm run dev            # http://localhost:8788/f/0042
 
 ## First deploy
 
-1. Create a free account at <https://cloudflare.com>, then `npx wrangler login`.
-2. Create the database and copy the printed `database_id` into `wrangler.toml`:
-   ```bash
-   npx wrangler d1 create fpe
-   ```
-3. Apply the schema and seed to the live database:
-   ```bash
-   npm run db:init:remote
-   ```
-4. Deploy:
-   ```bash
-   npx wrangler pages deploy
-   ```
-5. Note the `*.pages.dev` URL it prints, then generate the tag list:
-   ```bash
-   node scripts/generate-urls.mjs https://<your-site>.pages.dev 100
-   ```
+Order matters: the Pages project has to exist before secrets can be attached
+to it.
+
+**1. Sign in.** Free account at <https://cloudflare.com>, then:
+
+```bash
+npm install && npx wrangler login
+```
+
+**2. Create the database.** Copy the `database_id` it prints into
+`wrangler.toml`, replacing `REPLACE_ME`:
+
+```bash
+npx wrangler d1 create fpe
+```
+
+**3. Create the photo bucket.** R2 needs activating once in the dashboard
+(it asks for a card but the free tier covers this many times over):
+
+```bash
+npx wrangler r2 bucket create fpe-photos
+```
+
+**4. Load the schema and the 100 designations:**
+
+```bash
+node scripts/generate-seed.mjs 100 && npm run db:init:remote
+```
+
+**5. Deploy.** This creates the Pages project and prints your URL:
+
+```bash
+npx wrangler pages deploy
+```
+
+**6. Set the two secrets.** Each prompts for a value that is sent straight to
+Cloudflare -- never written to disk, never in the repo:
+
+```bash
+npx wrangler pages secret put ADMIN_PASSWORD --project-name=fpe-archive
+```
+
+```bash
+npx wrangler pages secret put SESSION_SECRET --project-name=fpe-archive
+```
+
+**7. Generate the tag list** using the URL from step 5:
+
+```bash
+node scripts/generate-urls.mjs https://fpe-archive.pages.dev 100
+```
+
+**8. Open `/admin`**, confirm the counts, and leave claiming **closed** until
+you are at the venue.
+
+### Choosing the two secrets
+
+They do different jobs:
+
+- `ADMIN_PASSWORD` is **typed by you, on a phone, in a dark and loud room**.
+  Favour something you can thumb in quickly: four lowercase words beat a short
+  cryptic string, and symbols will cost you real time at the venue.
+- `SESSION_SECRET` is only ever read by the server to sign the admin cookie.
+  Make it long and random; you will never type it again.
+
+Generate them on your own machine so they exist nowhere else:
+
+```bash
+awk 'length($0)>=4 && length($0)<=7 && $0 !~ /[^a-z]/' /usr/share/dict/words | sort -R | head -4 | paste -sd- -
+```
+
+```bash
+openssl rand -base64 32
+```
+
+Changing either one later is just re-running `wrangler pages secret put`.
+Changing `SESSION_SECRET` signs you out of `/admin` everywhere, which is the
+quickest way to revoke a session if you ever lose a phone.
 
 ## Saving a card
 
@@ -184,5 +245,8 @@ different matter and is coming with the admin panel.
 - [x] Stage 5 — admin panel
 - [ ] Stage 6 — NFC programming + deployment docs, checklists
 
-Outstanding input needed: **venue name and city** (`functions/_lib/config.js`),
-and the live `*.pages.dev` URL once deployed.
+Outstanding input needed: the live `*.pages.dev` URL once deployed.
+
+Event is set to **17 OCT 2026, Ohio State University, Columbus OH** in
+`functions/_lib/config.js`. These are frozen into each record as it is
+claimed, so a change after the show starts only affects later claims.
