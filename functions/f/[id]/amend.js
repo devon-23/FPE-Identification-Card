@@ -4,6 +4,7 @@ import { cleanName } from '../../_lib/sanitize.js';
 import { ownsRecord } from '../../_lib/auth.js';
 import { readJpeg, putPhoto } from '../../_lib/photo.js';
 import { getRecord } from '../../_lib/db.js';
+import { sameOrigin } from '../../_lib/origin.js';
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -15,10 +16,7 @@ export async function onRequestPost({ request, params, env }) {
   const id = normalizeId(params.id);
   if (!id) return json({ error: 'NO SUCH RECORD' }, 404);
 
-  const origin = request.headers.get('origin');
-  if (origin && new URL(origin).host !== new URL(request.url).host) {
-    return json({ error: 'REJECTED' }, 403);
-  }
+  if (!sameOrigin(request)) return json({ error: 'REJECTED' }, 403);
 
   const rec = await getRecord(env.DB, id);
   if (!rec || rec.status !== 'ESCAPED') return json({ error: 'NO SUCH RECORD' }, 404);

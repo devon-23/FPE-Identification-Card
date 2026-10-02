@@ -482,3 +482,105 @@ body {
   text-decoration: none;
   border-bottom: 1px solid var(--ink);
 }
+
+/* ---------- admin ---------- */
+
+.admin .note code { font-size: 0.6875rem; word-break: break-all; }
+
+.ok {
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--ink);
+  background: var(--stock-hi);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(22,21,15,.35);
+  border: 1px solid rgba(22,21,15,.35);
+  margin-bottom: 1rem;
+}
+
+.stats div { background: var(--stock); padding: 0.625rem 0.5rem; text-align: center; }
+.stats b { display: block; font-size: 1.5rem; line-height: 1.1; }
+.stats span { font-size: 0.5rem; letter-spacing: 0.14em; color: var(--ink-soft); }
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.switch span { font-size: 0.625rem; letter-spacing: 0.1em; flex: 1; }
+.switch .button { width: auto; min-width: 7rem; min-height: 2.75rem; font-size: 0.625rem; }
+
+.search { margin: 1rem 0 0.75rem; }
+
+.tabs { display: flex; gap: 1px; margin-bottom: 0.75rem; background: rgba(22,21,15,.35); border: 1px solid rgba(22,21,15,.35); }
+
+.tab {
+  flex: 1;
+  padding: 0.625rem 0.25rem;
+  background: var(--stock);
+  color: var(--ink-soft);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-decoration: none;
+  min-height: 2.5rem;
+  display: grid;
+  place-content: center;
+}
+
+.tab--on { background: var(--ink); color: var(--stock); }
+
+.alist { border-top: 1px solid rgba(22,21,15,.35); }
+
+.arow {
+  display: grid;
+  grid-template-columns: 3rem 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(22,21,15,.2);
+  font-size: 0.6875rem;
+}
+
+.arow__id a { color: var(--ink); text-decoration: none; font-weight: 700; }
+.arow__name { overflow-wrap: anywhere; }
+.arow__act { display: flex; gap: 0.25rem; }
+.arow__act form { margin: 0; }
+
+.tag {
+  display: inline-block;
+  padding: 0 0.25rem;
+  background: var(--ink);
+  color: var(--stock);
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  vertical-align: 1px;
+}
+
+.dim { color: var(--ink-soft); font-size: 0.5625rem; }
+
+.mini {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--ink-soft);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.mini--warn { border-color: #8c2f1d; color: #8c2f1d; }

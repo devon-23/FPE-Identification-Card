@@ -36,6 +36,9 @@ functions/
   f/[id]/amend.js       POST /f/0042/amend      owner edits (token required)
   p/[file].js           GET  /p/0042.jpg        photo, served from R2
   archive.js            GET  /archive           the public register
+  admin/_middleware.js  guards everything under /admin
+  admin/index.js        GET  /admin             dashboard
+  admin/act.js          POST /admin/act         reset / delete image / toggle
   fpe/[id].js           redirects /fpe/0042 -> /f/0042
   _lib/
     config.js           venue, date, set size, form furniture
@@ -46,6 +49,8 @@ functions/
     auth.js             edit tokens
     sanitize.js         name cleaning
     photo.js            image validation + R2 writes
+    session.js          admin session cookie, signed
+    origin.js           same-origin check
     db.js               database queries
 public/
   index.html            landing page
@@ -114,6 +119,28 @@ needs a real device to exercise; it cannot be tested in a desktop browser.
 No screenshot library is involved -- `html2canvas` is around 200 KB and renders
 CSS unreliably on iOS Safari, which is the single most important browser here.
 
+## Admin
+
+`/admin`, behind one passphrase. Shows counts, a search, filters, and per
+record a RESET (back to unclaimed, photo deleted, old edit token invalidated)
+and a DELETE IMAGE. The master **claiming switch** lives here — it ships
+**closed**, so nobody can sweep the set before you open it at the venue.
+
+Two secrets, set once and never committed:
+
+```bash
+npx wrangler pages secret put ADMIN_PASSWORD
+npx wrangler pages secret put SESSION_SECRET
+```
+
+For `SESSION_SECRET`, paste a long random string — `openssl rand -base64 32`.
+Without either one `/admin` returns 503 and tells you which is missing.
+Locally they come from `.dev.vars`, which is gitignored.
+
+The session is a signed HttpOnly, SameSite=Strict cookie scoped to `/admin`:
+no session table, no accounts. Login is throttled to 10 attempts per 5 minutes
+per address, and addresses are stored only as a salted hash.
+
 ## Security model
 
 The record URL is public and guessable on purpose — anyone may *read* any
@@ -138,6 +165,10 @@ designation. Writing is what is defended.
 - **Secrets** live in Cloudflare environment variables, never in the repo and
   never in frontend JavaScript.
 
+- **Cross-site writes** are refused on all four write endpoints via a shared
+  check that prefers `Sec-Fetch-Site` and parses `Origin` defensively — an
+  opaque `Origin: null` is rejected rather than crashing the request.
+
 Deliberately *not* implemented: per-IP rate limiting on claims. With a
 hundred records, an atomic claim, and a master `claiming_open` switch you flip
 when you arrive at the venue, it would add a database write to every request —
@@ -150,7 +181,7 @@ different matter and is coming with the admin panel.
 - [x] Stage 2 — the card, and the card maker (live preview, allegiance, photo)
 - [x] Stage 3 — claiming, edit tokens, consent-gated photo storage
 - [x] Stage 4 — save-as-image, public archive
-- [ ] Stage 5 — admin panel
+- [x] Stage 5 — admin panel
 - [ ] Stage 6 — NFC programming + deployment docs, checklists
 
 Outstanding input needed: **venue name and city** (`functions/_lib/config.js`),

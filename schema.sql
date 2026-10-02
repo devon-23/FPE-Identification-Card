@@ -27,3 +27,10 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 INSERT OR IGNORE INTO settings (key, value) VALUES ('claiming_open', '0');
+
+-- Admin login throttling. The address is stored only as a salted hash.
+CREATE TABLE IF NOT EXISTS login_attempts (
+  ip_hash TEXT PRIMARY KEY,
+  n       INTEGER NOT NULL DEFAULT 0,
+  first   INTEGER NOT NULL
+);

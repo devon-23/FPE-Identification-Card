@@ -5,6 +5,7 @@ import { newToken, hashToken } from '../../_lib/auth.js';
 import { readJpeg, putPhoto } from '../../_lib/photo.js';
 import { getSetting } from '../../_lib/db.js';
 import { EVENT } from '../../_lib/config.js';
+import { sameOrigin } from '../../_lib/origin.js';
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -17,10 +18,7 @@ export async function onRequestPost({ request, params, env }) {
   if (!id) return json({ error: 'NO SUCH RECORD' }, 404);
 
   // Same-origin guard: a cross-site form post will not carry this.
-  const origin = request.headers.get('origin');
-  if (origin && new URL(origin).host !== new URL(request.url).host) {
-    return json({ error: 'REJECTED' }, 403);
-  }
+  if (!sameOrigin(request)) return json({ error: 'REJECTED' }, 403);
 
   if ((await getSetting(env.DB, 'claiming_open', '0')) !== '1') {
     return json({ error: 'THE ARCHIVE IS NOT ACCEPTING SUBMISSIONS.' }, 403);
