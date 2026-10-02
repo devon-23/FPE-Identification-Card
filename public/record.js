@@ -31,10 +31,42 @@
     }
   } catch (e) { /* ignore */ }
 
+  // The exporter is ~10 KB and most visitors never tap this, so it is only
+  // fetched on demand -- a plain record view stays script-free in practice.
   var save = stage.querySelector('[data-action="save"]');
   if (save) {
+    var loading = null;
     save.addEventListener('click', function () {
-      save.textContent = 'SAVE COMING IN NEXT STAGE';
+      var card = stage.querySelector('.card');
+      if (!card) return;
+      save.disabled = true;
+      var original = save.textContent;
+      save.textContent = 'PREPARING…';
+
+      loading = loading || new Promise(function (resolve, reject) {
+        if (window.FPECard) return resolve();
+        var el = document.createElement('script');
+        el.src = '/cardimage.js';
+        el.onload = resolve;
+        el.onerror = reject;
+        document.head.appendChild(el);
+      });
+
+      loading.then(function () {
+        return window.FPECard.save(card, 'FPE-' + id + '.png');
+      }).then(function (how) {
+        save.textContent = how === 'shared' ? 'SHARED'
+          : how === 'cancelled' ? original
+          : 'SAVED';
+        save.disabled = false;
+        if (how !== 'cancelled') {
+          setTimeout(function () { save.textContent = original; }, 2500);
+        }
+      }).catch(function () {
+        save.textContent = 'COULD NOT SAVE — SCREENSHOT INSTEAD';
+        save.disabled = false;
+        setTimeout(function () { save.textContent = original; }, 3500);
+      });
     });
   }
 })();

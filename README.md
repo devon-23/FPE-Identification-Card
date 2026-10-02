@@ -35,6 +35,7 @@ functions/
   f/[id]/claim.js       POST /f/0042/claim      first registration
   f/[id]/amend.js       POST /f/0042/amend      owner edits (token required)
   p/[file].js           GET  /p/0042.jpg        photo, served from R2
+  archive.js            GET  /archive           the public register
   fpe/[id].js           redirects /fpe/0042 -> /f/0042
   _lib/
     config.js           venue, date, set size, form furniture
@@ -52,6 +53,7 @@ public/
   styles.css            all styling
   claim.js              card maker: live preview, photo processing, submit
   record.js             record page: owner controls, device-only photo
+  cardimage.js          canvas export, loaded only when SAVE CARD is tapped
 scripts/
   generate-seed.mjs     writes seed.sql
   generate-urls.mjs     writes urls.csv for NFC programming
@@ -97,6 +99,21 @@ npm run dev            # http://localhost:8788/f/0042
    node scripts/generate-urls.mjs https://<your-site>.pages.dev 100
    ```
 
+## Saving a card
+
+`SAVE CARD` redraws the card onto a canvas at 3.3x and hands over a ~1082x1560
+PNG. It reads the values back out of the rendered DOM, so the image cannot
+drift from what is on screen, and it is fetched only when the button is
+tapped -- a plain record view never loads it.
+
+Three tiers, best first: the native share sheet via `navigator.share` (which on
+a phone means straight into Instagram, Messages or Save to Photos), then a
+normal download, then opening the image in a tab to long-press. The share path
+needs a real device to exercise; it cannot be tested in a desktop browser.
+
+No screenshot library is involved -- `html2canvas` is around 200 KB and renders
+CSS unreliably on iOS Safari, which is the single most important browser here.
+
 ## Security model
 
 The record URL is public and guessable on purpose — anyone may *read* any
@@ -132,7 +149,7 @@ different matter and is coming with the admin panel.
 - [x] Stage 1 — data model, URL contract, record page
 - [x] Stage 2 — the card, and the card maker (live preview, allegiance, photo)
 - [x] Stage 3 — claiming, edit tokens, consent-gated photo storage
-- [ ] Stage 4 — save-as-image, public archive
+- [x] Stage 4 — save-as-image, public archive
 - [ ] Stage 5 — admin panel
 - [ ] Stage 6 — NFC programming + deployment docs, checklists
 

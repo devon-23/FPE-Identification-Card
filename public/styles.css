@@ -412,3 +412,73 @@ body {
 .form__status:not(:empty) { color: #8c2f1d; }
 
 .form > .button { margin-bottom: 0.5rem; }
+
+/* ---------- archive ---------- */
+
+.designation .of { color: var(--ink-soft); font-size: 0.5em; letter-spacing: 0; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.25rem, 1fr));
+  gap: 1px;
+  margin: 1.5rem 0 1rem;
+  background: rgba(22,21,15,.35);
+  border: 1px solid rgba(22,21,15,.35);
+}
+
+.cell {
+  display: grid;
+  gap: 0.0625rem;
+  place-content: center;
+  /* comfortably past the 44px minimum, for thumbs in a dark venue */
+  min-height: 3.25rem;
+  padding: 0.375rem 0.25rem;
+  background: var(--stock);
+  color: var(--ink-soft);
+  text-decoration: none;
+  text-align: center;
+}
+
+.cell__n { font-size: 0.8125rem; letter-spacing: 0.02em; }
+.cell__s { font-size: 0.5rem; letter-spacing: 0.1em; }
+
+.cell--taken { background: var(--ink); color: var(--stock); }
+.cell--taken .cell__n { font-weight: 700; }
+.cell--bandito { background: var(--ochre); color: var(--plate); }
+.cell:active { outline: 2px solid var(--ochre); outline-offset: -2px; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+
+.legend span { display: inline-flex; align-items: center; gap: 0.375rem; }
+
+.swatch {
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 1px solid rgba(22,21,15,.45);
+  background: var(--stock);
+}
+
+.swatch--ctz { background: var(--ink); }
+.swatch--bnd { background: var(--ochre); }
+
+.crosslink {
+  margin: 1.5rem 0 0;
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+}
+
+.crosslink a {
+  display: inline-block;
+  padding: 0.5rem 0;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink);
+}
