@@ -227,9 +227,14 @@ designation. Writing is what is defended.
 - **Losing the token** (cleared browser data, a different phone) means the
   record becomes read-only for you. That is the accepted trade of the
   localStorage approach — recovery is an admin reset.
-- **Photos** are re-encoded through a canvas on the device, which drops EXIF
-  and GPS, then verified as real JPEG magic bytes server-side and capped at
-  400 KB. They are served through the Worker, so the bucket stays private.
+- **Photos** are re-encoded through a canvas on the device, so no original
+  file and no GPS ever leaves the phone. The encoders on Apple platforms then
+  write their *own* APP1/Exif and APP13/Photoshop blocks into that output --
+  no user data in them, but no business being published either -- so the
+  server rewrites every upload to keep only the segments a decoder needs.
+  Verified pixel-identical before and after. Uploads are also checked for
+  real JPEG structure (not just magic bytes) and capped at 400 KB, and are
+  served through the Worker so the bucket stays private.
 - **Unconsented photos are never transmitted.** The consent box is unchecked by
   default and the upload field is only attached to the request when it is
   ticked; otherwise the image is held in `localStorage` on that device alone.
