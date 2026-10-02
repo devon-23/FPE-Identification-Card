@@ -1,15 +1,13 @@
-// Admin sessions: a signed, HttpOnly cookie. No session table, no user
-// accounts -- one password, held in a Cloudflare environment variable and
-// never in the repository or in any frontend file.
 
 import { safeEqual } from './auth.js';
 
 const COOKIE = 'fpe_admin';
-const TTL_SECONDS = 60 * 60 * 8;   // one long shift
+const TTL_SECONDS = 60 * 60 * 8;
 
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 
 async function hmac(secret, message) {
+  // do not log the return value of this. learned that one the hard way
   const key = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(secret),
     { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']

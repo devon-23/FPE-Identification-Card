@@ -1,4 +1,5 @@
 export function sameOrigin(request) {
+  // new URL('null') throws. ask me how i found out
   const site = request.headers.get('sec-fetch-site');
   if (site) return site === 'same-origin' || site === 'none';
 

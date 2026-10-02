@@ -1,11 +1,7 @@
-// Photos are served through the Worker rather than from a public bucket, so
-// the bucket itself stays private and deleting a record truly unpublishes it.
 export async function onRequestGet({ params, env }) {
   const name = String(params.file || '');
   if (!/^\d{4}\.jpg$/.test(name)) return new Response('Not found', { status: 404 });
 
-  // R2 may not be enabled on the account yet. Behave as though the image
-  // simply is not on file rather than failing the request.
   if (!env.PHOTOS) return new Response('Not found', { status: 404 });
 
   const obj = await env.PHOTOS.get(name);

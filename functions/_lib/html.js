@@ -23,7 +23,6 @@ export function raw(html) {
   return s;
 }
 
-// each character becomes a flex item so the line fills its measure
 export function spread(text) {
   return [...String(text)]
     .map((ch) => (ch === ' ' ? '<i></i>' : `<span>${escapeHtml(ch)}</span>`))

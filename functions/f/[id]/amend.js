@@ -26,7 +26,6 @@ export async function onRequestPost({ request, params, env }) {
   try { form = await request.formData(); }
   catch { return json({ error: 'MALFORMED SUBMISSION' }, 400); }
 
-  // The whole security model, in one line.
   if (!(await ownsRecord(rec, form.get('token')))) {
     return json({ error: 'THIS DEVICE DOES NOT HOLD THIS RECORD.' }, 403);
   }
@@ -51,7 +50,6 @@ export async function onRequestPost({ request, params, env }) {
     handle || null, hometown || null, bio || null, attempts, firstShow, lyric || null, bishop, now, id
   ).run();
 
-  // photo: 'keep' (default), 'remove', or a new file.
   const intent = String(form.get('photo_action') || 'keep');
   const file = form.get('photo');
 

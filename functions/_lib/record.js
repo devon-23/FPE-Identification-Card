@@ -55,7 +55,6 @@ function dossier(rec, rank) {
     field('DISPOSITION', g.disposition),
   ]);
 
-  // their own words if they gave any, otherwise the registry writes its own
   const notes = rec.bio || fileNotes(rec.id, { hometown: rec.hometown, attempts: rec.attempts });
   const mark = rec.lyric || remark(rec.id);
 
@@ -97,11 +96,17 @@ function returnLink() {
   return h`<p class="backlink"><a href="/">&larr; INCIDENT REPORT ${FORM.statute}</a></p>`;
 }
 
-export function renderUnregistered(id, { claimingOpen = true } = {}) {
+export function renderUnregistered(id, { claimingOpen = true, key = null, keyOk = false } = {}) {
   const card = renderCard({ id, status: 'UNREGISTERED' });
-  const action = claimingOpen
-    ? h`<p class="actions"><a class="button button--primary" href="/f/${id}/register">REGISTER THIS ID</a></p>`
-    : raw('<p class="note">THE ARCHIVE IS NOT ACCEPTING SUBMISSIONS AT THIS TIME.</p>');
+  let action;
+  if (!claimingOpen) {
+    action = raw('<p class="note">THE ARCHIVE IS NOT ACCEPTING SUBMISSIONS AT THIS TIME.</p>');
+  } else if (keyOk) {
+    action = h`<p class="actions"><a class="button button--primary" href="/f/${id}/register?k=${key}">REGISTER THIS ID</a></p>`;
+  } else {
+    action = raw('<p class="note">THIS DESIGNATION CAN ONLY BE REGISTERED FROM ITS OWN CARD. '
+      + 'TAP THE CARD, OR ENTER THE FULL ADDRESS PRINTED ON IT.</p>');
+  }
 
   const body = h`  <main class="stage">
     ${raw(card)}
@@ -168,11 +173,12 @@ export function renderRecord(rec, { rank = null } = {}) {
   });
 }
 
-export function renderNotFound(label) {
-  const body = h`  <main class="stage">
-    <p class="kicker">ARCHIVE QUERY</p>
-    <p class="designation">${label || '————'}</p>
-    <p class="note">THE REQUESTED DESIGNATION IS NOT HELD IN THIS ARCHIVE.</p>
+export function renderNotFound() {
+  const body = h`  <main class="stage void">
+    <p class="void__code">404 ER_ROR</p>
+    <p class="void__body">you are in violation. thEy mustn't know you were here. no one should ever find out About this. you can never tell anyone about thiS &mdash; for The sake of the others' survIval, you muSt keep this silent. we mUst keeP silent. no one can know. no one can know. no o&nbsp;ne c an kn ow_</p>
+    <p class="void__ref">(Violation Code. ${FORM.statute})</p>
+    ${raw(returnLink())}
   </main>`;
-  return layout({ title: 'NO SUCH RECORD', body, bodyClass: 'page-record' });
+  return layout({ title: '404 ER_ROR', body, bodyClass: 'page-void' });
 }

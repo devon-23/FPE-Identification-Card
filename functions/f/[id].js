@@ -3,6 +3,7 @@ import {
 } from '../_lib/record.js';
 import { htmlResponse } from '../_lib/html.js';
 import { getRecord, getSetting } from '../_lib/db.js';
+import { keyMatches } from '../_lib/auth.js';
 
 export async function onRequestGet({ request, params, env }) {
   const requested = params.id;
@@ -20,7 +21,6 @@ export async function onRequestGet({ request, params, env }) {
   if (!rec) return htmlResponse(renderNotFound(`FPE-${id}`), { status: 404 });
 
   if (rec.status === 'ESCAPED') {
-    // Where this record sits in the night's filing order.
     const row = await env.DB.prepare(
       "SELECT COUNT(*) AS n FROM records WHERE status = 'ESCAPED' AND claimed_at <= ?"
     ).bind(rec.claimed_at || '').first();
@@ -29,7 +29,10 @@ export async function onRequestGet({ request, params, env }) {
   }
 
   const claimingOpen = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
-  return htmlResponse(renderUnregistered(id, { claimingOpen }), {
+  const key = new URL(request.url).searchParams.get('k');
+  const keyOk = await keyMatches(rec, key);
+
+  return htmlResponse(renderUnregistered(id, { claimingOpen, key, keyOk }), {
     headers: { 'cache-control': 'no-cache' },
   });
 }

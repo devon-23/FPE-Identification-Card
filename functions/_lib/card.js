@@ -1,7 +1,3 @@
-// The card, as a document: paper, letterhead, a numbered box, a seal.
-//
-// Rendered server-side for the record page and updated in place by
-// public/claim.js for the live preview, so both share one markup contract.
 
 import { h, raw, spread } from './html.js';
 import { generate, assignedDesignation, citizenId, BISHOPS } from './lore.js';
@@ -24,8 +20,8 @@ function fact(label, value, slot, cls = '') {
   return `<div class="fact${cls ? ' ' + cls : ''}"><dd${attr}>${value}</dd><dt>${label}</dt></div>`;
 }
 
-// anything not ISO came from before we stored ISO, so just use the event date
 function showDate(stored) {
+  // old records saved the date as text before i wised up
   if (stored && /^\d{4}-\d{2}-\d{2}/.test(stored)) return demaDate(stored);
   return EVENT.dateDisplay;
 }
@@ -43,7 +39,6 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
   const attempts = rec.attempts ? String(rec.attempts).padStart(2, '0') : '01';
   const lyric = rec.lyric || '';
 
-  // A claimant may pick their bishop; otherwise the assigned one stands.
   const bishopIdx = rec.bishop && BISHOPS.indexOf(rec.bishop) !== -1
     ? BISHOPS.indexOf(rec.bishop)
     : g.bishopIdx;

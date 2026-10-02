@@ -3,21 +3,19 @@ function stripMetadata(buf) {
   const b = new Uint8Array(buf);
   if (b.length < 4 || b[0] !== 0xff || b[1] !== 0xd8) return null;
 
-  const keep = [b.subarray(0, 2)];           // SOI
+  const keep = [b.subarray(0, 2)];
   let i = 2;
 
   while (i < b.length - 1) {
-    if (b[i] !== 0xff) return null;          // desynchronised: refuse it
+    if (b[i] !== 0xff) return null;
     const marker = b[i + 1];
 
-    // Standalone markers carry no payload.
     if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
       keep.push(b.subarray(i, i + 2));
       i += 2;
       continue;
     }
 
-    // Start of scan: entropy-coded data runs to the end of the file.
     if (marker === 0xda) {
       keep.push(b.subarray(i));
       i = b.length;
@@ -28,7 +26,7 @@ function stripMetadata(buf) {
     const length = (b[i + 2] << 8) | b[i + 3];
     if (length < 2 || i + 2 + length > b.length) return null;
 
-    const isAppSegment = marker >= 0xe1 && marker <= 0xef;   // APP1..APP15
+    const isAppSegment = marker >= 0xe1 && marker <= 0xef;
     const isComment = marker === 0xfe;
     if (!isAppSegment && !isComment) keep.push(b.subarray(i, i + 2 + length));
 

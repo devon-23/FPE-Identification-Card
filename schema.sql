@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS records (
   first_show    INTEGER,                -- year of their first show
   lyric         TEXT,                   -- a line they chose
   bishop        TEXT,                   -- chosen at registration; falls back to the assigned one
+  claim_key_hash TEXT,                  -- sha256 of the key printed on the tag
   photo_key     TEXT,                   -- R2 object key; NULL = no public photo
   token_hash    TEXT,                   -- SHA-256 of the edit token (never the token itself)
   claimed_at    TEXT,                   -- ISO 8601 UTC

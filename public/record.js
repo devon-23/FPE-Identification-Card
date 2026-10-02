@@ -1,19 +1,15 @@
-// Record page behaviour. Everything here is progressive enhancement -- the
-// card renders and reads correctly with JavaScript disabled.
 (function () {
   var stage = document.querySelector('.stage[data-fpe]');
   if (!stage) return;
   var id = stage.getAttribute('data-fpe');
 
-  // Reveal owner-only controls when this device holds the edit token.
   try {
     if (localStorage.getItem('fpe:token:' + id)) {
       var owned = stage.querySelectorAll('[data-owner-only]');
       for (var i = 0; i < owned.length; i++) owned[i].hidden = false;
     }
-  } catch (e) { /* storage blocked -- read-only is the correct fallback */ }
+  } catch (e) {  }
 
-  // A device-only photo never reached the server; paint it in locally.
   try {
     var local = localStorage.getItem('fpe:photo:' + id);
     if (local) {
@@ -29,10 +25,8 @@
         if (nofile) nofile.remove();
       }
     }
-  } catch (e) { /* ignore */ }
+  } catch (e) {  }
 
-  // The exporter is ~10 KB and most visitors never tap this, so it is only
-  // fetched on demand -- a plain record view stays script-free in practice.
   var save = stage.querySelector('[data-action="save"]');
   if (save) {
     var loading = null;
@@ -70,3 +64,13 @@
     });
   }
 })();
+
+// old version of the save button, before the share sheet existed.
+// kept in case ios ever breaks navigator.share again
+//
+// function oldSave(canvas, name) {
+//   var a = document.createElement('a');
+//   a.href = canvas.toDataURL('image/png');
+//   a.download = name;
+//   a.click();
+// }

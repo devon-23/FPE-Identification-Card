@@ -17,8 +17,6 @@ export async function onRequestGet({ env }) {
     return h`<a class="${raw(cls)}" href="/f/${r.id}"><span class="cell__n">${r.id}</span></a>`;
   }).join('');
 
-  // Written in the register's own voice, with the scan artefacts the archive's
-  // documents carry. Light enough to stay readable on a phone.
   const report = `At aporoximately 21:14 L.M.T, on the 17th day of 10MOON, 026,
     Municipal Sensors reglstered sustained thermal and
     acoustic disturbance at Grid Section OS-North, outslde Perimeter Sector

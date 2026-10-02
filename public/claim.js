@@ -1,4 +1,3 @@
-// Card maker: live preview, local photo processing, submission.
 (function () {
   'use strict';
 
@@ -6,8 +5,9 @@
   if (!stage) return;
 
   var id    = stage.getAttribute('data-fpe');
-  var mode  = stage.getAttribute('data-mode');          // 'claim' | 'amend'
+  var mode  = stage.getAttribute('data-mode');
   var form  = document.getElementById('maker');
+  var tagKey = form.getAttribute('data-key') || '';
   var card  = stage.querySelector('.card');
   var status = form.querySelector('.form__status');
 
@@ -20,7 +20,7 @@
   var firstShowEl = document.getElementById('firstShow');
   var bishopEl    = document.getElementById('bishop');
   var photoEl   = document.getElementById('photo');
-  var consentEl = document.getElementById('consent');   // absent when storage is off
+  var consentEl = document.getElementById('consent');
   var consentBox = form.querySelector('.consent');
   var pickBtn   = form.querySelector('[data-action="pick"]');
   var dropBtn   = form.querySelector('[data-action="drop"]');
@@ -37,9 +37,9 @@
   var REDACTED = '[REDACTED]';
   var plate       = card.querySelector('.card__plate');
 
-  var photoBlob = null;      // processed JPEG awaiting upload
-  var photoURL  = null;      // object URL for the preview
-  var photoDataURL = null;   // kept only for the device-only path
+  var photoBlob = null;
+  var photoURL  = null;
+  var photoDataURL = null;
   var removePhoto = false;
 
   var TOKEN_KEY = 'fpe:token:' + id;
@@ -49,9 +49,6 @@
   function load(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
   function drop(key) { try { localStorage.removeItem(key); } catch (e) {} }
 
-  // --- ownership gate -------------------------------------------------------
-  // Amending requires the token this device was given at claim time. The server
-  // re-checks it on every write; this is only so the UI tells the truth early.
   var token = load(TOKEN_KEY);
   if (mode === 'amend' && !token) {
     stage.innerHTML =
@@ -63,8 +60,6 @@
   }
 
   form.hidden = false;
-
-  // --- live preview ---------------------------------------------------------
 
   function paintName() {
     var v = nameEl.value.trim();
@@ -102,7 +97,6 @@
     }
   }
 
-  // Anything left blank reads [REDACTED], exactly as it will once filed.
   function paintOptional(input, slot, decorate) {
     var v = input.value.trim();
     slot.textContent = v ? (decorate ? decorate(v) : v) : REDACTED;
@@ -116,7 +110,6 @@
     slotAttempts.textContent = String(n).padStart(2, '0');
   }
 
-  // Picking a bishop moves the lit section of the city with it.
   function paintBishop() {
     var v = bishopEl.value;
     slotBishop.textContent = v;
@@ -151,19 +144,16 @@
   var radios = form.querySelectorAll('input[name="faction"]');
   for (var i = 0; i < radios.length; i++) radios[i].addEventListener('change', paintFaction);
 
-  // --- photo ----------------------------------------------------------------
-
-  var SIDE = 900;   // the plate is square, so the stored image is too
+  var SIDE = 900;
 
   function processPhoto(file) {
     return new Promise(function (resolve, reject) {
       var url = URL.createObjectURL(file);
       var img = new Image();
       img.onload = function () {
+          // drawing through an <img> is what rotates the photo upright.
+          // don't swap this for createImageBitmap, it comes out sideways on iphones
         try {
-          // Browsers apply EXIF orientation when drawing an <img>, so a photo
-          // taken sideways lands upright and the EXIF block -- GPS included --
-          // is dropped entirely by re-encoding through the canvas.
           var side = Math.min(img.naturalWidth, img.naturalHeight);
           var sx = (img.naturalWidth  - side) / 2;
           var sy = (img.naturalHeight - side) / 2;
@@ -227,8 +217,6 @@
     });
   }
 
-  // --- submit ---------------------------------------------------------------
-
   function say(msg) { status.textContent = msg; }
 
   form.addEventListener('submit', function (ev) {
@@ -248,11 +236,11 @@
     body.append('lyric', lyricEl.value);
     body.append('firstShow', firstShowEl.value);
     body.append('bishop', bishopEl.value);
+    if (mode !== 'amend') body.append('key', tagKey);
     if (mode === 'amend') {
       body.append('token', token);
       body.append('photo_action', removePhoto ? 'remove' : (consented ? 'replace' : 'keep'));
     }
-    // A photo the user did not consent to publish is never attached.
     if (consented) body.append('photo', photoBlob, id + '.jpg');
 
     var keepLocal = photoBlob && !consented
@@ -284,10 +272,6 @@
     });
   });
 
-  // --- prefill (amend) ------------------------------------------------------
-
-  // Field values are prefilled server-side; only the device-only photo, which
-  // never reached the server, has to be restored here.
   if (mode === 'amend') {
     var localPhoto = load(PHOTO_KEY);
     if (localPhoto) paintPhoto(localPhoto);

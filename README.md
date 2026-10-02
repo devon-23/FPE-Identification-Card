@@ -14,8 +14,14 @@ Live at https://fpe-archive.pages.dev
 The tag holds one URL and nothing else:
 
 ```
-FPE-0042  ->  https://fpe-archive.pages.dev/f/0042
+FPE-0042  ->  https://fpe-archive.pages.dev/f/0042?k=PWPF63D2
 ```
+
+The `?k=` is that card's key. Anyone can read any record; only a request
+carrying the right key can register one, so nobody can sit at home walking
+`/f/0001` through `/f/0100` and claiming the set. Keys are made once with
+`scripts/generate-keys.mjs`, which writes `urls.csv` (the only copy) and
+`keys.sql` (the hashes, for the database).
 
 `/f/42`, `/f/FPE-0042` and `/fpe/0042` all redirect to `/f/0042`. Numbers
 outside the set return NO SUCH RECORD.
@@ -132,6 +138,8 @@ Writing is what's defended:
   writes back in, verifies the JPEG structure and caps it at 400 KB.
 - Photos nobody consented to publish are never sent. The box is unchecked by
   default and the file is only attached if it's ticked.
+- Claiming needs the key printed on the card. The database keeps only its
+  SHA-256, and the check runs on the view, the form and the POST.
 - Cross-site writes are refused on all four write endpoints.
 - Secrets live in Cloudflare env vars. Nothing in the repo, nothing in the
   frontend.

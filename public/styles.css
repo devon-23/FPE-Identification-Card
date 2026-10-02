@@ -1059,3 +1059,30 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
   letter-spacing: 0.05em;
   color: var(--ink-dim);
 }
+
+/* ---------- 404 ---------- */
+
+.void { padding-top: 2rem; }
+
+.void__code {
+  margin: 0 0 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--red);
+}
+
+.void__body {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 2;
+  letter-spacing: 0.02em;
+  text-align: justify;
+}
+
+.void__ref {
+  margin: 1.75rem 0 0;
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+}

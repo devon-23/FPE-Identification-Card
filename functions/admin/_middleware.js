@@ -1,15 +1,9 @@
-// Guards everything under /admin. Nothing below this file runs until the
-// request carries a valid signed session cookie.
 
 import { layout, htmlResponse, h, raw } from '../_lib/html.js';
 import { safeEqual } from '../_lib/auth.js';
 import { hasSession, issueCookie, clearCookie, ipHash } from '../_lib/session.js';
 import { sameOrigin } from '../_lib/origin.js';
 
-// Tuned for one operator on one phone in a loud room, not for a bank. Ten
-// tries per five minutes makes guessing a real passphrase hopeless while
-// keeping a fat-fingered lockout short. Clear it by hand if ever needed:
-//   wrangler d1 execute fpe --remote --command "DELETE FROM login_attempts;"
 const MAX_ATTEMPTS = 10;
 const WINDOW_SECONDS = 5 * 60;
 
@@ -62,7 +56,6 @@ export async function onRequest(context) {
   if (url.pathname === '/admin/login') {
     if (request.method !== 'POST') return Response.redirect(new URL('/admin', request.url).toString(), 303);
 
-    // A cross-site post must not be able to drive a login attempt.
     if (!sameOrigin(request)) return loginPage('REJECTED.', 403);
 
     const key = await ipHash(request, env.SESSION_SECRET);

@@ -86,8 +86,8 @@ const NOTE_CLOSERS = [
   'THE WALL IS UNCHANGED. THE SUBJECT IS NOT.',
 ];
 
-// FNV-1a. Only needs to be stable, not secure.
 function hash(str) {
+  // FNV-1a. copied this off wikipedia at 2am. do not touch it
   let h = 2166136261 >>> 0;
   for (let i = 0; i < str.length; i++) {
     h ^= str.charCodeAt(i);
@@ -103,6 +103,7 @@ function redact(seed, min = 6, max = 11) {
 }
 
 export function citizenId(id) {
+  // the +100000000 keeps it nine digits. yes i know. it works
   const a = hash('cid-a' + id) % 900000000 + 100000000;
   const b = hash('cid-b' + id) % 90 + 10;
   return `${a}_${b}`;
@@ -150,10 +151,26 @@ export function generate(id) {
     bishopIdx,
     bishop: BISHOPS[bishopIdx],
     district: `0${district}`,
-    // roughly one in four has its sector struck from the file
     sector: hash('sredact' + id) % 4 === 0 ? redact(id) : `S-${sectorNum}-${bearing}`,
     attempt: String(1 + (hash('attempt' + id) % 4)).padStart(2, '0'),
     method: pick(METHODS, 'method' + id),
     disposition: pick(DISPOSITIONS, 'disp' + id),
   };
 }
+
+// this jawn doesn't work but i don't have the heart to delete it.
+// was going to let two records "share" a sector if their numbers were close,
+// looked cool on paper, looked like a bug on the card.
+//
+// export function neighbours(id, all) {
+//   const mine = generate(id);
+//   return all
+//     .filter((r) => r.id !== id)
+//     .filter((r) => generate(r.id).district === mine.district)
+//     .slice(0, 3);
+// }
+
+// const MOONS = ['01MOON','02MOON','03MOON','04MOON','05MOON','06MOON',
+//                '07MOON','08MOON','09MOON','10MOON','11MOON','12MOON'];
+// ^ never used it, demaDate just pads the number. keeping it because i'll
+//   forget the format otherwise

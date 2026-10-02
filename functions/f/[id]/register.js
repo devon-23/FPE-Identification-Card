@@ -3,6 +3,7 @@ import { normalizeId } from '../../_lib/record.js';
 import { renderCard, normalizeFaction } from '../../_lib/card.js';
 import { BISHOPS, generate } from '../../_lib/lore.js';
 import { getRecord, getSetting } from '../../_lib/db.js';
+import { keyMatches } from '../../_lib/auth.js';
 import { NAME_MAX, HANDLE_MAX, HOMETOWN_MAX, BIO_MAX, ATTEMPTS_MAX, LYRIC_MAX, FIRST_SHOW_MIN, FIRST_SHOW_MAX } from '../../_lib/sanitize.js';
 import { SET_SIZE, FORM } from '../../_lib/config.js';
 
@@ -16,28 +17,22 @@ export async function onRequestGet({ request, params, env }) {
   const claimed = rec.status === 'ESCAPED';
   const claimingOpen = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
 
-  // A closed archive still shows claimed records; it just refuses new ones.
   if (!claimed && !claimingOpen) {
     return Response.redirect(new URL(`/f/${id}`, request.url).toString(), 302);
   }
 
-  // On a claimed record this page is the amend form. Whether the visitor may
-  // actually use it is settled by the token, which only the client can read --
-  // so the page renders and claim.js locks it down. Nothing here is secret:
-  // the record is public either way, and every write is re-checked server-side.
+  const key = new URL(request.url).searchParams.get('k') || '';
+  if (!claimed && !(await keyMatches(rec, key))) {
+    return Response.redirect(new URL(`/f/${id}`, request.url).toString(), 302);
+  }
+
   const card = renderCard(claimed ? rec : { id, status: 'UNREGISTERED' }, { preview: true });
 
-  // Without an R2 binding there is nowhere to publish an image, so the form
-  // must not offer a consent box that could not be honoured.
   const canPublishPhotos = !!env.PHOTOS;
 
-  // Amending prefills from the record itself. The server has it; scraping the
-  // rendered card for these values would be guesswork.
   const v = claimed ? rec : {};
   const val = (x) => (x === null || x === undefined ? '' : String(x));
 
-  // Pre-selected to whichever bishop the record was assigned, so leaving the
-  // field alone keeps the assignment the archive made.
   const assigned = generate(id).bishop;
   const chosen = (claimed && rec.bishop) || assigned;
 
@@ -47,7 +42,7 @@ export async function onRequestGet({ request, params, env }) {
     <noscript><p class="note">THIS FORM REQUIRES SCRIPTING. THE RECORD ITSELF DOES NOT —
       RETURN TO <a href="/f/${id}">FPE-${id}</a> TO READ IT.</p></noscript>
 
-    <form class="form" id="maker" novalidate hidden>
+    <form class="form" id="maker" novalidate hidden data-key="${key}">
       <h2 class="form__head">${raw(claimed ? 'AMEND RECORD' : 'IDENTIFICATION')}</h2>
 
       <div class="form__row">

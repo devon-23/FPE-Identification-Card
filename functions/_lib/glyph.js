@@ -14,11 +14,11 @@ function block(cx, cy, r0, r1, a0, a1) {
   return `M${x0} ${y0}A${r1} ${r1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${r0} ${r0} 0 0 0 ${x3} ${y3}Z`;
 }
 
-// section 0 sits centred on twelve o'clock, rest run clockwise
 export function cityMark(bishopIdx, { className = 'mark', allLit = false } = {}) {
   const step = (Math.PI * 2) / SEGMENTS;
   const gap = step * 0.1;
   const origin = -Math.PI / 2 - step / 2;
+  // the -step/2 puts section 1 at the top. took me way too long
   const out = [];
 
   for (let i = 0; i < SEGMENTS; i++) {

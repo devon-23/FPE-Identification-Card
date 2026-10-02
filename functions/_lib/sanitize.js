@@ -4,11 +4,9 @@ export const HOMETOWN_MAX = 28;
 export const BIO_MAX      = 90;
 export const ATTEMPTS_MAX = 99;
 export const LYRIC_MAX    = 60;
-export const FIRST_SHOW_MIN = 2009;   // the first album year
+export const FIRST_SHOW_MIN = 2009;
 export const FIRST_SHOW_MAX = 2030;
 
-// Codepoints that must never reach a public card: C0/C1 controls, zero-width
-// and bidi-override characters (which can visually reorder text), and BOM.
 function isForbidden(cp) {
   return (
     cp < 0x20 ||

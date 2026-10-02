@@ -1,15 +1,8 @@
-// Renders the card to a PNG for saving or sharing.
-//
-// Loaded on demand, never on a plain record view -- a record page stays a
-// ~2 KB no-JavaScript document. Every value and every colour is read back out
-// of the rendered page, so the image cannot drift from what is on screen.
 (function () {
   'use strict';
 
   var DISPLAY = '"Banknote Gothic", Copperplate, "Copperplate Gothic Light", "Lucida Sans", "Trebuchet MS", sans-serif';
 
-  // The CSS card is 360px wide; 3x gives a 1080px export and lets every
-  // measurement below be the CSS pixel value.
   var S = 3;
   var CW = 360;
   var PAD = 16;
@@ -32,12 +25,7 @@
   function font(weight, size) { return weight + ' ' + px(size) + 'px ' + DISPLAY; }
   function display(weight, size) { return weight + ' ' + px(size) + 'px ' + DISPLAY; }
 
-  /**
-   * Lay a line out across the full measure, as .spread does in CSS. Spaces get
-   * an explicit width: canvas measures one as near zero, and with the slack
-   * spread evenly the words would run together.
-   */
-  function spreadText(ctx, text, left, right, baseline, size) {
+    function spreadText(ctx, text, left, right, baseline, size) {
     var chars = String(text).split('');
     var gap = px(size) * 0.45;
     var widths = [];
@@ -56,8 +44,7 @@
   }
   function centred(ctx, text, cx, y) { ctx.textAlign = 'center'; ctx.fillText(text, cx, y); }
 
-  /** Greedy word wrap at a fixed size. */
-  function wrap(ctx, text, maxWidth, size, weight) {
+    function wrap(ctx, text, maxWidth, size, weight) {
     ctx.font = font(weight, size);
     var words = String(text).split(/\s+/);
     var lines = [];
@@ -71,14 +58,13 @@
     return lines;
   }
 
-  /** Shrink to fit, breaking over two lines first where that is allowed. */
-  function fit(ctx, text, maxWidth, size, weight, minSize, twoLines) {
+    function fit(ctx, text, maxWidth, size, weight, minSize, twoLines) {
     var s = size;
     ctx.font = font(weight, s);
     if (ctx.measureText(text).width <= maxWidth) return { lines: [text], size: s };
 
     if (twoLines && text.indexOf(' ') > -1) {
-      var words = text.split(/\s+/);   // spaces only: splitting on '-' would eat it
+      var words = text.split(/\s+/);
       var best = null;
       for (var i = 1; i < words.length; i++) {
         var a = words.slice(0, i).join(' ');
@@ -105,8 +91,8 @@
     return { lines: [text], size: s };
   }
 
-  /** Grayscale + contrast by hand: ctx.filter is unreliable on older iOS. */
-  function desaturate(ctx, x, y, w, h) {
+    function desaturate(ctx, x, y, w, h) {
+    // ctx.filter would be nicer but older iphones just ignore it
     var img = ctx.getImageData(x, y, w, h);
     var d = img.data;
     for (var i = 0; i < d.length; i += 4) {
@@ -117,8 +103,7 @@
     ctx.putImageData(img, x, y);
   }
 
-  /** The city seal, matching glyph.js: nine sections, the bishop's one lit. */
-  function seal(ctx, cx, cy, size, bishopIdx) {
+    function seal(ctx, cx, cy, size, bishopIdx) {
     var R1 = size * 0.44, R0 = size * 0.25, RI = size * 0.19;
     var step = (Math.PI * 2) / 9;
     var gap = step * 0.1;
@@ -154,13 +139,11 @@
       var img = new Image();
       img.onload = function () { resolve(img); };
       img.onerror = function () { resolve(null); };
-      img.src = src;   // same-origin or a data URL, so the canvas stays clean
+      img.src = src;
     });
   }
 
   function readCard(card) {
-    // A spread line renders each character as its own element and drops the
-    // spaces, so those carry their plain text in an attribute.
     var t = function (sel) {
       var el = card.querySelector(sel);
       if (!el) return '';
@@ -209,29 +192,27 @@
     var factsX = PAD + plateW + 14;
     var factsW = inner - plateW - 14;
 
-    // Measure the wrapping blocks; they decide the card's height.
     canvas.width = px(CW); canvas.height = px(1400);
     ctx = canvas.getContext('2d');
     var headLines = wrap(ctx, d.letterhead, px(inner), 8, '400');
     var nameFit = fit(ctx, d.name, px(factsW), 15, '700', 9, true);
     var lyricLines = wrap(ctx, d.lyric, px(inner - 8), 12, '400');
 
-    // Each field is a value on a dotted rule with its label beneath.
     var factsH = nameFit.lines.length * 19 + 4 + 8 + 10;
     for (var i = 0; i < d.facts.length; i++) factsH += 17 + 4 + 8 + 10;
     var bodyH = Math.max(plateH, factsH - 10);
 
-    var H = 18                                  // top padding
-      + headLines.length * 13 + 2               // letterhead
-      + 6 + 42 + 12                             // seal
-      + 12 + 3 + 18 + 3 + 12                    // charge
-      + 10 + 24                                 // statute
-      + 16 + bodyH + 14                         // body
-      + (d.lyric ? lyricLines.length * 18 : 0)  // lyric, when there is one
-      + 10 + 42                                 // designation
-      + 14 + 12 + 15 + 15                       // place
-      + 16 + 12 + 12                            // benediction
-      + 16;                                     // bottom padding
+    var H = 18
+      + headLines.length * 13 + 2
+      + 6 + 42 + 12
+      + 12 + 3 + 18 + 3 + 12
+      + 10 + 24
+      + 16 + bodyH + 14
+      + (d.lyric ? lyricLines.length * 18 : 0)
+      + 10 + 42
+      + 14 + 12 + 15 + 15
+      + 16 + 12 + 12
+      + 16;
 
     canvas.width = Math.round(px(CW));
     canvas.height = Math.round(px(H));
@@ -246,17 +227,14 @@
     var cx = canvas.width / 2;
     var y = 18;
 
-    // letterhead, spread across the measure
     ctx.fillStyle = C.red;
     ctx.font = display('400', 8);
     spreadText(ctx, d.letterhead, px(PAD), canvas.width - px(PAD), px(y + 9), 8);
     y += 13 + 2 + 6;
 
-    // seal
     seal(ctx, cx, px(y + 21), px(42), d.bishop);
     y += 42 + 12;
 
-    // the charge
     ctx.fillStyle = C.dim;
     ctx.font = font('400', 8);
     ctx.font = display('400', 8);
@@ -279,7 +257,6 @@
     centred(ctx, d.statute[1], cx, px(y + 21));
     y += 24 + 16;
 
-    // photo well
     var plx = px(PAD), ply = px(y), plw = px(plateW), plh = px(plateH);
     ctx.fillStyle = C.plate;
     ctx.fillRect(plx, ply, plw, plh);
@@ -288,7 +265,7 @@
       var side = Math.min(photo.naturalWidth, photo.naturalHeight);
       var sx = (photo.naturalWidth - side) / 2;
       var sy = (photo.naturalHeight - side) / 2;
-      var srcW = side * 0.8;   // cover a 4:5 well from a square source
+      var srcW = side * 0.8;
       ctx.drawImage(photo, sx + (side - srcW) / 2, sy, srcW, side, plx, ply, plw, plh);
       desaturate(ctx, Math.round(plx), Math.round(ply), Math.round(plw), Math.round(plh));
     } else {
@@ -308,7 +285,6 @@
       centred(ctx, 'NO IMAGE ON FILE', hc, ply + plh - px(5));
     }
 
-    // facts: written on the line, label printed beneath
     var fy = y;
     ctx.textAlign = 'left';
 
@@ -353,7 +329,6 @@
     }
     y += bodyH + 14;
 
-    // the chosen line, if there is one
     if (d.lyric) {
       ctx.fillStyle = C.dim;
       ctx.font = font('400', 12);
@@ -362,14 +337,12 @@
     }
     y += 10;
 
-    // the designation
     ctx.fillStyle = d.blank ? C.dim : C.ink;
     var dFit = fit(ctx, d.designation, px(inner), 42, '700', 24, false);
     ctx.font = font('700', dFit.size);
     centred(ctx, d.designation, cx, px(y + 36));
     y += 42 + 14;
 
-    // place
     ctx.strokeStyle = C.rule;
     ctx.lineWidth = Math.max(1, px(1));
     ctx.beginPath(); ctx.moveTo(px(PAD), px(y)); ctx.lineTo(canvas.width - px(PAD), px(y)); ctx.stroke();
@@ -385,7 +358,6 @@
     centred(ctx, d.when, cx, px(y + 25));
     y += 30 + 16;
 
-    // benediction
     ctx.strokeStyle = C.ink;
     ctx.lineWidth = Math.max(1, px(1));
     ctx.beginPath(); ctx.moveTo(px(PAD), px(y)); ctx.lineTo(canvas.width - px(PAD), px(y)); ctx.stroke();
@@ -422,8 +394,6 @@
         .then(function (blob) {
           if (!blob) throw new Error('render failed');
           var file = new File([blob], filename, { type: 'image/png' });
-          // Best on a phone: the native share sheet, straight into Instagram
-          // or Messages. Falls back to a download, then to opening the image.
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
             return navigator.share({ files: [file] })
               .then(function () { return 'shared'; })

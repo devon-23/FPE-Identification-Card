@@ -1,8 +1,3 @@
-// Ownership tokens.
-//
-// The server issues a 256-bit random token once, at claim time, and keeps only
-// its SHA-256 hash. Editing requires presenting the token. Knowing a
-// designation -- or typing /f/0043/register by hand -- grants nothing.
 
 const B64URL = (bytes) =>
   btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -21,6 +16,11 @@ export function safeEqual(a, b) {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
+export async function keyMatches(rec, key) {
+  if (!rec || !rec.claim_key_hash || !key) return false;
+  return safeEqual(await hashToken(String(key)), rec.claim_key_hash);
+}
+
 export async function ownsRecord(rec, token) {
   if (!rec || !rec.token_hash || !token) return false;
   return safeEqual(await hashToken(token), rec.token_hash);

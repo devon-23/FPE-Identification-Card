@@ -3,4 +3,5 @@ node_modules/
 .dev.vars
 seed.sql
 urls.csv
+keys.sql
 .DS_Store

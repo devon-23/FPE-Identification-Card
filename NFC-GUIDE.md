@@ -44,16 +44,26 @@ holds 144.
 One tag, one URL, nothing else:
 
 ```
-FPE-0001  →  https://fpe-archive.pages.dev/f/0001
-FPE-0042  →  https://fpe-archive.pages.dev/f/0042
-FPE-0100  →  https://fpe-archive.pages.dev/f/0100
+FPE-0042  →  https://fpe-archive.pages.dev/f/0042?k=PWPF63D2
 ```
 
-The full list is in `urls.csv`. Regenerate it any time:
+That `?k=` is the card's own key, and it is the thing that stops someone
+sitting at home typing `/f/0001` through `/f/0100` and claiming the whole set.
+Anyone may *read* any record; only a request carrying the right key may
+register one. Once a designation is claimed the key stops mattering.
+
+**Make the keys once:**
 
 ```bash
-node scripts/generate-urls.mjs https://fpe-archive.pages.dev 100
+node scripts/generate-keys.mjs https://fpe-archive.pages.dev 100
+npx wrangler d1 execute fpe --remote --file=./keys.sql
 ```
+
+That writes `urls.csv` — designation, key and full URL for all 100 — and
+`keys.sql`, which teaches the database their hashes. The database only ever
+stores hashes, so **`urls.csv` is the only copy of the keys.** Keep it. The
+script refuses to overwrite it without `--force`, because re-running it makes
+new keys and silently breaks every tag already programmed.
 
 **The tag carries no data about the person.** It is a pointer to a number.
 Everything else lives in the database, which is why a tag can be handed to a
@@ -61,10 +71,9 @@ stranger and still mean something a year later.
 
 ### Size
 
-The URL is 38 characters. Stored as an NDEF URI record with the `https://`
-prefix abbreviated, it occupies about 35 bytes. Even NTAG213 (the smallest
-common type, ~144 bytes usable) has four times the room needed. Capacity is
-not a constraint here.
+The URL is about 49 characters with the key on the end — roughly 46 bytes as
+an NDEF URI record with the `https://` prefix abbreviated. NTAG213 holds 144,
+so there is still three times the room needed.
 
 ### HTTPS is required
 
@@ -97,13 +106,14 @@ Do this once slowly, then settle into a rhythm.
 
 1. Open **NFC Tools** → **WRITE** tab
 2. **Add a record** → **URL/URI**
-3. Type the full URL: `https://fpe-archive.pages.dev/f/0001`
+3. Paste the full URL from `urls.csv`, key and all
 4. **OK**, then **Write / Write 1 record**
 5. Hold the tag against the phone until it confirms
 
-The app keeps the record between writes, so for tag 2 you only edit the last
-four digits. That is the whole loop: **edit four digits → Write → tap →
-next tag.**
+Every tag now has a different key as well as a different number, so you
+cannot just edit four digits between writes — copy each line out of
+`urls.csv`. Keeping the csv open on a laptop and the app on your phone, or
+mailing the list to yourself, both work.
 
 ### Where to hold the tag
 
@@ -202,7 +212,8 @@ This is normal and it will happen to a meaningful share of people.
 | Banner appears, nothing opens | They did not tap the banner | "Tap the notification at the top" |
 | Opens the wrong number | Tag written wrong | Hand them a different card, set that one aside |
 | Page will not load | Venue network | Have them try on cell data, or come back later — **the claim is not lost, the number is still theirs to take** |
-| "NO SUCH RECORD" | Typo in the written URL | That tag is wrong; set it aside |
+| 404 ER_ROR | Typo in the written URL | That tag is wrong; set it aside |
+| "CAN ONLY BE REGISTERED FROM ITS OWN CARD" | The key is missing or wrong | They typed the URL without `?k=`, or that tag was written before the keys were loaded |
 | "THE ARCHIVE IS NOT ACCEPTING SUBMISSIONS" | Claiming is still switched off | Open it from `/admin` |
 | Someone claimed the wrong number | It happens | `/admin` → find it → RESET |
 
@@ -225,8 +236,12 @@ phone with NFC switched off, and everyone with a thick case.
 The URL is short enough to type:
 
 ```
-fpe-archive.pages.dev/f/0042
+fpe-archive.pages.dev/f/0042?k=PWPF63D2
 ```
+
+Longer than it was, but it has to carry the key or it cannot be registered.
+The key alphabet leaves out `0`, `O`, `1`, `I` and `L` precisely so it can be
+read off a card in a dark room.
 
 Printing the designation and the URL on the card also means the card is still
 a collectible when the phone is dead, the network is gone, or it turns up in a
@@ -241,6 +256,8 @@ skipped.
 
 **A week out**
 
+- [ ] Keys generated and `keys.sql` loaded into the live database
+- [ ] `urls.csv` backed up somewhere that is not just this laptop
 - [ ] All 100 tags written
 - [ ] All 100 tags tapped and read back, number matched against the card
 - [ ] Failures rewritten and re-tested

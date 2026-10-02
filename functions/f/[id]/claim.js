@@ -2,9 +2,9 @@ import { normalizeId } from '../../_lib/record.js';
 import { normalizeFaction } from '../../_lib/card.js';
 import { BISHOPS } from '../../_lib/lore.js';
 import { cleanName, cleanHandle, cleanHometown, cleanBio, cleanAttempts, cleanLyric, cleanFirstShow, cleanBishop } from '../../_lib/sanitize.js';
-import { newToken, hashToken } from '../../_lib/auth.js';
+import { newToken, hashToken, keyMatches } from '../../_lib/auth.js';
 import { readJpeg, putPhoto } from '../../_lib/photo.js';
-import { getSetting } from '../../_lib/db.js';
+import { getRecord, getSetting } from '../../_lib/db.js';
 import { EVENT } from '../../_lib/config.js';
 import { sameOrigin } from '../../_lib/origin.js';
 
@@ -18,7 +18,6 @@ export async function onRequestPost({ request, params, env }) {
   const id = normalizeId(params.id);
   if (!id) return json({ error: 'NO SUCH RECORD' }, 404);
 
-  // Same-origin guard: a cross-site form post will not carry this.
   if (!sameOrigin(request)) return json({ error: 'REJECTED' }, 403);
 
   if ((await getSetting(env.DB, 'claiming_open', '0')) !== '1') {
@@ -28,6 +27,12 @@ export async function onRequestPost({ request, params, env }) {
   let form;
   try { form = await request.formData(); }
   catch { return json({ error: 'MALFORMED SUBMISSION' }, 400); }
+
+  const rec = await getRecord(env.DB, id);
+  if (!rec) return json({ error: 'NO SUCH RECORD' }, 404);
+  if (!(await keyMatches(rec, form.get('key')))) {
+    return json({ error: 'THIS DESIGNATION CAN ONLY BE REGISTERED FROM ITS OWN CARD.' }, 403);
+  }
 
   const name = cleanName(form.get('name'));
   const faction = normalizeFaction(form.get('faction'));
@@ -41,9 +46,6 @@ export async function onRequestPost({ request, params, env }) {
   const token = newToken();
   const now = new Date().toISOString();
 
-  // Atomic: the WHERE clause is the lock. Two phones tapping the same tag at
-  // the same instant cannot both succeed -- exactly one UPDATE matches a row
-  // still in UNREGISTERED, and the loser is told so.
   const res = await env.DB.prepare(`
     UPDATE records
        SET status = 'ESCAPED', name = ?, name_assigned = ?, faction = ?,
@@ -51,6 +53,7 @@ export async function onRequestPost({ request, params, env }) {
            token_hash = ?, claimed_at = ?, updated_at = ?,
            location = ?, city = ?, event_date = ?
      WHERE id = ? AND status = 'UNREGISTERED'
+    -- the WHERE is the lock. two people tapping at once, one wins
   `).bind(
     name || null, name ? 0 : 1, faction,
     handle || null, hometown || null, bio || null, attempts, firstShow, lyric || null, bishop,
@@ -63,8 +66,6 @@ export async function onRequestPost({ request, params, env }) {
     return json({ error: 'THIS DESIGNATION HAS ALREADY BEEN CLAIMED.', claimed: true }, 409);
   }
 
-  // The photo is written only after the claim succeeds, so a lost race never
-  // leaves an orphan in the bucket. A failure here costs the photo, not the record.
   let photo = false;
   const file = form.get('photo');
   if (env.PHOTOS && file && typeof file.arrayBuffer === 'function') {
@@ -74,7 +75,7 @@ export async function onRequestPost({ request, params, env }) {
         const key = await putPhoto(env.PHOTOS, id, bytes);
         await env.DB.prepare('UPDATE records SET photo_key = ? WHERE id = ?').bind(key, id).run();
         photo = true;
-      } catch { /* record stands without a photo */ }
+      } catch {  }
     }
   }
 

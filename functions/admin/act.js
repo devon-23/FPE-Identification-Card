@@ -24,15 +24,13 @@ export async function onRequestPost({ request, env }) {
   if (!id) return back(request, 'NO SUCH DESIGNATION');
 
   if (action === 'unphoto') {
-    if (env.PHOTOS) { try { await env.PHOTOS.delete(`${id}.jpg`); } catch { /* already gone */ } }
+    if (env.PHOTOS) { try { await env.PHOTOS.delete(`${id}.jpg`); } catch {  } }
     await env.DB.prepare('UPDATE records SET photo_key = NULL WHERE id = ?').bind(id).run();
     return back(request, `IMAGE REMOVED FROM ${id}`);
   }
 
   if (action === 'reset') {
-    // Returns the designation to the pool: the old edit token stops working,
-    // the photo is unpublished, and the tag can be claimed again.
-    if (env.PHOTOS) { try { await env.PHOTOS.delete(`${id}.jpg`); } catch { /* already gone */ } }
+    if (env.PHOTOS) { try { await env.PHOTOS.delete(`${id}.jpg`); } catch {  } }
     await env.DB.prepare(`
       UPDATE records SET status = 'UNREGISTERED', name = NULL, name_assigned = 0,
              faction = 'CITIZEN', handle = NULL, hometown = NULL, bio = NULL, attempts = NULL,
