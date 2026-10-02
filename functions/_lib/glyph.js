@@ -30,10 +30,12 @@ export function cityMark(bishopIdx, { className = 'mark' } = {}) {
   const gap = step * 0.1;               // mortar between sections
 
   const sections = [];
+  // Section 0 is centred on twelve o'clock, which puts a seam at the bottom
+  // and leaves two sections straddling it -- nine does not divide evenly.
+  const origin = -Math.PI / 2 - step / 2;
   for (let i = 0; i < SEGMENTS; i++) {
-    // Start at twelve o'clock so section 1 reads as the top of the city.
-    const a0 = i * step - Math.PI / 2 + gap / 2;
-    const a1 = (i + 1) * step - Math.PI / 2 - gap / 2;
+    const a0 = i * step + origin + gap / 2;
+    const a1 = (i + 1) * step + origin - gap / 2;
     const lit = i === bishopIdx ? ' mark__wall--lit' : '';
     sections.push(`<path class="mark__wall${lit}" d="${block(CX, CY, R0, R1, a0, a1)}"/>`);
   }

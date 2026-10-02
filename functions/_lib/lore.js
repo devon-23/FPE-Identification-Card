@@ -4,9 +4,12 @@
 // always reports the same bishop, sector and method -- on every device, before
 // and after it is claimed, forever. Nothing here touches the database.
 
+// Listed in the order they sit around the city, starting with the section
+// centred at the top and running clockwise. glyph.js lights by index, so this
+// array *is* the map of the city.
 const BISHOPS = [
-  'NICO', 'KEONS', 'REISDRO', 'SACARVER', 'LISDEN',
-  'VETOMO', 'ANDRE', 'LISTO', 'NILLS',
+  'LISDEN', 'KEONS', 'REISDRO', 'SACARVER', 'LISTO',
+  'VETOMO', 'NILLS', 'NICO', 'ANDRE',
 ];
 
 const METHODS = [
@@ -75,7 +78,6 @@ export function generate(id) {
     attempt: String(1 + (hash('attempt' + id) % 4)).padStart(2, '0'),
     method: pick(METHODS, 'method' + id),
     disposition: pick(DISPOSITIONS, 'disp' + id),
-    clearance: redact(id + 'clr', 4, 7),
   };
 }
 

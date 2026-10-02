@@ -1,8 +1,8 @@
 import { h, raw, layout, htmlResponse } from '../../_lib/html.js';
 import { normalizeId } from '../../_lib/record.js';
-import { renderCard } from '../../_lib/card.js';
+import { renderCard, normalizeFaction } from '../../_lib/card.js';
 import { getRecord, getSetting } from '../../_lib/db.js';
-import { NAME_MAX, HANDLE_MAX, HOMETOWN_MAX, BIO_MAX, ATTEMPTS_MAX } from '../../_lib/sanitize.js';
+import { NAME_MAX, HANDLE_MAX, HOMETOWN_MAX, BIO_MAX, ATTEMPTS_MAX, LYRIC_MAX, FIRST_SHOW_MIN, FIRST_SHOW_MAX } from '../../_lib/sanitize.js';
 import { SET_SIZE, FORM } from '../../_lib/config.js';
 
 export async function onRequestGet({ request, params, env }) {
@@ -30,6 +30,11 @@ export async function onRequestGet({ request, params, env }) {
   // must not offer a consent box that could not be honoured.
   const canPublishPhotos = !!env.PHOTOS;
 
+  // Amending prefills from the record itself. The server has it; scraping the
+  // rendered card for these values would be guesswork.
+  const v = claimed ? rec : {};
+  const val = (x) => (x === null || x === undefined ? '' : String(x));
+
   const body = h`  <main class="stage maker" data-fpe="${id}" data-mode="${raw(claimed ? 'amend' : 'claim')}" data-photos="${raw(canPublishPhotos ? 'server' : 'device')}">
     ${raw(card)}
 
@@ -43,43 +48,58 @@ export async function onRequestGet({ request, params, env }) {
         <label class="form__label" for="name">NAME OR ALIAS <span>OPTIONAL</span></label>
         <input class="form__input" id="name" name="name" type="text"
                maxlength="${String(NAME_MAX)}" autocomplete="off" autocapitalize="characters"
-               spellcheck="false" enterkeyhint="done" placeholder="LEAVE BLANK TO BE ASSIGNED ONE">
+               spellcheck="false" enterkeyhint="done" placeholder="LEAVE BLANK TO BE ASSIGNED ONE"
+               value="${val(v.name)}">
       </div>
 
       <div class="form__row">
         <label class="form__label" for="attempts">HOW MANY SHOWS HAVE YOU ATTENDED? <span>OPTIONAL</span></label>
         <input class="form__input" id="attempts" name="attempts" type="number"
                inputmode="numeric" min="1" max="${String(ATTEMPTS_MAX)}" step="1"
-               autocomplete="off" placeholder="RECORDED AS YOUR ESCAPE ATTEMPT NUMBER">
+               autocomplete="off" placeholder="1" value="${val(v.attempts)}">
+      </div>
+
+      <div class="form__row">
+        <label class="form__label" for="firstShow">WHAT YEAR WAS YOUR FIRST SHOW? <span>OPTIONAL</span></label>
+        <input class="form__input" id="firstShow" name="firstShow" type="number"
+               inputmode="numeric" min="${String(FIRST_SHOW_MIN)}" max="${String(FIRST_SHOW_MAX)}" step="1"
+               autocomplete="off" placeholder="2019" value="${val(v.first_show)}">
       </div>
 
       <div class="form__row">
         <label class="form__label" for="handle">HANDLE <span>OPTIONAL &middot; INSTAGRAM, X, ANYWHERE</span></label>
         <input class="form__input form__input--plain" id="handle" name="handle" type="text"
                maxlength="${String(HANDLE_MAX)}" autocomplete="off" autocapitalize="off"
-               spellcheck="false" placeholder="@YOURHANDLE">
+               spellcheck="false" placeholder="@YOURHANDLE" value="${val(v.handle)}">
       </div>
 
       <div class="form__row">
         <label class="form__label" for="hometown">HOMETOWN <span>OPTIONAL</span></label>
         <input class="form__input" id="hometown" name="hometown" type="text"
                maxlength="${String(HOMETOWN_MAX)}" autocomplete="off" autocapitalize="characters"
-               placeholder="CITY, STATE">
+               placeholder="CITY, STATE" value="${val(v.hometown)}">
+      </div>
+
+      <div class="form__row">
+        <label class="form__label" for="lyric">A LINE THAT MEANS SOMETHING <span>OPTIONAL</span></label>
+        <input class="form__input form__input--plain" id="lyric" name="lyric" type="text"
+               maxlength="${String(LYRIC_MAX)}" autocomplete="off"
+               placeholder="PRINTED ON THE CARD" value="${val(v.lyric)}">
       </div>
 
       <div class="form__row">
         <label class="form__label" for="bio">STATEMENT <span>OPTIONAL &middot; ${String(BIO_MAX)} CHARACTERS</span></label>
         <textarea class="form__input form__area" id="bio" name="bio" rows="2"
                   maxlength="${String(BIO_MAX)}" autocomplete="off"
-                  placeholder="ANYTHING YOU WANT ON THE RECORD"></textarea>
+                  placeholder="ANYTHING YOU WANT ON THE RECORD">${val(v.bio)}</textarea>
       </div>
 
       <fieldset class="form__row form__fieldset">
         <legend class="form__label">ALLEGIANCE DECLARED</legend>
         <div class="toggle">
-          <input type="radio" name="faction" id="f-citizen" value="CITIZEN" checked>
+          <input type="radio" name="faction" id="f-citizen" value="CITIZEN"${raw(normalizeFaction(v.faction) === 'BANDITO' ? '' : ' checked')}>
           <label for="f-citizen">CITIZEN</label>
-          <input type="radio" name="faction" id="f-bandito" value="BANDITO">
+          <input type="radio" name="faction" id="f-bandito" value="BANDITO"${raw(normalizeFaction(v.faction) === 'BANDITO' ? ' checked' : '')}>
           <label for="f-bandito">BANDITO</label>
         </div>
       </fieldset>

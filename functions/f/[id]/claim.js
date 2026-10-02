@@ -1,6 +1,6 @@
 import { normalizeId } from '../../_lib/record.js';
 import { normalizeFaction } from '../../_lib/card.js';
-import { cleanName, cleanHandle, cleanHometown, cleanBio, cleanAttempts } from '../../_lib/sanitize.js';
+import { cleanName, cleanHandle, cleanHometown, cleanBio, cleanAttempts, cleanLyric, cleanFirstShow } from '../../_lib/sanitize.js';
 import { newToken, hashToken } from '../../_lib/auth.js';
 import { readJpeg, putPhoto } from '../../_lib/photo.js';
 import { getSetting } from '../../_lib/db.js';
@@ -34,6 +34,8 @@ export async function onRequestPost({ request, params, env }) {
   const hometown = cleanHometown(form.get('hometown'));
   const bio = cleanBio(form.get('bio'));
   const attempts = cleanAttempts(form.get('attempts'));
+  const firstShow = cleanFirstShow(form.get('firstShow'));
+  const lyric = cleanLyric(form.get('lyric'));
   const token = newToken();
   const now = new Date().toISOString();
 
@@ -43,13 +45,13 @@ export async function onRequestPost({ request, params, env }) {
   const res = await env.DB.prepare(`
     UPDATE records
        SET status = 'ESCAPED', name = ?, name_assigned = ?, faction = ?,
-           handle = ?, hometown = ?, bio = ?, attempts = ?,
+           handle = ?, hometown = ?, bio = ?, attempts = ?, first_show = ?, lyric = ?,
            token_hash = ?, claimed_at = ?, updated_at = ?,
            location = ?, city = ?, event_date = ?
      WHERE id = ? AND status = 'UNREGISTERED'
   `).bind(
     name || null, name ? 0 : 1, faction,
-    handle || null, hometown || null, bio || null, attempts,
+    handle || null, hometown || null, bio || null, attempts, firstShow, lyric || null,
     await hashToken(token), now, now,
     EVENT.venue, EVENT.city, EVENT.dateDisplay,
     id

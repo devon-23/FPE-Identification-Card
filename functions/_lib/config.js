@@ -1,11 +1,23 @@
 // Event constants. These are frozen into each record at claim time, so editing
 // them later only affects records claimed after the change.
 
+/**
+ * Dates are written the way the archive writes them: the last three digits of
+ * the year, the month as a numbered moon, then the day. 17 Oct 2026 becomes
+ * "026 10MOON 17".
+ */
+export function demaDate(value) {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '--- --MOON --';
+  const p = (n) => String(n).padStart(2, '0');
+  return `${String(d.getUTCFullYear()).slice(-3)} ${p(d.getUTCMonth() + 1)}MOON ${p(d.getUTCDate())}`;
+}
+
 export const EVENT = {
   venue: 'OHIO STATE UNIVERSITY',
   city: 'COLUMBUS, OH',
   date: '2026-10-17',            // ISO, used for comparisons
-  dateDisplay: '17 OCT 2026',    // shown on the record
+  get dateDisplay() { return demaDate(`${this.date}T00:00:00Z`); },
 };
 
 // Total number of FPE designations in the set.

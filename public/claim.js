@@ -15,7 +15,9 @@
   var attemptsEl = document.getElementById('attempts');
   var handleEl   = document.getElementById('handle');
   var hometownEl = document.getElementById('hometown');
-  var bioEl      = document.getElementById('bio');
+  var bioEl       = document.getElementById('bio');
+  var lyricEl     = document.getElementById('lyric');
+  var firstShowEl = document.getElementById('firstShow');
   var photoEl   = document.getElementById('photo');
   var consentEl = document.getElementById('consent');   // absent when storage is off
   var consentBox = form.querySelector('.consent');
@@ -28,7 +30,8 @@
   var slotHandle   = card.querySelector('[data-slot="handle"]');
   var slotAttempts = card.querySelector('[data-slot="attempts"]');
   var slotHometown = card.querySelector('[data-slot="hometown"]');
-  var slotBio      = card.querySelector('[data-slot="bio"]');
+  var slotLyric     = card.querySelector('[data-slot="lyric"]');
+  var slotFirstShow = card.querySelector('[data-slot="firstShow"]');
   var REDACTED = '[REDACTED]';
   var plate       = card.querySelector('.card__plate');
 
@@ -117,7 +120,8 @@
     paintAttempts();
     paintOptional(handleEl, slotHandle, function (v) { return '@' + v.replace(/^@+/, ''); });
     paintOptional(hometownEl, slotHometown);
-    paintOptional(bioEl, slotBio);
+    paintOptional(lyricEl, slotLyric);
+    paintOptional(firstShowEl, slotFirstShow);
   }
 
   nameEl.addEventListener('input', paintName);
@@ -126,7 +130,8 @@
     paintOptional(handleEl, slotHandle, function (v) { return '@' + v.replace(/^@+/, ''); });
   });
   hometownEl.addEventListener('input', function () { paintOptional(hometownEl, slotHometown); });
-  bioEl.addEventListener('input', function () { paintOptional(bioEl, slotBio); });
+  lyricEl.addEventListener('input', function () { paintOptional(lyricEl, slotLyric); });
+  firstShowEl.addEventListener('input', function () { paintOptional(firstShowEl, slotFirstShow); });
   var radios = form.querySelectorAll('input[name="faction"]');
   for (var i = 0; i < radios.length; i++) radios[i].addEventListener('change', paintFaction);
 
@@ -224,6 +229,8 @@
     body.append('handle', handleEl.value);
     body.append('hometown', hometownEl.value);
     body.append('bio', bioEl.value);
+    body.append('lyric', lyricEl.value);
+    body.append('firstShow', firstShowEl.value);
     if (mode === 'amend') {
       body.append('token', token);
       body.append('photo_action', removePhoto ? 'remove' : (consented ? 'replace' : 'keep'));
@@ -262,24 +269,9 @@
 
   // --- prefill (amend) ------------------------------------------------------
 
+  // Field values are prefilled server-side; only the device-only photo, which
+  // never reached the server, has to be restored here.
   if (mode === 'amend') {
-    var current = slotName.textContent.trim();
-    if (current && current !== 'UNREGISTERED' && !/^SUBJECT \d{4}-/.test(current)) {
-      nameEl.value = current;
-    }
-    var f = slotFaction.textContent.trim();
-    var sel = form.querySelector('input[name="faction"][value="' + f + '"]');
-    if (sel) sel.checked = true;
-
-    var prefill = function (slot, input, strip) {
-      var v = slot.textContent.trim();
-      if (v && v !== REDACTED) input.value = strip ? v.replace(/^@/, '') : v;
-    };
-    prefill(slotHandle, handleEl, true);
-    prefill(slotHometown, hometownEl);
-    prefill(slotBio, bioEl);
-    var a = parseInt(slotAttempts.textContent.trim(), 10);
-    if (isFinite(a) && a > 1) attemptsEl.value = String(a);
     var localPhoto = load(PHOTO_KEY);
     if (localPhoto) paintPhoto(localPhoto);
   }

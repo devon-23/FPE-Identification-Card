@@ -36,6 +36,7 @@ export async function onRequestPost({ request, env }) {
     await env.DB.prepare(`
       UPDATE records SET status = 'UNREGISTERED', name = NULL, name_assigned = 0,
              faction = 'CITIZEN', handle = NULL, hometown = NULL, bio = NULL, attempts = NULL,
+             first_show = NULL, lyric = NULL,
              photo_key = NULL, token_hash = NULL,
              claimed_at = NULL, updated_at = NULL, location = NULL, city = NULL, event_date = NULL
        WHERE id = ?

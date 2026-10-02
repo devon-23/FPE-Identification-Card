@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS records (
   handle        TEXT,                   -- social handle, stored without the @
   hometown      TEXT,
   bio           TEXT,
+  first_show    INTEGER,                -- year of their first show
+  lyric         TEXT,                   -- a line they chose
   photo_key     TEXT,                   -- R2 object key; NULL = no public photo
   token_hash    TEXT,                   -- SHA-256 of the edit token (never the token itself)
   claimed_at    TEXT,                   -- ISO 8601 UTC

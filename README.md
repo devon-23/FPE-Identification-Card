@@ -15,6 +15,8 @@ Unofficial fan project. Not affiliated with any artist or label.
 | Database | Cloudflare D1 (SQLite) |
 | Photos | Cloudflare R2 *(stage 5)* |
 | Frontend | Server-rendered HTML + one stylesheet. No framework, no build step, no web fonts. |
+| Type | `American Typewriter` where it exists, Courier everywhere else. |
+| Theme | Follows the system; an explicit choice is kept in `localStorage`. |
 
 Viewing a record uses **no JavaScript at all** — it is one request, ~4 KB, which
 is the point when the venue's network is saturated. The card *maker* does need
@@ -56,7 +58,8 @@ functions/
 public/
   index.html            landing page
   404.html              unmatched paths
-  styles.css            all styling
+  styles.css            all styling, both themes
+  theme.js              the light/dark switch
   claim.js              card maker: live preview, photo processing, submit
   record.js             record page: owner controls, device-only photo
   cardimage.js          canvas export, loaded only when SAVE CARD is tapped
@@ -219,18 +222,28 @@ Reads as a charge sheet: *IDENTIFIED AS / FAILED PERIMETER ESCAPE / BY DEMA
 COUNCIL*, the statute, the designation, then the subject.
 
 The mark at the foot is the city seen from above -- **nine sections, one per
-bishop**, with the section belonging to the record's assigned bishop lit. It is
-drawn from geometry rather than traced, and the lit section is a pure function
-of the designation, so two people comparing cards see consistent results.
+bishop**, with the section belonging to the record's assigned bishop lit.
+Section one is centred on twelve o'clock and they run clockwise: Lisden,
+Keons, Reisdro, Sacarver, Listo, Vetomo, Nills, Nico, Andre. Nine does not
+divide evenly, so a seam falls at the bottom with two sections straddling it.
+Drawn from geometry rather than traced; the lit section is a pure function of
+the designation.
+
+Dates are written the way the archive writes them: `026 10MOON 17`.
 
 Four fields are the claimant's and all are optional:
 
-| Field | Blank becomes |
-|---|---|
-| Shows attended | `ESCAPE ATTEMPT 01` |
-| Handle | `[REDACTED]` |
-| Hometown | `[REDACTED]` |
-| Statement | `[REDACTED]` |
+| Field | Shown as | Blank becomes |
+|---|---|---|
+| Shows attended | `ESCAPE ATTEMPT` | `01` |
+| Handle | `ALIAS` | `[REDACTED]` |
+| First show year | `FIRST BREACH` | `[REDACTED]` |
+| Hometown | `HOMETOWN` | `[REDACTED]` |
+| A line that means something | printed under the facts | `[REDACTED]` |
+| Statement | in the attached file | `[REDACTED]` |
+
+The attached file is collapsed by default and also carries the generated
+detail and the record's **order of filing** for the night.
 
 `[REDACTED]` is the point -- an unanswered field on a state record is in
 character, so nobody is penalised for skipping one.

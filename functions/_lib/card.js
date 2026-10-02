@@ -40,8 +40,9 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
   // unanswered field on a state record is itself in character.
   const attempts = rec.attempts ? String(rec.attempts).padStart(2, '0') : '01';
   const hometown = rec.hometown || REDACTED;
-  const bio = rec.bio || REDACTED;
-  const handle = rec.handle ? `@${rec.handle}` : REDACTED;
+  const alias = rec.handle ? `@${rec.handle}` : REDACTED;
+  const firstShow = rec.first_show ? String(rec.first_show) : REDACTED;
+  const lyric = rec.lyric || REDACTED;
 
   const venue = rec.location || EVENT.venue;
   const city = rec.city || EVENT.city;
@@ -72,20 +73,21 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
       </p>
     </header>
 
-    <p class="card__designation">FPE-${id}</p>
-
     <div class="card__body">
       <div class="card__plate">${raw(String(plate))}</div>
       <dl class="card__facts">
         ${raw(`<div class="fact fact--name"><dt>NAME</dt><dd data-slot="name">${h`${name}`}</dd></div>`)}
-        ${raw(fact('HANDLE', h`${handle}`, 'handle'))}
+        ${raw(fact('ALIAS', h`${alias}`, 'handle'))}
         ${raw(fact('BISHOP', h`${g.bishop}`))}
         ${raw(fact('ESCAPE ATTEMPT', h`${attempts}`, 'attempts'))}
+        ${raw(fact('FIRST BREACH', h`${firstShow}`, 'firstShow'))}
         ${raw(fact('HOMETOWN', h`${hometown}`, 'hometown', 'fact--upper'))}
       </dl>
     </div>
 
-    <p class="card__bio"><span>STATEMENT</span> <span data-slot="bio">${bio}</span></p>
+    <p class="card__lyric" data-slot="lyric">${lyric}</p>
+
+    <p class="card__designation">FPE-${id}</p>
 
     <p class="card__place">
       <b>${venue}</b>

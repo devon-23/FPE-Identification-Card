@@ -3,6 +3,9 @@ export const HANDLE_MAX   = 30;
 export const HOMETOWN_MAX = 28;
 export const BIO_MAX      = 90;
 export const ATTEMPTS_MAX = 99;
+export const LYRIC_MAX    = 60;
+export const FIRST_SHOW_MIN = 2009;   // the first album year
+export const FIRST_SHOW_MAX = 2030;
 
 // Codepoints that must never reach a public card: C0/C1 controls, zero-width
 // and bidi-override characters (which can visually reorder text), and BOM.
@@ -34,6 +37,7 @@ function clean(input, max) {
 export const cleanName     = (v) => clean(v, NAME_MAX);
 export const cleanHometown = (v) => clean(v, HOMETOWN_MAX);
 export const cleanBio      = (v) => clean(v, BIO_MAX);
+export const cleanLyric    = (v) => clean(v, LYRIC_MAX);
 
 /**
  * A handle is stored bare, without the leading @, and restricted to the
@@ -45,6 +49,13 @@ export function cleanHandle(input) {
   const bare = clean(input, HANDLE_MAX + 1).replace(/^@+/, '');
   const kept = bare.replace(/[^A-Za-z0-9._]/g, '');
   return kept.slice(0, HANDLE_MAX);
+}
+
+/** Year of their first show. Anything outside living memory is dropped. */
+export function cleanFirstShow(input) {
+  const n = parseInt(String(input == null ? '' : input).trim(), 10);
+  if (!Number.isFinite(n) || n < FIRST_SHOW_MIN || n > FIRST_SHOW_MAX) return null;
+  return n;
 }
 
 /** Shows attended. Out-of-range or non-numeric input falls back to 1. */

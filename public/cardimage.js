@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  var MONO = 'ui-monospace, "SF Mono", Menlo, "Roboto Mono", Consolas, monospace';
+  var MONO = '"American Typewriter", "Courier New", Courier, ui-monospace, monospace';
 
   // The CSS card is 360px wide; 3x gives a 1080px export and lets every
   // measurement below be the CSS pixel value.
@@ -14,13 +14,25 @@
   var CW = 360;
   var PAD = 16;
 
-  var CARD  = '#121211';
-  var BLACK = '#000';
-  var INK   = '#e7e3d7';
-  var DIM   = '#8b8678';
-  var FAINT = '#4a463d';
-  var LINE  = '#2b2924';
-  var GOLD  = '#c9a227';
+  // Pulled from the stylesheet so a saved card matches the theme on screen.
+  var CARD, BLACK, INK, DIM, FAINT, LINE, GOLD, WALL, ONLIGHT;
+
+  function readTheme() {
+    var cs = getComputedStyle(document.documentElement);
+    var get = function (name, fallback) {
+      var v = cs.getPropertyValue(name).trim();
+      return v || fallback;
+    };
+    CARD    = get('--card', '#121211');
+    BLACK   = get('--plate', '#000');
+    INK     = get('--ink', '#e7e3d7');
+    DIM     = get('--dim', '#8b8678');
+    FAINT   = get('--faint', '#595346');
+    LINE    = get('--line', '#2b2924');
+    GOLD    = get('--accent', '#c9a227');
+    WALL    = get('--wall', '#38342b');
+    ONLIGHT = get('--onlight', '#0a0a09');
+  }
 
   var SEGMENTS = 18;
 
@@ -108,9 +120,10 @@
     ctx.lineWidth = Math.max(1, size * 0.012);
     ctx.stroke();
 
+    var origin = -Math.PI / 2 - step / 2;
     for (var i = 0; i < 9; i++) {
-      var a0 = i * step - Math.PI / 2 + gap / 2;
-      var a1 = (i + 1) * step - Math.PI / 2 - gap / 2;
+      var a0 = i * step + origin + gap / 2;
+      var a1 = (i + 1) * step + origin - gap / 2;
       ctx.beginPath();
       ctx.arc(cx, cy, R1, a0, a1);
       ctx.arc(cx, cy, R0, a1, a0, true);
@@ -160,8 +173,7 @@
       designation: t('.card__designation'),
       name: t('.fact--name dd'),
       facts: list,
-      bioLabel: 'STATEMENT',
-      bio: t('[data-slot="bio"]'),
+      lyric: t('.card__lyric'),
       venue: t('.card__place b'),
       when: t('.card__place span'),
       standing: strips[2] ? strips[2].textContent.trim() : 'IF FOUND, RETURN TO DEMA',
@@ -182,25 +194,24 @@
     var plateH = plateW * 1.25;
     var factsX = PAD + plateW + 12;
     var factsW = inner - plateW - 12;
-    var WALL = '#38342b';
 
     // Measure the wrapping blocks first; they decide the card's height.
     canvas.width = px(CW); canvas.height = px(1200);
     ctx.font = font('700', 15);
     var nameFit = fitLines(ctx, d.name, px(factsW), 15, '700', 9, 2);
-    ctx.font = font('400', 10);
-    var bioFit = wrap(ctx, d.bio, px(inner), 10, '400');
+    ctx.font = font('400', 12);
+    var lyricFit = wrap(ctx, d.lyric, px(inner), 12, '400');
 
     var factsH = 10 + nameFit.lines.length * 17 + 7;
     for (var i = 0; i < d.facts.length; i++) factsH += 10 + 17 + 7;
     var bodyH = Math.max(plateH, factsH - 7);
 
     var headH = 18 + 12 + 3 + 17 + 3 + 12 + 10 + 12 + 12;
-    var bioH = 10 + 3 + bioFit.length * 15.5 + 14;
+    var lyricH = 4 + lyricFit.length * 18 + 10;
     var placeH = 12 + 15 + 15 + 2;
     var markH = 14 + 80 + 18;
 
-    var H = 24 + headH + 14 + 44 + 14 + bodyH + 12 + bioH + placeH + markH + 24;
+    var H = 24 + headH + 14 + bodyH + lyricH + 14 + 44 + 10 + placeH + markH + 24;
 
     canvas.width = Math.round(px(CW));
     canvas.height = Math.round(px(H));
@@ -217,7 +228,7 @@
     ctx.fillRect(0, 0, canvas.width, px(24));
     ctx.fillStyle = LINE;
     ctx.fillRect(0, px(23), canvas.width, Math.max(1, px(1)));
-    ctx.fillStyle = DIM;
+    ctx.fillStyle = '#a9a396';
     ctx.font = font('400', 8);
     ctx.textAlign = 'left';
     ctx.fillText(d.bureau, px(11), px(15.5));
@@ -247,15 +258,8 @@
     centred(ctx, d.statute[1], cx, px(y + 20));
     y += 24;
 
-    // the number
-    y += 14;
-    ctx.fillStyle = d.blank ? DIM : INK;
-    var dFit = fitLines(ctx, d.designation, px(inner), 44, '700', 24, 1);
-    ctx.font = font('700', dFit.size);
-    centred(ctx, d.designation, cx, px(y + 38));
-    y += 44 + 14;
-
     // photo well
+    y += 14;
     var plx = px(PAD), ply = px(y), plw = px(plateW), plh = px(plateH);
     ctx.fillStyle = BLACK;
     ctx.fillRect(plx, ply, plw, plh);
@@ -311,19 +315,23 @@
       fy += 10 + 17 + 7;
     }
 
-    y += bodyH + 12;
+    y += bodyH;
 
-    // statement
-    ctx.textAlign = 'left';
-    ctx.fillStyle = FAINT;
-    ctx.font = font('400', 7);
-    ctx.fillText(d.bioLabel, px(PAD), px(y + 7));
-    ctx.fillStyle = d.bio === '[REDACTED]' ? FAINT : INK;
-    ctx.font = font('400', 10);
-    for (var b = 0; b < bioFit.length; b++) {
-      ctx.fillText(bioFit[b], px(PAD), px(y + 10 + 3 + 11 + b * 15.5));
+    // the chosen line
+    ctx.fillStyle = d.lyric === '[REDACTED]' ? FAINT : DIM;
+    ctx.font = font('400', 12);
+    for (var b = 0; b < lyricFit.length; b++) {
+      centred(ctx, lyricFit[b], cx, px(y + 4 + 13 + b * 18));
     }
-    y += bioH;
+    y += lyricH;
+
+    // the number
+    y += 14;
+    ctx.fillStyle = d.blank ? DIM : INK;
+    var dFit = fitLines(ctx, d.designation, px(inner), 44, '700', 24, 1);
+    ctx.font = font('700', dFit.size);
+    centred(ctx, d.designation, cx, px(y + 38));
+    y += 44 + 10;
 
     // place
     ctx.strokeStyle = LINE;
@@ -351,7 +359,7 @@
     ctx.fillRect(0, px(y), canvas.width, canvas.height - px(y));
     ctx.fillStyle = LINE;
     ctx.fillRect(0, px(y), canvas.width, Math.max(1, px(1)));
-    ctx.fillStyle = DIM;
+    ctx.fillStyle = '#a9a396';
     ctx.font = font('400', 8);
     ctx.textAlign = 'left';
     ctx.fillText(d.standing, px(11), px(y + 15.5));
@@ -378,6 +386,7 @@
 
   window.FPECard = {
     render: function (card) {
+      readTheme();
       var d = readCard(card);
       return loadImage(d.photoSrc).then(function (photo) { return draw(d, photo); });
     },

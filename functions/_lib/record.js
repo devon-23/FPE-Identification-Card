@@ -1,7 +1,7 @@
 import { h, raw, layout } from './html.js';
 import { generate, assignedDesignation } from './lore.js';
-import { renderCard, normalizeFaction } from './card.js';
-import { EVENT, SET_SIZE, FORM } from './config.js';
+import { renderCard, normalizeFaction, REDACTED } from './card.js';
+import { EVENT, SET_SIZE, FORM, demaDate } from './config.js';
 
 export const padId = (n) => String(n).padStart(4, '0');
 
@@ -19,34 +19,43 @@ function field(label, value) {
   return h`<div class="field"><dt>${label}</dt><dd>${value}</dd></div>`;
 }
 
-/** The bureaucratic dossier that sits under the card. */
-function dossier(rec) {
+/**
+ * The attached file. Collapsed by default: the card is the thing people came
+ * for, and this is the paperwork behind it.
+ */
+function dossier(rec, rank) {
   const g = generate(rec.id);
-  // Name, bishop, sector and attempt are already on the card; repeating them
-  // here just pads the page. This is only what the card has no room for.
   const rows = [
+    field('STATEMENT', rec.bio || REDACTED),
     field('DISTRICT', g.district),
     field('METHOD', g.method),
     field('ALLEGIANCE DECLARED', normalizeFaction(rec.faction)),
     field('ESCAPE LOCATION', `${rec.location || EVENT.venue}, ${rec.city || EVENT.city}`),
     field('ESCAPE DATE', rec.event_date || EVENT.dateDisplay),
     field('DISPOSITION', g.disposition),
-    field('CLEARANCE', g.clearance),
     field('RECORD FILED', filedAt(rec.claimed_at)),
   ];
-  return h`<section class="dossier">
-      <h2 class="dossier__head">ATTACHED FILE</h2>
+  if (rank) {
+    rows.splice(7, 0, field('ORDER OF FILING', `${ordinal(rank)} OF THE NIGHT`));
+  }
+  return h`<details class="dossier">
+      <summary class="dossier__head">ATTACHED FILE</summary>
       <dl class="fields">${raw(rows.join(''))}</dl>
-    </section>`;
+    </details>`;
+}
+
+function ordinal(n) {
+  const rem100 = n % 100;
+  if (rem100 >= 11 && rem100 <= 13) return `${n}TH`;
+  return `${n}${['TH', 'ST', 'ND', 'RD'][n % 10] || 'TH'}`;
 }
 
 function filedAt(iso) {
   if (!iso) return '——';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '——';
-  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   const p = (x) => String(x).padStart(2, '0');
-  return `${p(d.getUTCDate())} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()} · ${p(d.getUTCHours())}${p(d.getUTCMinutes())} UTC`;
+  return `${demaDate(d)} · ${p(d.getUTCHours())}${p(d.getUTCMinutes())}`;
 }
 
 export function renderUnregistered(id, { claimingOpen = true } = {}) {
@@ -66,7 +75,7 @@ export function renderUnregistered(id, { claimingOpen = true } = {}) {
   });
 }
 
-export function renderRecord(rec) {
+export function renderRecord(rec, { rank = null } = {}) {
   const name = rec.name || assignedDesignation(rec.id);
   const card = renderCard(rec);
 
@@ -81,7 +90,7 @@ export function renderRecord(rec) {
       <button class="button button--primary" type="button" data-action="save">SAVE CARD</button>
       <a class="button" href="/f/${rec.id}/register" data-owner-only hidden>AMEND RECORD</a>
     </p>
-    ${raw(dossier(rec))}
+    ${raw(dossier(rec, rank))}
     <p class="standing">IF FOUND, RETURN TO DEMA.<br>DO NOT TRUST THE BISHOPS.</p>
   </main>
   <script src="/record.js" defer></script>`;

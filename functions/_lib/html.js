@@ -35,6 +35,7 @@ export function layout({ title, body, bodyClass = '', mastLeft = null, mastRight
 <meta name="color-scheme" content="dark">
 <title>${escapeHtml(title)}</title>
 <link rel="stylesheet" href="/styles.css">
+<script>try{var t=localStorage.getItem('fpe:theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 </head>
 <body class="${escapeHtml(bodyClass)}">
 <div class="sheet">
@@ -42,12 +43,14 @@ export function layout({ title, body, bodyClass = '', mastLeft = null, mastRight
     <a class="masthead__all" href="/archive">ALL RECORDS</a>
     <span class="bureau">${escapeHtml(mastLeft ?? FORM.bureau)}</span>
     <span class="formcode">${escapeHtml(mastRight ?? `FORM ${FORM.code} (${FORM.revision})`)}</span>
+    <button class="masthead__theme" type="button" data-theme-toggle aria-label="Switch between light and dark">LIGHT / DARK</button>
   </header>
 ${body}
   <footer class="colophon">
     <p>UNOFFICIAL FAN-MADE RECORD. NOT AFFILIATED WITH ANY ARTIST OR LABEL.</p>
   </footer>
 </div>
+<script src="/theme.js" defer></script>
 </body>
 </html>`;
 }
