@@ -62,6 +62,85 @@ export function citizenId(id) {
   return `${a}_${b}`;
 }
 
+const DOC_TYPES = [
+  'PERSONNEL STABILITY INDEX',
+  'CHARACTER DEVIATION REPORT',
+  'PERIMETER INCIDENT RECORD',
+  'CIVIL CONTAINMENT FILE',
+  'SUBJECT CONDUCT SUMMARY',
+];
+
+const REMARKS = [
+  'A LIGHT THAT DOES NOT DIM',
+  'UNACCOUNTED FOR',
+  'VERIFIED DEPARTURE',
+  'NO LONGER WITHIN THE WALL',
+  'SINGS WHERE SINGING IS NOT PERMITTED',
+  'KNOWN TO OTHERS',
+  'SPEAKS OF THE EAST',
+];
+
+const RECOMMENDATIONS = [
+  'MONITOR. DO NOT OBSTRUCT.',
+  'OBSERVE CLOSELY. SANCTION UNADVISED.',
+  'NO FURTHER PURSUIT AUTHORISED.',
+  'RECORD AND RELEASE.',
+  'CONTAINMENT IMPRACTICAL. FILE RETAINED.',
+  'REFER TO DISTRICT COUNCIL.',
+];
+
+const NOTE_OPENERS = [
+  'SUBJECT DEPARTED THE PERIMETER WITHOUT SANCTION AND HAS NOT RETURNED.',
+  'SUBJECT WAS RECORDED OUTSIDE THE BOUNDARY AND DECLINED RECOVERY.',
+  'SUBJECT CROSSED DURING ASSEMBLY AND WAS NOT INTERCEPTED.',
+  'SUBJECT IS KNOWN TO HAVE LEFT BY MEANS NOT YET ESTABLISHED.',
+];
+
+const NOTE_BEHAVIOUR = [
+  'DISPLAYS NO SIGNS OF DEVIATION FROM OBJECTIVE.',
+  'MAINTAINS CONTACT WITH PARTIES OUTSIDE THE WALL.',
+  'SHOWS NO INTENTION OF RETURNING TO ASSIGNED DISTRICT.',
+  'OBSERVED IN COORDINATED VOCALISATION OF PROHIBITED MATERIAL.',
+  'CONSIDERED HARMLESS BY VIALIST STANDARDS, YET PERSISTENTLY INFLUENTIAL.',
+];
+
+const NOTE_CLOSERS = [
+  'RECOVERY IS NOT EXPECTED.',
+  'PRESENCE MAY INVOKE REBELLION IN ADJACENT SECTORS.',
+  'FILE REMAINS OPEN AT THE DISCRETION OF THE COUNCIL.',
+  'FURTHER OBSERVATION ADVISED.',
+  'THE WALL IS UNCHANGED. THE SUBJECT IS NOT.',
+];
+
+/** The registry reference printed at the head of the attached file. */
+export function registryFile(id) {
+  const letters = 'ABCDEFGHJKLMNPRSTVWXYZ';
+  const a = String(1 + (hash('regA' + id) % 12)).padStart(2, '0');
+  const b = String(hash('regB' + id) % 1000).padStart(3, '0');
+  const c = 1 + (hash('regC' + id) % 9);
+  const d = letters[hash('regD' + id) % letters.length];
+  const e = letters[hash('regE' + id) % letters.length];
+  return `${a}.${b}-${c}-${d}${e}`;
+}
+
+/** A dossier paragraph assembled from fixed parts, stable per designation. */
+export function fileNotes(id, { hometown, attempts } = {}) {
+  const parts = [
+    pick(NOTE_OPENERS, 'noteA' + id),
+    pick(NOTE_BEHAVIOUR, 'noteB' + id),
+  ];
+  if (attempts && attempts > 1) {
+    parts.push(`THIS MARKS ATTEMPT ${String(attempts).padStart(2, '0')} ON RECORD.`);
+  }
+  if (hometown) parts.push(`ORIGIN GIVEN AS ${hometown.toUpperCase()}.`);
+  parts.push(pick(NOTE_CLOSERS, 'noteC' + id));
+  return parts.join(' ');
+}
+
+export const docType = (id) => pick(DOC_TYPES, 'doc' + id);
+export const remark = (id) => pick(REMARKS, 'rem' + id);
+export const recommendation = (id) => pick(RECOMMENDATIONS, 'rec' + id);
+
 /** Filing references for the civil notice. Derived, so they never move. */
 export function ledgerRef(id) {
   const a = hash('ledger' + id) % 90 + 10;

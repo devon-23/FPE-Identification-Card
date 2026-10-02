@@ -281,8 +281,11 @@ with no column to migrate.
 | Hometown | attached file | `[REDACTED]` |
 | Statement | attached file | `[REDACTED]` |
 
-The attached file is collapsed by default and also carries the generated
-detail and the record's **order of filing** for the night.
+The attached file is collapsed by default and is laid out the way the
+registry lays out a dossier: a ruled box, label and value in fixed columns,
+groups divided by rules, and the notes at the foot. Its registry reference,
+document type, file notes, remark and recommendation are all composed from
+the designation, so they are stable and differ from record to record.
 
 `[REDACTED]` is the point -- an unanswered field on a state record is in
 character, so nobody is penalised for skipping one.

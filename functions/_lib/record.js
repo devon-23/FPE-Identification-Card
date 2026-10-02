@@ -1,5 +1,8 @@
 import { h, raw, layout } from './html.js';
-import { generate, assignedDesignation, ledgerRef } from './lore.js';
+import {
+  generate, assignedDesignation, ledgerRef,
+  registryFile, docType, fileNotes, remark, recommendation, BISHOPS,
+} from './lore.js';
 import { renderCard, normalizeFaction, REDACTED } from './card.js';
 import { EVENT, SET_SIZE, FORM, demaDate } from './config.js';
 import { spread } from './html.js';
@@ -16,35 +19,61 @@ export function normalizeId(input) {
   return padId(n);
 }
 
+/** A label/value line in the registry's two-column hand. */
 function field(label, value) {
-  return h`<div class="field"><dd>${value}</dd><dt>${label}</dt></div>`;
+  return h`<div class="rf"><dt>${label}</dt><dd>${value}</dd></div>`;
 }
 
+const group = (rows) => `<div class="rf__group">${rows.filter(Boolean).join('')}</div>`;
+
 /**
- * The attached file. Collapsed by default: the card is the thing people came
- * for, and this is the paperwork behind it.
+ * The attached file, laid out as the registry lays out a dossier: a ruled
+ * box, label and value in fixed columns, groups divided by rules, and the
+ * notes at the foot.
  */
 function dossier(rec, rank) {
   const g = generate(rec.id);
-  const rows = [
-    field('ALIAS', rec.handle ? `@${rec.handle}` : REDACTED),
-    field('HOMETOWN', rec.hometown || REDACTED),
+  const name = rec.name || assignedDesignation(rec.id);
+  const faction = normalizeFaction(rec.faction);
+  const bishop = rec.bishop && BISHOPS.indexOf(rec.bishop) !== -1 ? rec.bishop : g.bishop;
+
+  const registry = group([
+    field('REGISTRY FILE', registryFile(rec.id)),
+    field('DESIGNATION', `FPE-${rec.id}`),
+    field('DOCUMENT TYPE', docType(rec.id)),
+  ]);
+
+  const subject = group([
+    field('NAME', name),
+    field('CODE NAME', rec.handle ? `@${rec.handle}` : REDACTED),
+    field('ASSOCIATION', `${faction} / ${rec.hometown || 'UNREGISTERED'}`),
     field('FIRST BREACH', rec.first_show ? String(rec.first_show) : REDACTED),
-    field('STATEMENT', rec.bio || REDACTED),
+    field('BISHOP', bishop),
+  ]);
+
+  const incident = group([
     field('DISTRICT', g.district),
     field('METHOD', g.method),
-    field('ALLEGIANCE DECLARED', normalizeFaction(rec.faction)),
-    field('ESCAPE LOCATION', `${rec.location || EVENT.venue}, ${rec.city || EVENT.city}`),
-    field('ESCAPE DATE', rec.event_date || EVENT.dateDisplay),
+    field('LOCATION', `${rec.location || EVENT.venue}, ${rec.city || EVENT.city}`),
+    field('DATE', showDate(rec.event_date)),
+    rank ? field('ORDER OF FILING', `${ordinal(rank)} OF THE NIGHT`) : '',
+    field('FILED', filedAt(rec.claimed_at)),
     field('DISPOSITION', g.disposition),
-    field('RECORD FILED', filedAt(rec.claimed_at)),
-  ];
-  if (rank) {
-    rows.splice(7, 0, field('ORDER OF FILING', `${ordinal(rank)} OF THE NIGHT`));
-  }
+  ]);
+
+  const notes = h`<div class="rf__notes">
+        <h3>FILE NOTES:</h3>
+        <p>${fileNotes(rec.id, { hometown: rec.hometown, attempts: rec.attempts })}</p>
+        ${raw(rec.bio ? h`<div class="rf"><dt class="rf__u">STATEMENT</dt><dd>&ldquo;${rec.bio}&rdquo;</dd></div>` : '')}
+        <div class="rf"><dt class="rf__u">REMARK</dt><dd>${remark(rec.id)}</dd></div>
+        <div class="rf"><dt class="rf__u">RECOMMENDATION</dt><dd>${recommendation(rec.id)}</dd></div>
+      </div>`;
+
   return h`<details class="dossier">
       <summary class="dossier__head">ATTACHED FILE</summary>
-      <dl class="fields">${raw(rows.join(''))}</dl>
+      <div class="rf__sheet">
+        ${raw(registry)}${raw(subject)}${raw(incident)}${raw(String(notes))}
+      </div>
     </details>`;
 }
 
@@ -52,6 +81,12 @@ function ordinal(n) {
   const rem100 = n % 100;
   if (rem100 >= 11 && rem100 <= 13) return `${n}TH`;
   return `${n}${['TH', 'ST', 'ND', 'RD'][n % 10] || 'TH'}`;
+}
+
+/** Legacy records stored a formatted date; newer ones store ISO. */
+function showDate(stored) {
+  if (!stored) return EVENT.dateDisplay;
+  return /^\d{4}-\d{2}-\d{2}/.test(stored) ? demaDate(stored) : stored;
 }
 
 function filedAt(iso) {

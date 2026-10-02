@@ -326,21 +326,71 @@ details.dossier { margin-top: 1.75rem; border-top: 1px solid var(--ink-faint); }
 details[open] .dossier__head::after { content: "[ \2212 ]"; }
 details.dossier .fields { padding-bottom: 0.75rem; }
 
-.fields { margin: 0; }
-.field { display: grid; padding: 0.375rem 0 0.625rem; }
+.rf__sheet {
+  border: 1px solid var(--ink);
+  margin: 0 0 0.75rem;
+  font-family: var(--display);
+}
 
-.field dd {
+.rf__group {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--ink);
+}
+
+/* Label and value in fixed columns, as a registry sets them. */
+.rf {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 0 0.5rem;
+  align-items: baseline;
+  padding: 0.1875rem 0;
+}
+
+.rf dt {
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+
+.rf dt::after { content: ":"; }
+
+.rf dd {
   margin: 0;
-  padding: 0 0.125rem 0.1875rem;
-  border-bottom: 1px dotted var(--ink-faint);
-  font-size: 0.75rem;
-  letter-spacing: 0.03em;
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
   color: var(--red);
-  min-height: 1.1em;
   overflow-wrap: anywhere;
 }
 
-.field dt { margin-top: 0.1875rem; font-size: 0.4375rem; letter-spacing: 0.18em; color: var(--ink-faint); }
+.rf__notes { padding: 0.75rem; }
+
+.rf__notes h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.5rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rf__notes p {
+  margin: 0 0 0.75rem;
+  font-size: 0.5625rem;
+  line-height: 1.8;
+  letter-spacing: 0.03em;
+  text-align: justify;
+  color: var(--ink);
+}
+
+.rf__notes .rf { padding: 0.25rem 0; }
+.rf__u { text-decoration: underline; text-underline-offset: 2px; }
+
+/* The label column needs the room more than the value does on a narrow phone. */
+@media (max-width: 22rem) {
+  .rf { grid-template-columns: 6.25rem 1fr; }
+  .rf dt { font-size: 0.4375rem; }
+}
 
 /* ---------- controls ---------- */
 
