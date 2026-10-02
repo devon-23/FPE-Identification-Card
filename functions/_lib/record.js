@@ -1,7 +1,8 @@
 import { h, raw, layout } from './html.js';
-import { generate, assignedDesignation } from './lore.js';
+import { generate, assignedDesignation, ledgerRef } from './lore.js';
 import { renderCard, normalizeFaction, REDACTED } from './card.js';
 import { EVENT, SET_SIZE, FORM, demaDate } from './config.js';
+import { spread } from './html.js';
 
 export const padId = (n) => String(n).padStart(4, '0');
 
@@ -77,6 +78,38 @@ export function renderUnregistered(id, { claimingOpen = true } = {}) {
   });
 }
 
+/**
+ * The paperwork that follows a filed record. Written in the register's own
+ * degraded hand, the way the scans read.
+ */
+function civilNotice(rec) {
+  const name = rec.name || assignedDesignation(rec.id);
+  const ref = ledgerRef(rec.id);
+  return h`<section class="notice">
+      <p class="notice__body"><b>CIVIL NOTICE:</b> in mcordance wh Dema Lew Sec. A-77.03
+        persons found to be in possession of knowindne reseroine the whereabouts,
+        communication or prior contact with Subject ${name} must immediately subeil
+        form V-14-8 el their assigned congreggion desk. Falure to comply constitutes
+        civil treason.</p>
+
+      <div class="notice__cols">
+        <div class="notice__col">
+          <h3>REPORT CLASSIFICATION:</h3>
+          <p>PENDING ESCALATION &mdash; INTERNAL SECURITY COUNCIL REVIEV</p>
+          <p>Filed by: UNITED VIALISTS / OIV, OF CIVIL ORDER AND RESTRAIKT</p>
+          <p>Archived In: Municioal Ledger ${ref.ledger} / Vault ${ref.vault}</p>
+        </div>
+        <div class="notice__col">
+          <h3>DESIGNATED INCIDENT SENTIMENT</h3>
+          <p class="notice__quote">&ldquo;All eactely honor unto the glorious gone. Let
+            their ash mark the path of those who resain&rdquo;</p>
+        </div>
+      </div>
+
+      <p class="notice__tag spread" data-plain="${FORM.benediction}">${raw(spread(FORM.benediction))}</p>
+    </section>`;
+}
+
 export function renderRecord(rec, { rank = null } = {}) {
   const name = rec.name || assignedDesignation(rec.id);
   const card = renderCard(rec);
@@ -93,6 +126,7 @@ export function renderRecord(rec, { rank = null } = {}) {
       <a class="button" href="/f/${rec.id}/register" data-owner-only hidden>AMEND RECORD</a>
     </p>
     ${raw(dossier(rec, rank))}
+    ${raw(civilNotice(rec))}
   </main>
   <script src="/record.js" defer></script>`;
 

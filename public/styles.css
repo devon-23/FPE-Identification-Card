@@ -129,7 +129,11 @@ body {
   color: var(--ink);
   border: 1px solid var(--ink);
   padding: 1.125rem 1rem 1rem;
+  /* The whole document is set in the engraved face, not just its headings. */
+  font-family: var(--display);
 }
+
+.card * { font-family: inherit; }
 
 .card__letterhead {
   margin: 0 0 0.125rem;
@@ -238,10 +242,10 @@ body {
   color: var(--ink);
 }
 
-.fact--name dd,
-.fact--id dd { color: var(--red); }
+.fact dd { color: var(--red); }
 .fact--name dd { font-size: 1.0625rem; font-weight: 700; text-transform: uppercase; }
-.card--blank .fact--name dd { color: var(--ink-faint); font-weight: 400; font-size: 0.875rem; }
+.card--blank .fact dd { color: var(--ink-faint); }
+.card--blank .fact--name dd { font-weight: 400; font-size: 0.875rem; }
 
 .card__lyric {
   margin: 0;
@@ -331,7 +335,7 @@ details.dossier .fields { padding-bottom: 0.75rem; }
   border-bottom: 1px dotted var(--ink-faint);
   font-size: 0.75rem;
   letter-spacing: 0.03em;
-  color: var(--ink);
+  color: var(--red);
   min-height: 1.1em;
   overflow-wrap: anywhere;
 }
@@ -780,3 +784,66 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 
 .spread i { flex: 0 0 0.35em; }
 .spread span { flex: 0 0 auto; }
+
+/* ---------- civil notice ---------- */
+
+.notice {
+  margin: 2rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink);
+  font-family: var(--display);
+}
+
+.notice__body {
+  margin: 0;
+  font-size: 0.5625rem;
+  line-height: 1.85;
+  letter-spacing: 0.04em;
+  text-align: justify;
+}
+
+.notice__body b { letter-spacing: 0.12em; }
+
+.notice__cols {
+  display: grid;
+  gap: 1.25rem;
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--hair);
+}
+
+.notice__col h3 {
+  margin: 0 0 0.375rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.notice__col p {
+  margin: 0 0 0.25rem;
+  font-size: 0.5rem;
+  line-height: 1.7;
+  letter-spacing: 0.05em;
+  color: var(--ink-dim);
+}
+
+.notice__quote { font-style: italic; color: var(--red) !important; }
+
+.notice__tag {
+  margin: 1.5rem 0 0;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--ink);
+  font-size: 0.4375rem;
+  color: var(--red);
+}
+
+/* Side by side once there is room for two readable columns. A pseudo-element
+   divider disturbs grid auto-placement, so the rule lives on the column. */
+@media (min-width: 23rem) {
+  .notice__cols { grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+
+  .notice__col:first-child {
+    padding-right: 1rem;
+    border-right: 1px solid var(--hair);
+  }
+}

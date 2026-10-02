@@ -31,7 +31,9 @@
   }
 
   function px(v) { return v * S; }
-  function font(weight, size) { return weight + ' ' + px(size) + 'px ' + MONO; }
+  // The card is set entirely in the display face; MONO is kept for nothing
+  // on the card itself.
+  function font(weight, size) { return weight + ' ' + px(size) + 'px ' + DISPLAY; }
   function display(weight, size) { return weight + ' ' + px(size) + 'px ' + DISPLAY; }
 
   /**
@@ -344,7 +346,7 @@
 
     for (var k = 0; k < d.facts.length; k++) {
       var isId = d.facts[k].label === 'CITIZEN ID';
-      ctx.fillStyle = isId ? C.red : (d.facts[k].value === '[REDACTED]' ? C.faint : C.ink);
+      ctx.fillStyle = d.facts[k].value === '[REDACTED]' ? C.faint : C.red;
       var vFit = fit(ctx, d.facts[k].value, px(factsW), 13, '400', 8, false);
       ctx.font = font(isId ? '700' : '400', vFit.size);
       ctx.fillText(d.facts[k].value, px(factsX + 1), px(fy + 13));

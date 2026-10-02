@@ -62,6 +62,14 @@ export function citizenId(id) {
   return `${a}_${b}`;
 }
 
+/** Filing references for the civil notice. Derived, so they never move. */
+export function ledgerRef(id) {
+  const a = hash('ledger' + id) % 90 + 10;
+  const b = hash('ledgerb' + id) % 60;
+  const v = hash('vault' + id) % 9 + 1;
+  return { ledger: `${a}:${String(b).padStart(2, '0')}`, vault: `0${v}` };
+}
+
 // Assigned when a claimant leaves the name field blank.
 export function assignedDesignation(id) {
   const letters = 'ABCDEFGHJKLMNPRSTVWXYZ'; // no I/O/Q/U -- ambiguous in print

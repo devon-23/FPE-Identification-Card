@@ -324,6 +324,12 @@ when you arrive at the venue, it would add a database write to every request —
 cost on a bad network — for very little. Admin login rate limiting is a
 different matter and is coming with the admin panel.
 
+## Handing them out
+
+`NFC-GUIDE.md` covers writing the tags, testing them, whether to lock them,
+what a fan's phone actually does, troubleshooting at the venue, and the
+pre- and post-show checklists.
+
 ## Status
 
 - [x] Stage 1 — data model, URL contract, record page
@@ -331,7 +337,7 @@ different matter and is coming with the admin panel.
 - [x] Stage 3 — claiming, edit tokens, consent-gated photo storage
 - [x] Stage 4 — save-as-image, public archive
 - [x] Stage 5 — admin panel
-- [ ] Stage 6 — NFC programming + deployment docs, checklists
+- [x] Stage 6 — NFC programming + deployment docs, checklists
 
 Outstanding input needed: the live `*.pages.dev` URL once deployed.
 
