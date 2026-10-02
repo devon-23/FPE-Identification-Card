@@ -7,3 +7,7 @@ pages_build_output_dir = "public"
 binding = "DB"
 database_name = "fpe"
 database_id = "REPLACE_ME"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "fpe-photos"

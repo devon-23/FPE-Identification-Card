@@ -1,126 +1,414 @@
-/* STAGE 1 PLACEHOLDER STYLES.
-   Structure only -- the real design pass happens in stage 4. */
+/* FPE ARCHIVE
+   Mobile-first. One stylesheet, no web fonts, no framework.
+   Typographic + bureaucratic: paper stock, hard rules, one accent. */
 
 :root {
-  --ink: #141414;
-  --ground: #efece4;
-  --rule: #141414;
-  --muted: #6a675f;
+  --ink:      #16150f;
+  --ink-soft: #6c685c;
+  --ground:   #cfcabc;   /* desk surface the card sits on */
+  --stock:    #e9e5d9;   /* card stock */
+  --stock-hi: #f3f0e7;
+  --ochre:    #d8a52b;   /* the one accent */
+  --rule:     #16150f;
+  --plate:    #121108;   /* photo panel */
+
+  --card-w: 20.5rem;
 }
 
 * { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+/* Must outrank .button's display:block. */
+[hidden] { display: none !important; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--ground);
+}
 
 body {
   margin: 0;
   background: var(--ground);
   color: var(--ink);
-  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   font-size: 16px;
   line-height: 1.45;
+  /* Faint paper tooth, drawn rather than loaded. */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.018) 0 1px, transparent 1px 3px);
 }
 
 .sheet {
-  max-width: 34rem;
+  max-width: 24rem;
   margin: 0 auto;
-  padding: 1.25rem 1rem calc(2rem + env(safe-area-inset-bottom));
+  padding: 0.875rem 0.75rem calc(2.5rem + env(safe-area-inset-bottom));
 }
+
+/* ---------- page furniture ---------- */
 
 .masthead,
 .colophon {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  font-size: 0.6875rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+  gap: 0.75rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
 }
 
-.masthead {
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.colophon {
-  border-top: 1px solid var(--rule);
-  margin-top: 2rem;
-  padding-top: 0.5rem;
-}
-
+.masthead  { margin-bottom: 1rem; }
+.colophon  { margin-top: 2rem; padding-top: 0.5rem; border-top: 1px solid var(--ink-soft); }
 .colophon p { margin: 0; }
 
-.kicker {
-  margin: 0;
+.kicker      { margin: 0; font-size: 0.6875rem; letter-spacing: 0.18em; }
+.designation { margin: 0.25rem 0 1rem; font-size: 2.75rem; line-height: 1; font-weight: 700; }
+
+.note {
+  margin: 1rem 0 0;
   font-size: 0.75rem;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.standing {
+  margin: 2rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--ink);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  line-height: 1.7;
+}
+
+/* ---------- the card ---------- */
+
+.card {
+  position: relative;
+  background: var(--stock);
+  border: 1px solid var(--rule);
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(0,0,0,.25), 0 10px 22px -14px rgba(0,0,0,.6);
+  /* Sits a hair off-square, like it was laid down by hand. */
+  transform: rotate(-0.25deg);
+}
+
+.card__strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: var(--ink);
+  color: var(--stock);
+  padding: 0.3125rem 0.625rem;
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+.card__strip--bottom {
+  font-size: 0.5rem;
+  flex-direction: column;
+  gap: 0.0625rem;
+  text-align: center;
+  padding: 0.4375rem 0.625rem;
+}
+
+.card__name {
+  margin: 0.75rem 0.75rem 0.25rem;
+  font-size: 1.5rem;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-align: center;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.card--blank .card__name { color: var(--ink-soft); font-weight: 400; letter-spacing: 0.1em; font-size: 1.125rem; }
+
+.card__pill {
+  margin: 0 auto 0.75rem;
+  width: max-content;
+  max-width: calc(100% - 1.5rem);
+  background: var(--ink);
+  color: var(--stock);
+  padding: 0.1875rem 0.75rem;
+  font-size: 0.5625rem;
   letter-spacing: 0.16em;
 }
 
-.designation {
-  margin: 0.25rem 0 1.5rem;
-  font-size: clamp(2.25rem, 13vw, 3.5rem);
+.card__pill span { color: var(--ochre); }
+
+.card__frame {
+  margin: 0 0.75rem;
+  border: 2px solid var(--ochre);
+  padding: 3px;
+  background: var(--plate);
+}
+
+.card--citizen .card__frame { border-color: var(--ink-soft); }
+
+.card__plate {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--plate);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.card__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The unifier: a hundred different snapshots, one surveillance system. */
+  filter: grayscale(1) contrast(1.35) brightness(0.92);
+}
+
+.card__silhouette {
+  position: absolute;
+  top: 13%;
+  left: 32%;
+  width: 36%;
+  fill: #302d20;
+}
+
+.card__nofile {
+  position: absolute;
+  left: 0; right: 0;
+  top: 63%;
+  margin: 0;
+  text-align: center;
+  font-size: 0.5625rem;
+  letter-spacing: 0.18em;
+  color: #4a4634;
+}
+
+.card__scrim {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 52%;
+  background: linear-gradient(to top, rgba(10,9,4,.94) 18%, rgba(10,9,4,0));
+  pointer-events: none;
+}
+
+.card__designation {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.375rem;
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.75rem, 11vw, 2.375rem);
   line-height: 1;
-  letter-spacing: -0.02em;
   font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--stock-hi);
+  text-shadow: 0 2px 10px rgba(0,0,0,.65);
+}
+
+.card--bandito .card__designation { color: var(--ochre); }
+
+.card__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.375rem;
+  margin: 0.5rem 0.75rem 0.75rem;
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.card__faction { color: var(--ink); font-weight: 700; }
+.card--bandito .card__faction { color: #9a7415; }
+
+/* ---------- dossier ---------- */
+
+.dossier { margin-top: 2rem; }
+
+.dossier__head {
+  margin: 0 0 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  color: var(--ink-soft);
 }
 
 .fields { margin: 0; }
 
 .field {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.125rem;
-  padding: 0.625rem 0;
-  border-top: 1px solid var(--rule);
+  gap: 0.0625rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid rgba(22,21,15,.35);
 }
 
 .field dt {
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  color: var(--muted);
+  font-size: 0.5625rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-soft);
 }
 
 .field dd {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
   overflow-wrap: anywhere;
 }
 
-.field--status dd { font-weight: 700; letter-spacing: 0.06em; }
-.field--cont dt { display: none; }
-.field--cont { border-top: 0; padding-top: 0; margin-top: -0.5rem; }
+/* ---------- controls ---------- */
 
-.note {
-  margin: 1.25rem 0 0;
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
-
-.standing {
-  margin: 2rem 0 0;
-  padding-top: 1rem;
-  border-top: 1px solid var(--rule);
-  font-size: 0.8125rem;
-  letter-spacing: 0.08em;
-}
-
-.actions { margin: 1.5rem 0 0; }
+.stage > .actions { margin: 1.25rem 0 0; display: grid; gap: 0.5rem; }
 
 .button {
   display: block;
   width: 100%;
   min-height: 3rem;
   padding: 0.875rem 1rem;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--ink);
   background: transparent;
   color: var(--ink);
   font: inherit;
-  font-size: 0.875rem;
-  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.button:active { background: var(--ink); color: var(--ground); }
+.button--primary { background: var(--ink); color: var(--stock); }
+.button:active   { opacity: .75; }
+.button[disabled]{ opacity: .4; cursor: default; }
+
+/* ---------- the maker ---------- */
+
+.card--preview { margin-bottom: 1.5rem; }
+
+.form { margin: 0; }
+
+.form__head {
+  margin: 0 0 1rem;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 0.375rem;
+}
+
+.form__row { margin: 0 0 1.25rem; display: grid; gap: 0.5rem; }
+
+.form__fieldset { border: 0; padding: 0; min-width: 0; }
+
+.form__label {
+  display: block;
+  padding: 0;
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  color: var(--ink-soft);
+}
+
+.form__label span { opacity: .65; }
+
+.form__input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem;
+  border: 1px solid var(--ink);
+  background: var(--stock-hi);
+  color: var(--ink);
+  font: inherit;
+  /* 16px keeps Safari from zooming the viewport on focus. */
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form__input::placeholder { color: var(--ink-soft); opacity: .7; text-transform: none; font-size: 0.75rem; letter-spacing: 0.08em; }
+.form__input:focus-visible { outline: 2px solid var(--ochre); outline-offset: 1px; }
+
+/* two-up allegiance toggle */
+.toggle { display: grid; grid-template-columns: 1fr 1fr; }
+.toggle input { position: absolute; opacity: 0; pointer-events: none; }
+
+.toggle label {
+  display: grid;
+  place-items: center;
+  min-height: 3rem;
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--ink);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  background: transparent;
+}
+
+.toggle label + input + label { border-left: 0; }
+.toggle input:checked + label { background: var(--ink); color: var(--stock); }
+.toggle input:nth-of-type(2):checked + label { background: var(--ochre); color: var(--plate); border-color: var(--ink); }
+.toggle input:focus-visible + label { outline: 2px solid var(--ochre); outline-offset: -4px; }
+
+.button--quiet { border-color: var(--ink-soft); color: var(--ink-soft); font-size: 0.6875rem; min-height: 2.5rem; }
+
+/* consent */
+.consent {
+  margin-top: 0.25rem;
+  border: 1px solid var(--ink);
+  background: var(--stock-hi);
+  padding: 0.75rem;
+}
+
+.consent__box {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.625rem;
+  align-items: start;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.consent__box input {
+  width: 1.375rem;
+  height: 1.375rem;
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.consent__note {
+  margin: 0.625rem 0 0;
+  font-size: 0.5625rem;
+  line-height: 1.65;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.warning {
+  margin: 0 0 1rem;
+  padding: 0.625rem 0.75rem;
+  border-left: 3px solid var(--ochre);
+  background: rgba(216,165,43,.1);
+  font-size: 0.625rem;
+  line-height: 1.6;
+  letter-spacing: 0.06em;
+}
+
+.form__status {
+  margin: 0 0 0.75rem;
+  min-height: 1.1em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+}
+
+.form__status:not(:empty) { color: #8c2f1d; }
+
+.form > .button { margin-bottom: 0.5rem; }

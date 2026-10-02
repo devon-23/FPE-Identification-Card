@@ -25,7 +25,7 @@ export function raw(html) {
   return s;
 }
 
-export function layout({ title, body, bodyClass = '' }) {
+export function layout({ title, body, bodyClass = '', mastLeft = null, mastRight = null }) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -39,8 +39,8 @@ export function layout({ title, body, bodyClass = '' }) {
 <body class="${escapeHtml(bodyClass)}">
 <div class="sheet">
   <header class="masthead">
-    <span class="bureau">${escapeHtml(FORM.bureau)}</span>
-    <span class="formcode">FORM ${escapeHtml(FORM.code)} (${escapeHtml(FORM.revision)})</span>
+    <span class="bureau">${escapeHtml(mastLeft ?? FORM.bureau)}</span>
+    <span class="formcode">${escapeHtml(mastRight ?? `FORM ${FORM.code} (${FORM.revision})`)}</span>
   </header>
 ${body}
   <footer class="colophon">
