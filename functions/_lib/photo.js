@@ -1,5 +1,8 @@
 const MAX_PHOTO_BYTES = 400 * 1024;
 function stripMetadata(buf) {
+  // the browser already re-encodes through a canvas so none of the
+  // original exif survives -- but apple's encoder writes its own back in.
+  // this throws away everything that is not needed to decode the thing
   const b = new Uint8Array(buf);
   if (b.length < 4 || b[0] !== 0xff || b[1] !== 0xd8) return null;
 

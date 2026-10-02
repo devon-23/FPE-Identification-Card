@@ -1086,3 +1086,12 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
   letter-spacing: 0.14em;
   color: var(--ink-faint);
 }
+
+/* the webp banner. the hand-built .restricted__box rules above still work if
+   you ever want to go back to it -- see the comment in functions/index.js */
+.restricted__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0.375rem 0;
+}

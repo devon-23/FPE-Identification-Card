@@ -27,6 +27,8 @@ function showDate(stored) {
 }
 
 export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
+  // same markup for the real record and the live preview, so the maker
+  // cannot drift from what gets filed
   const id = rec.id;
   const g = generate(id);
   const faction = normalizeFaction(rec.faction);

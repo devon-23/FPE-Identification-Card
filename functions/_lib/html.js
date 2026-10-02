@@ -24,6 +24,8 @@ export function raw(html) {
 }
 
 export function spread(text) {
+  // spaces become empty <i> so flex can stretch them. that means textContent
+  // loses the spaces, which is why the callers also set data-plain
   return [...String(text)]
     .map((ch) => (ch === ' ' ? '<i></i>' : `<span>${escapeHtml(ch)}</span>`))
     .join('');

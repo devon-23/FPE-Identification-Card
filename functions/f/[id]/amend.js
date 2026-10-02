@@ -14,6 +14,7 @@ const json = (data, status = 200) =>
   });
 
 export async function onRequestPost({ request, params, env }) {
+  // the edit token is the whole security model here. no token, no write
   const id = normalizeId(params.id);
   if (!id) return json({ error: 'NO SUCH RECORD' }, 404);
 

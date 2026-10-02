@@ -105,64 +105,6 @@ record's bishop lit. Section one sits at twelve o'clock and they run clockwise
 
 Dates are written the way the archive writes them: `026 10MOON 17`.
 
-Type is Banknote Gothic if you have it, Copperplate otherwise. It's a licensed
-font so it can't be served from here.
-
-## What a person fills in
-
-Name, how many shows they've been to, what year their first was, their bishop,
-handle, hometown, a line that means something, and a statement. All optional —
-blank fields come out as `[REDACTED]`, which honestly looks better.
-
-Their statement becomes the FILE NOTES on the attached file and their line
-becomes the REMARK. If they skip both, the registry writes its own, pulled
-from the designation so it's stable and different per record.
-
-The citizen ID, registry reference, document type, association, district,
-method and disposition are all derived from the number — same every time, no
-columns to store.
-
-## Security
-
-The URLs are public and guessable on purpose. Anyone can read any record.
-Writing is what's defended:
-
-- Claiming is one atomic `UPDATE ... WHERE status = 'UNREGISTERED'`. Twelve
-  simultaneous claims on the same number produce one winner and eleven 409s.
-- Editing needs a 256-bit token minted at claim time. The server only keeps
-  its SHA-256 and compares in constant time. No token, no write.
-- Lose the token (cleared data, different phone) and the record goes read-only
-  for you. Recovery is an admin reset. That's the trade.
-- Photos get re-encoded through a canvas on the device, so no original and no
-  GPS leaves the phone. The server then strips the APP segments the encoder
-  writes back in, verifies the JPEG structure and caps it at 400 KB.
-- Photos nobody consented to publish are never sent. The box is unchecked by
-  default and the file is only attached if it's ticked.
-- Claiming needs the key printed on the card. The database keeps only its
-  SHA-256, and the check runs on the view, the form and the POST.
-- Cross-site writes are refused on all four write endpoints.
-- Secrets live in Cloudflare env vars. Nothing in the repo, nothing in the
-  frontend.
-
-No rate limiting on claims — with 100 records, an atomic claim and a master
-on/off switch, it'd just add a database write to every request. Admin login is
-throttled though, 10 tries per 5 minutes.
-
-## Admin
-
-`/admin`, one password. Counts, search, filters, reset a record, delete a
-photo, and the claiming switch.
-
-**Claiming ships closed.** Nobody can sweep the set before the show, but it
-also means you have to remember to open it when you get there. Everyone sees
-"THE ARCHIVE IS NOT ACCEPTING SUBMISSIONS" until you do.
-
-## Tags
-
-`NFC-GUIDE.md` covers writing them, testing them, why I wouldn't permanently
-lock them, what each kind of phone actually does when someone taps, and the
-checklists for before and after the show.
-
 ## Editing your own details
 
 `functions/_lib/about.js`. That's the only file `/about` reads — name, bio,

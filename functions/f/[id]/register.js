@@ -29,6 +29,7 @@ export async function onRequestGet({ request, params, env }) {
   const card = renderCard(claimed ? rec : { id, status: 'UNREGISTERED' }, { preview: true });
 
   const canPublishPhotos = !!env.PHOTOS;
+  // no bucket means no consent box -- do not offer what cannot happen
 
   const v = claimed ? rec : {};
   const val = (x) => (x === null || x === undefined ? '' : String(x));

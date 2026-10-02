@@ -39,6 +39,8 @@ function misconfigured(missing) {
 }
 
 export async function onRequest(context) {
+  // everything under /admin goes through here first. adding a new admin
+  // route needs no auth code of its own, which is the point
   const { request, env, next } = context;
   const url = new URL(request.url);
   const secure = url.protocol === 'https:';

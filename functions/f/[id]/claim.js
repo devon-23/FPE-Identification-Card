@@ -15,6 +15,7 @@ const json = (data, status = 200) =>
   });
 
 export async function onRequestPost({ request, params, env }) {
+  // first registration only. amend.js handles everything after
   const id = normalizeId(params.id);
   if (!id) return json({ error: 'NO SUCH RECORD' }, 404);
 
@@ -67,6 +68,8 @@ export async function onRequestPost({ request, params, env }) {
   }
 
   let photo = false;
+  // photo goes in after the claim lands, so a lost race leaves nothing
+  // orphaned in the bucket. if this fails they keep the record, not the photo
   const file = form.get('photo');
   if (env.PHOTOS && file && typeof file.arrayBuffer === 'function') {
     const { bytes, error } = await readJpeg(file);

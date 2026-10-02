@@ -144,6 +144,8 @@
   }
 
   function readCard(card) {
+    // read the rendered card rather than rebuilding it, so the png cannot
+    // disagree with what is on screen
     var t = function (sel) {
       var el = card.querySelector(sel);
       if (!el) return '';
@@ -184,6 +186,8 @@
   }
 
   function draw(d, photo) {
+    // everything is measured in css pixels and multiplied by S at the end.
+    // if you change the card css, change the numbers here too
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     var inner = CW - PAD * 2;

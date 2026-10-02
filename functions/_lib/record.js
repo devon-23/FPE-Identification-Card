@@ -25,6 +25,8 @@ function field(label, value) {
 const group = (rows) => `<div class="rf__group">${rows.filter(Boolean).join('')}</div>`;
 
 function dossier(rec, rank) {
+  // laid out like the character cards: label column, value column, rules
+  // between the groups
   const g = generate(rec.id);
   const name = rec.name || assignedDesignation(rec.id);
   const faction = normalizeFaction(rec.faction);
@@ -120,6 +122,7 @@ export function renderUnregistered(id, { claimingOpen = true, key = null, keyOk 
 }
 
 function civilNotice(rec) {
+  // typos in here are on purpose, they are meant to read like a bad scan
   const name = rec.name || assignedDesignation(rec.id);
   const ref = ledgerRef(rec.id);
   return h`<section class="notice">

@@ -98,6 +98,7 @@
   }
 
   function paintOptional(input, slot, decorate) {
+    // blank fields read [REDACTED] on the card, same as they will once filed
     var v = input.value.trim();
     slot.textContent = v ? (decorate ? decorate(v) : v) : REDACTED;
     slot.classList.toggle('is-redacted', !v);
@@ -147,6 +148,7 @@
   var SIDE = 900;
 
   function processPhoto(file) {
+    // 900px square, re-encoded. the re-encode is what drops the gps
     return new Promise(function (resolve, reject) {
       var url = URL.createObjectURL(file);
       var img = new Image();
@@ -220,6 +222,8 @@
   function say(msg) { status.textContent = msg; }
 
   form.addEventListener('submit', function (ev) {
+    // a photo with the consent box unticked is never attached to the request.
+    // it goes to localStorage and nowhere else
     ev.preventDefault();
     submitBtn.disabled = true;
     say(mode === 'amend' ? 'FILING AMENDMENT…' : 'FILING RECORD…');

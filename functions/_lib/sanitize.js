@@ -8,6 +8,7 @@ export const FIRST_SHOW_MIN = 2009;
 export const FIRST_SHOW_MAX = 2030;
 
 function isForbidden(cp) {
+  // bidi overrides can visually reverse a name. not having that on a card
   return (
     cp < 0x20 ||
     (cp >= 0x7f && cp <= 0x9f) ||
@@ -31,6 +32,8 @@ export const cleanHometown = (v) => clean(v, HOMETOWN_MAX);
 export const cleanBio      = (v) => clean(v, BIO_MAX);
 export const cleanLyric    = (v) => clean(v, LYRIC_MAX);
 export function cleanHandle(input) {
+  // stored without the @. never rendered as a link -- we cannot check that
+  // somebody actually owns the handle they typed
   const bare = clean(input, HANDLE_MAX + 1).replace(/^@+/, '');
   const kept = bare.replace(/[^A-Za-z0-9._]/g, '');
   return kept.slice(0, HANDLE_MAX);

@@ -30,6 +30,8 @@ export async function onRequestPost({ request, env }) {
   }
 
   if (action === 'reset') {
+    // puts the number back in the pool: old edit token dies, photo goes,
+    // and the physical tag starts working again for whoever taps it next
     if (env.PHOTOS) { try { await env.PHOTOS.delete(`${id}.jpg`); } catch {  } }
     await env.DB.prepare(`
       UPDATE records SET status = 'UNREGISTERED', name = NULL, name_assigned = 0,

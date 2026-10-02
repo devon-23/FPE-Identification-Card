@@ -45,6 +45,7 @@ function readCookie(request) {
 }
 
 export async function hasSession(request, secret) {
+  // no session table. the cookie is the session, signed so it cannot be forged
   const raw = readCookie(request);
   if (!raw) return false;
   const dot = raw.lastIndexOf('.');

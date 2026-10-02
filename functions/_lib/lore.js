@@ -160,7 +160,7 @@ export function generate(id) {
 
 // this jawn doesn't work but i don't have the heart to delete it.
 // was going to let two records "share" a sector if their numbers were close,
-// looked cool on paper, looked like a bug on the card.
+// looked cool in theory but jist didnt work.
 //
 // export function neighbours(id, all) {
 //   const mine = generate(id);
