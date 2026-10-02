@@ -9,6 +9,36 @@ you from losing your place.
 
 ---
 
+## 0. Buying the tags
+
+Get **NTAG215** (or NTAG213). These are NFC Forum Type 2 tags, which is what
+phones read natively with no app involved.
+
+Search `NTAG215 NFC cards` and check the listing names the chip. Roughly
+$25-45 for 100.
+
+**Do not buy anything described as:**
+
+- UID changeable / magic card / block 0 writable
+- MIFARE Classic, S50, or "1K"
+- "access control", "door entry", "clone"
+
+Those are MIFARE Classic fobs for duplicating apartment badges. **iPhones
+cannot read them at all** -- Apple's Core NFC supports the Ultralight, Plus
+and DESFire families and has never supported Classic -- and plenty of Android
+phones can't either. Listings often still put "NFC Tags" in the title. One I
+looked at said in its own bullets: *"Not suitable for using the nfc mobile
+phone."*
+
+**Cards, not keyfobs.** You need somewhere to print the designation and the
+URL (see §8), and a keyfob gives you almost no surface. Blank white PVC
+NTAG215 cards are credit-card sized and take a label or a card printer.
+
+Capacity is a non-issue: the URL is 38 characters, about 35 bytes. NTAG213
+holds 144.
+
+---
+
 ## 1. What each tag holds
 
 One tag, one URL, nothing else:
