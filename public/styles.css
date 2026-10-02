@@ -150,7 +150,7 @@ body::before {
 
 /* the number */
 .card__designation {
-  margin: 0.625rem 0 0;
+  margin: 0.875rem 0 0;
   text-align: center;
   font-size: clamp(2.125rem, 13vw, 2.75rem);
   line-height: 1;
@@ -165,28 +165,26 @@ body::before {
 .card__mark {
   display: grid;
   place-items: center;
-  padding: 0.75rem 0 0.875rem;
+  padding: 0.875rem 0 1.125rem;
 }
 
-.mark { width: 4.25rem; height: 4.25rem; display: block; }
-.mark__wall   { fill: var(--ink); }
-.mark__inner  { fill: none; stroke: var(--faint); stroke-width: 1; }
-.mark__breach { stroke: var(--edge); stroke-width: 2.5; }
+.mark { width: 5rem; height: 5rem; display: block; }
+.mark__inner { fill: none; stroke: var(--line); stroke-width: 1; }
 
-/* An unclaimed designation has an intact wall. Claiming one breaks it --
-   driven by the class alone, so the live preview breaks it as you type. */
-.card--blank .mark__wall   { fill: var(--faint); }
-.card--blank .mark__breach { display: none; }
-.card:not(.card--blank) .mark__wall--gap { display: none; }
+/* Nine sections, one per bishop. The section belonging to the record's
+   assigned bishop is lit. */
+.mark__wall      { fill: #38342b; }
+.mark__wall--lit { fill: var(--ink); }
 
-.card--bandito .mark__wall { fill: var(--accent); }
+.card--bandito .mark__wall--lit { fill: var(--accent); }
+.card--blank   .mark__wall--lit { fill: var(--dim); }
 
 /* photo + facts */
 .card__body {
   display: grid;
   grid-template-columns: 38% 1fr;
   gap: 0.75rem;
-  padding: 0 1rem 1.125rem;
+  padding: 0.875rem 1rem 0.75rem;
   align-items: start;
 }
 
@@ -223,7 +221,7 @@ body::before {
   color: #332f28;
 }
 
-.card__facts { margin: 0; display: grid; gap: 0.5rem; }
+.card__facts { margin: 0; display: grid; gap: 0.4375rem; align-content: start; }
 
 .fact dt {
   font-size: 0.4375rem;
@@ -246,6 +244,7 @@ body::before {
 }
 
 .card--blank .fact--name dd { color: var(--dim); font-weight: 400; font-size: 0.8125rem; }
+.fact--upper dd { text-transform: uppercase; }
 
 /* ---------- dossier ---------- */
 
@@ -391,41 +390,46 @@ body::before {
 
 .designation .of { color: var(--faint); font-size: 0.5em; letter-spacing: 0; }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(4.25rem, 1fr));
-  gap: 1px;
-  margin: 1.5rem 0 1rem;
-  background: var(--line);
-  border: 1px solid var(--line);
+.entries {
+  margin: 1.5rem 0 0;
+  border-top: 1px solid var(--line);
 }
 
-.cell {
+.entry {
   display: grid;
-  gap: 0.0625rem;
-  place-content: center;
-  min-height: 3.25rem;
-  padding: 0.375rem 0.25rem;
-  background: var(--card);
+  grid-template-columns: 3rem 1fr auto;
+  gap: 0.625rem;
+  align-items: center;
+  /* comfortably past 44px, for thumbs in a dark venue */
+  min-height: 3rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid var(--line);
   color: var(--faint);
   text-decoration: none;
-  text-align: center;
 }
 
-.cell__n { font-size: 0.8125rem; letter-spacing: 0.02em; }
-.cell__s { font-size: 0.4375rem; letter-spacing: 0.12em; }
+.entry__n { font-size: 0.8125rem; letter-spacing: 0.02em; }
 
-.cell--taken { background: #2f2c25; color: var(--ink); }
-.cell--taken .cell__n { font-weight: 700; }
-.cell--bandito { background: var(--accent); color: #000; }
-.cell:active { outline: 2px solid var(--accent); outline-offset: -2px; }
+.entry__name {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
 
-.legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin: 0; font-size: 0.5rem; letter-spacing: 0.12em; color: var(--faint); }
-.legend span { display: inline-flex; align-items: center; gap: 0.375rem; }
+.entry__name small {
+  display: block;
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+  margin-top: 0.125rem;
+}
 
-.swatch { width: 0.625rem; height: 0.625rem; border: 1px solid var(--line); background: var(--card); }
-.swatch--ctz { background: #2f2c25; }
-.swatch--bnd { background: var(--accent); }
+.entry__f { font-size: 0.5rem; letter-spacing: 0.12em; }
+
+.entry--taken { color: var(--ink); }
+.entry--taken .entry__n { font-weight: 700; }
+.entry--bandito .entry__f { color: var(--accent); }
+.entry:active { background: var(--raise); }
 
 /* ---------- admin ---------- */
 
@@ -507,3 +511,91 @@ body::before {
 }
 
 .mini--warn { border-color: #4a2018; color: var(--alarm); }
+
+/* ---------- masthead nav ---------- */
+
+.masthead { align-items: center; }
+
+.masthead__all {
+  order: -1;
+  margin-right: auto;
+  padding: 0.375rem 0.5rem;
+  margin-left: -0.5rem;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  text-decoration: none;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+.masthead__all:active { background: var(--raise); }
+.masthead .bureau { display: none; }
+
+/* ---------- card: charge block ---------- */
+
+.card__charge {
+  margin: 0;
+  display: grid;
+  gap: 0.1875rem;
+  font-size: 0.5rem;
+  letter-spacing: 0.26em;
+  color: var(--dim);
+}
+
+.card__charge b {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.card--blank .card__charge b { color: var(--dim); }
+
+.card__statute {
+  display: grid;
+  gap: 0.0625rem;
+  margin: 0.625rem 0 0;
+  font-size: 0.4375rem;
+  line-height: 1.7;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+}
+
+/* ---------- card: statement, place, mark ---------- */
+
+.card__bio {
+  margin: 0;
+  padding: 0 1rem 0.875rem;
+  font-size: 0.625rem;
+  line-height: 1.55;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.card__bio > span:first-child {
+  display: block;
+  font-size: 0.4375rem;
+  letter-spacing: 0.2em;
+  color: var(--faint);
+  margin-bottom: 0.1875rem;
+}
+
+.card__place {
+  margin: 0;
+  padding: 0.75rem 1rem 0;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 0.5625rem;
+  line-height: 1.6;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+}
+
+.card__place b { display: block; color: var(--dim); font-weight: 400; letter-spacing: 0.16em; }
+.card__place span { display: block; margin-top: 0.1875rem; }
+
+.is-redacted { color: var(--faint); }
+
+.form__area { min-height: 4.5rem; padding: 0.75rem; resize: vertical; line-height: 1.5; text-transform: none; font-size: 1rem; }
+.form__input--plain { text-transform: none; }

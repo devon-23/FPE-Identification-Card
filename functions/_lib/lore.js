@@ -65,10 +65,13 @@ export function generate(id) {
   // Roughly one record in four has its sector struck from the file.
   const sectorRedacted = hash('sredact' + id) % 4 === 0;
 
+  const bishopIdx = hash('bishop' + id) % BISHOPS.length;
+
   return {
+    bishopIdx,
     district: `0${district}`,
     sector: sectorRedacted ? redact(id) : `S-${sectorNum}-${bearing}`,
-    bishop: pick(BISHOPS, 'bishop' + id),
+    bishop: BISHOPS[bishopIdx],
     attempt: String(1 + (hash('attempt' + id) % 4)).padStart(2, '0'),
     method: pick(METHODS, 'method' + id),
     disposition: pick(DISPOSITIONS, 'disp' + id),

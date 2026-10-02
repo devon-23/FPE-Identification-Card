@@ -8,6 +8,10 @@ CREATE TABLE IF NOT EXISTS records (
   name          TEXT,                   -- claimant-supplied name or alias
   name_assigned INTEGER NOT NULL DEFAULT 0,  -- 1 = system assigned a designation
   faction       TEXT NOT NULL DEFAULT 'CITIZEN',   -- CITIZEN | BANDITO
+  attempts      INTEGER,                -- shows attended; shown as ESCAPE ATTEMPT
+  handle        TEXT,                   -- social handle, stored without the @
+  hometown      TEXT,
+  bio           TEXT,
   photo_key     TEXT,                   -- R2 object key; NULL = no public photo
   token_hash    TEXT,                   -- SHA-256 of the edit token (never the token itself)
   claimed_at    TEXT,                   -- ISO 8601 UTC

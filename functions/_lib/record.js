@@ -59,7 +59,6 @@ export function renderUnregistered(id, { claimingOpen = true } = {}) {
     ${raw(card)}
     <p class="note">THIS DESIGNATION HAS NOT BEEN CLAIMED.<br>THE FIRST SUBJECT TO REGISTER HOLDS IT.</p>
     ${raw(String(action))}
-    <p class="crosslink"><a href="/archive">REGISTER OF DESIGNATIONS &rarr;</a></p>
   </main>`;
   return layout({
     title: `FPE-${id} — UNREGISTERED`, body, bodyClass: 'page-record',
@@ -83,7 +82,6 @@ export function renderRecord(rec) {
       <a class="button" href="/f/${rec.id}/register" data-owner-only hidden>AMEND RECORD</a>
     </p>
     ${raw(dossier(rec))}
-    <p class="crosslink"><a href="/archive">REGISTER OF DESIGNATIONS &rarr;</a></p>
     <p class="standing">IF FOUND, RETURN TO DEMA.<br>DO NOT TRUST THE BISHOPS.</p>
   </main>
   <script src="/record.js" defer></script>`;

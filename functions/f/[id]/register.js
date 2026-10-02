@@ -2,7 +2,7 @@ import { h, raw, layout, htmlResponse } from '../../_lib/html.js';
 import { normalizeId } from '../../_lib/record.js';
 import { renderCard } from '../../_lib/card.js';
 import { getRecord, getSetting } from '../../_lib/db.js';
-import { NAME_MAX } from '../../_lib/sanitize.js';
+import { NAME_MAX, HANDLE_MAX, HOMETOWN_MAX, BIO_MAX, ATTEMPTS_MAX } from '../../_lib/sanitize.js';
 import { SET_SIZE, FORM } from '../../_lib/config.js';
 
 export async function onRequestGet({ request, params, env }) {
@@ -46,6 +46,34 @@ export async function onRequestGet({ request, params, env }) {
                spellcheck="false" enterkeyhint="done" placeholder="LEAVE BLANK TO BE ASSIGNED ONE">
       </div>
 
+      <div class="form__row">
+        <label class="form__label" for="attempts">HOW MANY SHOWS HAVE YOU ATTENDED? <span>OPTIONAL</span></label>
+        <input class="form__input" id="attempts" name="attempts" type="number"
+               inputmode="numeric" min="1" max="${String(ATTEMPTS_MAX)}" step="1"
+               autocomplete="off" placeholder="RECORDED AS YOUR ESCAPE ATTEMPT NUMBER">
+      </div>
+
+      <div class="form__row">
+        <label class="form__label" for="handle">HANDLE <span>OPTIONAL &middot; INSTAGRAM, X, ANYWHERE</span></label>
+        <input class="form__input form__input--plain" id="handle" name="handle" type="text"
+               maxlength="${String(HANDLE_MAX)}" autocomplete="off" autocapitalize="off"
+               spellcheck="false" placeholder="@YOURHANDLE">
+      </div>
+
+      <div class="form__row">
+        <label class="form__label" for="hometown">HOMETOWN <span>OPTIONAL</span></label>
+        <input class="form__input" id="hometown" name="hometown" type="text"
+               maxlength="${String(HOMETOWN_MAX)}" autocomplete="off" autocapitalize="characters"
+               placeholder="CITY, STATE">
+      </div>
+
+      <div class="form__row">
+        <label class="form__label" for="bio">STATEMENT <span>OPTIONAL &middot; ${String(BIO_MAX)} CHARACTERS</span></label>
+        <textarea class="form__input form__area" id="bio" name="bio" rows="2"
+                  maxlength="${String(BIO_MAX)}" autocomplete="off"
+                  placeholder="ANYTHING YOU WANT ON THE RECORD"></textarea>
+      </div>
+
       <fieldset class="form__row form__fieldset">
         <legend class="form__label">ALLEGIANCE DECLARED</legend>
         <div class="toggle">
@@ -76,6 +104,8 @@ export async function onRequestGet({ request, params, env }) {
             CLEAR YOUR BROWSER DATA.</p>`)}
         </div>
       </div>
+
+      <p class="note">ANYTHING YOU LEAVE BLANK IS FILED AS [REDACTED].</p>
 
       <p class="warning">THIS RECORD IS PUBLIC. ANYONE WHO TAPS THIS CARD — OR TYPES ITS
         NUMBER — WILL SEE WHAT YOU ENTER HERE. USE AN ALIAS IF YOU PREFER.</p>

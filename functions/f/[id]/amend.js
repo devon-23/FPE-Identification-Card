@@ -1,6 +1,6 @@
 import { normalizeId } from '../../_lib/record.js';
 import { normalizeFaction } from '../../_lib/card.js';
-import { cleanName } from '../../_lib/sanitize.js';
+import { cleanName, cleanHandle, cleanHometown, cleanBio, cleanAttempts } from '../../_lib/sanitize.js';
 import { ownsRecord } from '../../_lib/auth.js';
 import { readJpeg, putPhoto } from '../../_lib/photo.js';
 import { getRecord } from '../../_lib/db.js';
@@ -32,11 +32,20 @@ export async function onRequestPost({ request, params, env }) {
 
   const name = cleanName(form.get('name'));
   const faction = normalizeFaction(form.get('faction'));
+  const handle = cleanHandle(form.get('handle'));
+  const hometown = cleanHometown(form.get('hometown'));
+  const bio = cleanBio(form.get('bio'));
+  const attempts = cleanAttempts(form.get('attempts'));
   const now = new Date().toISOString();
 
-  await env.DB.prepare(
-    'UPDATE records SET name = ?, name_assigned = ?, faction = ?, updated_at = ? WHERE id = ?'
-  ).bind(name || null, name ? 0 : 1, faction, now, id).run();
+  await env.DB.prepare(`
+    UPDATE records SET name = ?, name_assigned = ?, faction = ?,
+           handle = ?, hometown = ?, bio = ?, attempts = ?, updated_at = ?
+     WHERE id = ?
+  `).bind(
+    name || null, name ? 0 : 1, faction,
+    handle || null, hometown || null, bio || null, attempts, now, id
+  ).run();
 
   // photo: 'keep' (default), 'remove', or a new file.
   const intent = String(form.get('photo_action') || 'keep');

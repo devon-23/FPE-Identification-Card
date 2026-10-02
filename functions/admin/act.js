@@ -35,7 +35,8 @@ export async function onRequestPost({ request, env }) {
     if (env.PHOTOS) { try { await env.PHOTOS.delete(`${id}.jpg`); } catch { /* already gone */ } }
     await env.DB.prepare(`
       UPDATE records SET status = 'UNREGISTERED', name = NULL, name_assigned = 0,
-             faction = 'CITIZEN', photo_key = NULL, token_hash = NULL,
+             faction = 'CITIZEN', handle = NULL, hometown = NULL, bio = NULL, attempts = NULL,
+             photo_key = NULL, token_hash = NULL,
              claimed_at = NULL, updated_at = NULL, location = NULL, city = NULL, event_date = NULL
        WHERE id = ?
     `).bind(id).run();

@@ -39,6 +39,7 @@ export function layout({ title, body, bodyClass = '', mastLeft = null, mastRight
 <body class="${escapeHtml(bodyClass)}">
 <div class="sheet">
   <header class="masthead">
+    <a class="masthead__all" href="/archive">ALL RECORDS</a>
     <span class="bureau">${escapeHtml(mastLeft ?? FORM.bureau)}</span>
     <span class="formcode">${escapeHtml(mastRight ?? `FORM ${FORM.code} (${FORM.revision})`)}</span>
   </header>

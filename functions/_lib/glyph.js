@@ -1,23 +1,14 @@
-// The perimeter mark: a walled ring seen from above.
+// The city mark: nine sections of wall seen from above, one per bishop.
 //
-// Drawn from geometry, not traced from anything. One segment of every ring is
-// breached, and which one is a pure function of the designation -- so each
-// record carries the same wall broken in its own place.
+// Drawn from geometry, not traced from anything. The section belonging to the
+// record's assigned bishop is lit, so the mark says who holds the subject
+// without needing to be read.
 
-export const SEGMENTS = 18;
+import { BISHOPS } from './lore.js';
 
-function hash(str) {
-  let h = 2166136261 >>> 0;
-  for (let i = 0; i < str.length; i++) {
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619) >>> 0;
-  }
-  return h >>> 0;
-}
+export const SEGMENTS = BISHOPS.length;   // nine
 
-export const breachIndex = (id) => hash('breach' + id) % SEGMENTS;
-
-/** One block of the wall, as an annular sector. */
+/** One section of wall, as an annular sector. */
 function block(cx, cy, r0, r1, a0, a1) {
   const at = (r, a) => [
     (cx + r * Math.cos(a)).toFixed(2),
@@ -31,34 +22,24 @@ function block(cx, cy, r0, r1, a0, a1) {
 }
 
 /**
- * Every segment is drawn; the breached one carries its own class so the
- * wall can open and close from CSS alone. That lets the live preview break
- * the wall the moment a record stops being blank, with no scripting.
+ * @param bishopIdx  index into BISHOPS; that section is lit
  */
-export function perimeterMark(id, { className = 'mark' } = {}) {
-  const CX = 50, CY = 50, R0 = 27, R1 = 43;
+export function cityMark(bishopIdx, { className = 'mark' } = {}) {
+  const CX = 50, CY = 50, R0 = 25, R1 = 44;
   const step = (Math.PI * 2) / SEGMENTS;
-  const gap = step * 0.22;              // mortar between blocks
-  const breach = breachIndex(id);
+  const gap = step * 0.1;               // mortar between sections
 
-  const walls = [];
+  const sections = [];
   for (let i = 0; i < SEGMENTS; i++) {
+    // Start at twelve o'clock so section 1 reads as the top of the city.
     const a0 = i * step - Math.PI / 2 + gap / 2;
     const a1 = (i + 1) * step - Math.PI / 2 - gap / 2;
-    const cls = i === breach ? 'mark__wall mark__wall--gap' : 'mark__wall';
-    walls.push(`<path class="${cls}" d="${block(CX, CY, R0, R1, a0, a1)}"/>`);
+    const lit = i === bishopIdx ? ' mark__wall--lit' : '';
+    sections.push(`<path class="mark__wall${lit}" d="${block(CX, CY, R0, R1, a0, a1)}"/>`);
   }
 
-  // The gap is marked, not merely absent: a hairline where the wall gave way.
-  const a = (breach + 0.5) * step - Math.PI / 2;
-  const bx0 = (CX + (R0 - 4) * Math.cos(a)).toFixed(2);
-  const by0 = (CY + (R0 - 4) * Math.sin(a)).toFixed(2);
-  const bx1 = (CX + (R1 + 4) * Math.cos(a)).toFixed(2);
-  const by1 = (CY + (R1 + 4) * Math.sin(a)).toFixed(2);
-
   return `<svg class="${className}" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-      <circle class="mark__inner" cx="50" cy="50" r="21"/>
-      ${walls.join('')}
-      <line class="mark__breach" x1="${bx0}" y1="${by0}" x2="${bx1}" y2="${by1}"/>
+      <circle class="mark__inner" cx="50" cy="50" r="19"/>
+      ${sections.join('')}
     </svg>`;
 }

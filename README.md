@@ -44,6 +44,7 @@ functions/
     config.js           venue, date, set size, form furniture
     lore.js             deterministic generated fields
     card.js             the card markup (shared by page and preview)
+    glyph.js            the nine-section city mark
     record.js           id parsing + page rendering
     html.js             escaping, layout shell, responses
     auth.js             edit tokens
@@ -211,6 +212,33 @@ Locally they come from `.dev.vars`, which is gitignored.
 The session is a signed HttpOnly, SameSite=Strict cookie scoped to `/admin`:
 no session table, no accounts. Login is throttled to 10 attempts per 5 minutes
 per address, and addresses are stored only as a salted hash.
+
+## The card
+
+Reads as a charge sheet: *IDENTIFIED AS / FAILED PERIMETER ESCAPE / BY DEMA
+COUNCIL*, the statute, the designation, then the subject.
+
+The mark at the foot is the city seen from above -- **nine sections, one per
+bishop**, with the section belonging to the record's assigned bishop lit. It is
+drawn from geometry rather than traced, and the lit section is a pure function
+of the designation, so two people comparing cards see consistent results.
+
+Four fields are the claimant's and all are optional:
+
+| Field | Blank becomes |
+|---|---|
+| Shows attended | `ESCAPE ATTEMPT 01` |
+| Handle | `[REDACTED]` |
+| Hometown | `[REDACTED]` |
+| Statement | `[REDACTED]` |
+
+`[REDACTED]` is the point -- an unanswered field on a state record is in
+character, so nobody is penalised for skipping one.
+
+Handles are stored bare, without the `@`, and restricted to the characters the
+major platforms allow. **They are rendered as plain text and never linked:**
+we cannot verify that someone owns the handle they typed, and turning
+unverified input into an outbound link invites misuse.
 
 ## Security model
 

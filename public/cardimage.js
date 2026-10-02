@@ -63,6 +63,25 @@
     return { lines: [text], size: s };
   }
 
+  /** Greedy word wrap at a fixed size. */
+  function wrap(ctx, text, maxWidth, size, weight) {
+    ctx.font = font(weight, size);
+    var words = String(text).split(/\s+/);
+    var lines = [];
+    var line = '';
+    for (var i = 0; i < words.length; i++) {
+      var next = line ? line + ' ' + words[i] : words[i];
+      if (ctx.measureText(next).width > maxWidth && line) {
+        lines.push(line);
+        line = words[i];
+      } else {
+        line = next;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
   function centred(ctx, text, cx, y) { ctx.textAlign = 'center'; ctx.fillText(text, cx, y); }
 
   /** Grayscale + contrast by hand: ctx.filter is unreliable on older iOS. */
@@ -77,38 +96,27 @@
     ctx.putImageData(img, x, y);
   }
 
-  /** The perimeter mark, matching glyph.js. */
-  function drawMark(ctx, cx, cy, size, breach, showBreach, wallColour, edgeColour) {
-    var R1 = size * 0.43, R0 = size * 0.27, RI = size * 0.21;
-    var step = (Math.PI * 2) / SEGMENTS;
-    var gap = step * 0.22;
+  /** The city mark, matching glyph.js: nine sections, the bishop's one lit. */
+  function drawMark(ctx, cx, cy, size, bishopIdx, wallColour, litColour) {
+    var R1 = size * 0.44, R0 = size * 0.25, RI = size * 0.19;
+    var step = (Math.PI * 2) / 9;
+    var gap = step * 0.1;
 
     ctx.beginPath();
     ctx.arc(cx, cy, RI, 0, Math.PI * 2);
-    ctx.strokeStyle = FAINT;
-    ctx.lineWidth = Math.max(1, size * 0.01);
+    ctx.strokeStyle = LINE;
+    ctx.lineWidth = Math.max(1, size * 0.012);
     ctx.stroke();
 
-    ctx.fillStyle = wallColour;
-    for (var i = 0; i < SEGMENTS; i++) {
-      if (showBreach && i === breach) continue;
+    for (var i = 0; i < 9; i++) {
       var a0 = i * step - Math.PI / 2 + gap / 2;
       var a1 = (i + 1) * step - Math.PI / 2 - gap / 2;
       ctx.beginPath();
       ctx.arc(cx, cy, R1, a0, a1);
       ctx.arc(cx, cy, R0, a1, a0, true);
       ctx.closePath();
+      ctx.fillStyle = i === bishopIdx ? litColour : wallColour;
       ctx.fill();
-    }
-
-    if (showBreach) {
-      var a = (breach + 0.5) * step - Math.PI / 2;
-      ctx.beginPath();
-      ctx.moveTo(cx + (R0 - size * 0.04) * Math.cos(a), cy + (R0 - size * 0.04) * Math.sin(a));
-      ctx.lineTo(cx + (R1 + size * 0.04) * Math.cos(a), cy + (R1 + size * 0.04) * Math.sin(a));
-      ctx.strokeStyle = edgeColour;
-      ctx.lineWidth = Math.max(1, size * 0.025);
-      ctx.stroke();
     }
   }
 
@@ -128,6 +136,8 @@
       return el ? el.textContent.trim() : '';
     };
     var strips = card.querySelectorAll('.card__strip span');
+    var charge = card.querySelectorAll('.card__charge span');
+    var statute = card.querySelectorAll('.card__statute span');
     var facts = card.querySelectorAll('.card__facts .fact');
     var list = [];
     for (var i = 1; i < facts.length; i++) {
@@ -140,18 +150,26 @@
     return {
       bureau: strips[0] ? strips[0].textContent.trim() : '',
       form: strips[1] ? strips[1].textContent.trim() : '',
-      kicker: t('.card__kicker'),
-      where: t('.card__where'),
-      when: t('.card__when'),
+      chargeTop: charge[0] ? charge[0].textContent.trim() : '',
+      chargeMain: t('.card__charge b'),
+      chargeBy: charge[1] ? charge[1].textContent.trim() : '',
+      statute: [
+        statute[0] ? statute[0].textContent.trim() : '',
+        statute[1] ? statute[1].textContent.trim() : '',
+      ],
       designation: t('.card__designation'),
       name: t('.fact--name dd'),
       facts: list,
+      bioLabel: 'STATEMENT',
+      bio: t('[data-slot="bio"]'),
+      venue: t('.card__place b'),
+      when: t('.card__place span'),
       standing: strips[2] ? strips[2].textContent.trim() : 'IF FOUND, RETURN TO DEMA',
       faction: t('.card__faction'),
       photoSrc: photo ? photo.src : null,
       bandito: card.classList.contains('card--bandito'),
       blank: card.classList.contains('card--blank'),
-      breach: parseInt(card.getAttribute('data-breach') || '0', 10),
+      bishop: parseInt(card.getAttribute('data-bishop') || '0', 10),
     };
   }
 
@@ -164,17 +182,25 @@
     var plateH = plateW * 1.25;
     var factsX = PAD + plateW + 12;
     var factsW = inner - plateW - 12;
+    var WALL = '#38342b';
 
-    // Measure the name first; it can take two lines and decide the height.
-    canvas.width = px(CW); canvas.height = px(800);
+    // Measure the wrapping blocks first; they decide the card's height.
+    canvas.width = px(CW); canvas.height = px(1200);
     ctx.font = font('700', 15);
     var nameFit = fitLines(ctx, d.name, px(factsW), 15, '700', 9, 2);
+    ctx.font = font('400', 10);
+    var bioFit = wrap(ctx, d.bio, px(inner), 10, '400');
 
-    var factsH = nameFit.lines.length * 17 + 10 + 8;
-    for (var i = 0; i < d.facts.length; i++) factsH += 10 + 17 + 8;
-    var bodyH = Math.max(plateH, factsH);
+    var factsH = 10 + nameFit.lines.length * 17 + 7;
+    for (var i = 0; i < d.facts.length; i++) factsH += 10 + 17 + 7;
+    var bodyH = Math.max(plateH, factsH - 7);
 
-    var H = 24 + 18 + 13 + 6 + 13 + 2 + 13 + 10 + 44 + 12 + 68 + 14 + bodyH + 18 + 24;
+    var headH = 18 + 12 + 3 + 17 + 3 + 12 + 10 + 12 + 12;
+    var bioH = 10 + 3 + bioFit.length * 15.5 + 14;
+    var placeH = 12 + 15 + 15 + 2;
+    var markH = 14 + 80 + 18;
+
+    var H = 24 + headH + 14 + 44 + 14 + bodyH + 12 + bioH + placeH + markH + 24;
 
     canvas.width = Math.round(px(CW));
     canvas.height = Math.round(px(H));
@@ -199,29 +225,35 @@
     ctx.fillText(d.form, canvas.width - px(11), px(15.5));
     y = 24;
 
-    // header
+    // the charge
+    y += 18;
     ctx.fillStyle = DIM;
-    ctx.font = font('400', 9);
-    centred(ctx, d.kicker, cx, px(y + 18 + 9));
+    ctx.font = font('400', 8);
+    centred(ctx, d.chargeTop, cx, px(y + 9));
+    y += 12 + 3;
+    ctx.fillStyle = d.blank ? DIM : INK;
+    var mainFit = fitLines(ctx, d.chargeMain, px(inner), 12, '700', 8, 1);
+    ctx.font = font('700', mainFit.size);
+    centred(ctx, d.chargeMain, cx, px(y + 13));
+    y += 17 + 3;
+    ctx.fillStyle = DIM;
+    ctx.font = font('400', 8);
+    centred(ctx, d.chargeBy, cx, px(y + 9));
+    y += 12 + 10;
+
     ctx.fillStyle = FAINT;
-    var whereFit = fitLines(ctx, d.where, px(inner), 9, '400', 6, 1);
-    ctx.font = font('400', whereFit.size);
-    centred(ctx, d.where, cx, px(y + 18 + 9 + 6 + 13));
-    ctx.font = font('400', 9);
-    centred(ctx, d.when, cx, px(y + 18 + 9 + 6 + 13 + 2 + 13));
-    y += 18 + 13 + 6 + 13 + 2 + 13;
+    ctx.font = font('400', 7);
+    centred(ctx, d.statute[0], cx, px(y + 8));
+    centred(ctx, d.statute[1], cx, px(y + 20));
+    y += 24;
 
     // the number
+    y += 14;
     ctx.fillStyle = d.blank ? DIM : INK;
     var dFit = fitLines(ctx, d.designation, px(inner), 44, '700', 24, 1);
     ctx.font = font('700', dFit.size);
-    centred(ctx, d.designation, cx, px(y + 10 + 38));
-    y += 10 + 44;
-
-    // the mark
-    drawMark(ctx, cx, px(y + 12 + 34), px(68),
-             d.breach, !d.blank, d.bandito ? GOLD : (d.blank ? FAINT : INK), edge);
-    y += 12 + 68 + 14;
+    centred(ctx, d.designation, cx, px(y + 38));
+    y += 44 + 14;
 
     // photo well
     var plx = px(PAD), ply = px(y), plw = px(plateW), plh = px(plateH);
@@ -232,9 +264,8 @@
       var side = Math.min(photo.naturalWidth, photo.naturalHeight);
       var sx = (photo.naturalWidth - side) / 2;
       var sy = (photo.naturalHeight - side) / 2;
-      // cover a 4:5 well from a square source
-      var srcH = side, srcW = side * 0.8;
-      ctx.drawImage(photo, sx + (side - srcW) / 2, sy, srcW, srcH, plx, ply, plw, plh);
+      var srcW = side * 0.8;    // cover a 4:5 well from a square source
+      ctx.drawImage(photo, sx + (side - srcW) / 2, sy, srcW, side, plx, ply, plw, plh);
       desaturate(ctx, Math.round(plx), Math.round(ply), Math.round(plw), Math.round(plh));
     } else {
       ctx.fillStyle = '#1e1c18';
@@ -267,20 +298,53 @@
     for (var n = 0; n < nameFit.lines.length; n++) {
       ctx.fillText(nameFit.lines[n], px(factsX), px(fy + 10 + 14 + n * 17));
     }
-    fy += 10 + nameFit.lines.length * 17 + 8;
+    fy += 10 + nameFit.lines.length * 17 + 7;
 
     for (var k = 0; k < d.facts.length; k++) {
       ctx.fillStyle = FAINT;
       ctx.font = font('400', 7);
       ctx.fillText(d.facts[k].label, px(factsX), px(fy + 7));
-      ctx.fillStyle = INK;
+      ctx.fillStyle = d.facts[k].value === '[REDACTED]' ? FAINT : INK;
       var vFit = fitLines(ctx, d.facts[k].value, px(factsW), 12, '400', 8, 1);
       ctx.font = font('400', vFit.size);
       ctx.fillText(d.facts[k].value, px(factsX), px(fy + 10 + 13));
-      fy += 10 + 17 + 8;
+      fy += 10 + 17 + 7;
     }
 
-    y += bodyH + 18;
+    y += bodyH + 12;
+
+    // statement
+    ctx.textAlign = 'left';
+    ctx.fillStyle = FAINT;
+    ctx.font = font('400', 7);
+    ctx.fillText(d.bioLabel, px(PAD), px(y + 7));
+    ctx.fillStyle = d.bio === '[REDACTED]' ? FAINT : INK;
+    ctx.font = font('400', 10);
+    for (var b = 0; b < bioFit.length; b++) {
+      ctx.fillText(bioFit[b], px(PAD), px(y + 10 + 3 + 11 + b * 15.5));
+    }
+    y += bioH;
+
+    // place
+    ctx.strokeStyle = LINE;
+    ctx.lineWidth = Math.max(1, px(1));
+    ctx.beginPath();
+    ctx.moveTo(0, px(y)); ctx.lineTo(canvas.width, px(y)); ctx.stroke();
+    y += 12;
+    ctx.fillStyle = DIM;
+    ctx.font = font('400', 9);
+    var vFit2 = fitLines(ctx, d.venue, px(inner), 9, '400', 6, 1);
+    ctx.font = font('400', vFit2.size);
+    centred(ctx, d.venue, cx, px(y + 10));
+    ctx.fillStyle = FAINT;
+    ctx.font = font('400', 9);
+    centred(ctx, d.when, cx, px(y + 25));
+    y += 30;
+
+    // the city
+    drawMark(ctx, cx, px(y + 14 + 40), px(80), d.bishop,
+             WALL, d.bandito ? GOLD : (d.blank ? DIM : INK));
+    y += markH;
 
     // bottom strip
     ctx.fillStyle = BLACK;

@@ -11,7 +11,11 @@
   var card  = stage.querySelector('.card');
   var status = form.querySelector('.form__status');
 
-  var nameEl    = document.getElementById('name');
+  var nameEl     = document.getElementById('name');
+  var attemptsEl = document.getElementById('attempts');
+  var handleEl   = document.getElementById('handle');
+  var hometownEl = document.getElementById('hometown');
+  var bioEl      = document.getElementById('bio');
   var photoEl   = document.getElementById('photo');
   var consentEl = document.getElementById('consent');   // absent when storage is off
   var consentBox = form.querySelector('.consent');
@@ -19,8 +23,13 @@
   var dropBtn   = form.querySelector('[data-action="drop"]');
   var submitBtn = form.querySelector('[data-action="submit"]');
 
-  var slotName    = card.querySelector('[data-slot="name"]');
-  var slotFaction = card.querySelector('[data-slot="faction"]');
+  var slotName     = card.querySelector('[data-slot="name"]');
+  var slotFaction  = card.querySelector('[data-slot="faction"]');
+  var slotHandle   = card.querySelector('[data-slot="handle"]');
+  var slotAttempts = card.querySelector('[data-slot="attempts"]');
+  var slotHometown = card.querySelector('[data-slot="hometown"]');
+  var slotBio      = card.querySelector('[data-slot="bio"]');
+  var REDACTED = '[REDACTED]';
   var plate       = card.querySelector('.card__plate');
 
   var photoBlob = null;      // processed JPEG awaiting upload
@@ -88,7 +97,36 @@
     }
   }
 
+  // Anything left blank reads [REDACTED], exactly as it will once filed.
+  function paintOptional(input, slot, decorate) {
+    var v = input.value.trim();
+    slot.textContent = v ? (decorate ? decorate(v) : v) : REDACTED;
+    slot.classList.toggle('is-redacted', !v);
+  }
+
+  function paintAttempts() {
+    var n = parseInt(attemptsEl.value, 10);
+    if (!isFinite(n) || n < 1) n = 1;
+    if (n > 99) n = 99;
+    slotAttempts.textContent = String(n).padStart(2, '0');
+  }
+
+  function paintAll() {
+    paintName();
+    paintFaction();
+    paintAttempts();
+    paintOptional(handleEl, slotHandle, function (v) { return '@' + v.replace(/^@+/, ''); });
+    paintOptional(hometownEl, slotHometown);
+    paintOptional(bioEl, slotBio);
+  }
+
   nameEl.addEventListener('input', paintName);
+  attemptsEl.addEventListener('input', paintAttempts);
+  handleEl.addEventListener('input', function () {
+    paintOptional(handleEl, slotHandle, function (v) { return '@' + v.replace(/^@+/, ''); });
+  });
+  hometownEl.addEventListener('input', function () { paintOptional(hometownEl, slotHometown); });
+  bioEl.addEventListener('input', function () { paintOptional(bioEl, slotBio); });
   var radios = form.querySelectorAll('input[name="faction"]');
   for (var i = 0; i < radios.length; i++) radios[i].addEventListener('change', paintFaction);
 
@@ -182,6 +220,10 @@
     var body = new FormData();
     body.append('name', nameEl.value);
     body.append('faction', form.querySelector('input[name="faction"]:checked').value);
+    body.append('attempts', attemptsEl.value);
+    body.append('handle', handleEl.value);
+    body.append('hometown', hometownEl.value);
+    body.append('bio', bioEl.value);
     if (mode === 'amend') {
       body.append('token', token);
       body.append('photo_action', removePhoto ? 'remove' : (consented ? 'replace' : 'keep'));
@@ -228,10 +270,19 @@
     var f = slotFaction.textContent.trim();
     var sel = form.querySelector('input[name="faction"][value="' + f + '"]');
     if (sel) sel.checked = true;
+
+    var prefill = function (slot, input, strip) {
+      var v = slot.textContent.trim();
+      if (v && v !== REDACTED) input.value = strip ? v.replace(/^@/, '') : v;
+    };
+    prefill(slotHandle, handleEl, true);
+    prefill(slotHometown, hometownEl);
+    prefill(slotBio, bioEl);
+    var a = parseInt(slotAttempts.textContent.trim(), 10);
+    if (isFinite(a) && a > 1) attemptsEl.value = String(a);
     var localPhoto = load(PHOTO_KEY);
     if (localPhoto) paintPhoto(localPhoto);
   }
 
-  paintName();
-  paintFaction();
+  paintAll();
 })();
