@@ -6,7 +6,7 @@ pages_build_output_dir = "public"
 [[d1_databases]]
 binding = "DB"
 database_name = "fpe"
-database_id = "REPLACE_ME"
+database_id = "561af3e2-972f-47ff-b7eb-bedac98db7f3"
 
 [[r2_buckets]]
 binding = "PHOTOS"

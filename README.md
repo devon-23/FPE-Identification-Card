@@ -102,12 +102,22 @@ npm install && npx wrangler login
 npx wrangler d1 create fpe
 ```
 
-**3. Create the photo bucket.** R2 needs activating once in the dashboard
-(it asks for a card but the free tier covers this many times over):
+**3. Create the photo bucket.** R2 must be switched on once before the API
+will accept anything — otherwise this fails with *"Please enable R2 through
+the Cloudflare Dashboard" [code: 10042]*. In the dashboard go to
+**Storage & databases > R2 > Overview** and complete the checkout flow, then:
 
 ```bash
 npx wrangler r2 bucket create fpe-photos
 ```
+
+Free tier is 10 GB-month and 1M writes. A hundred photos at ~20 KB is about
+2 MB, so roughly 0.02% of it.
+
+**R2 is optional.** Comment out the `[[r2_buckets]]` block in `wrangler.toml`
+and everything still works — the maker drops the consent box, says the photo
+is held on the device only, and claiming, the archive and admin are
+unaffected. Enable R2 later and uncomment to turn server-stored photos on.
 
 **4. Load the schema and the 100 designations:**
 

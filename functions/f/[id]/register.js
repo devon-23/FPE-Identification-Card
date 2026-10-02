@@ -26,7 +26,11 @@ export async function onRequestGet({ request, params, env }) {
   // the record is public either way, and every write is re-checked server-side.
   const card = renderCard(claimed ? rec : { id, status: 'UNREGISTERED' }, { preview: true });
 
-  const body = h`  <main class="stage maker" data-fpe="${id}" data-mode="${raw(claimed ? 'amend' : 'claim')}">
+  // Without an R2 binding there is nowhere to publish an image, so the form
+  // must not offer a consent box that could not be honoured.
+  const canPublishPhotos = !!env.PHOTOS;
+
+  const body = h`  <main class="stage maker" data-fpe="${id}" data-mode="${raw(claimed ? 'amend' : 'claim')}" data-photos="${raw(canPublishPhotos ? 'server' : 'device')}">
     ${raw(card)}
 
     <noscript><p class="note">THIS FORM REQUIRES SCRIPTING. THE RECORD ITSELF DOES NOT —
@@ -59,13 +63,17 @@ export async function onRequestGet({ request, params, env }) {
         <button type="button" class="button button--quiet" data-action="drop" hidden>REMOVE PHOTO</button>
 
         <div class="consent" hidden>
+          ${raw(canPublishPhotos ? `
           <label class="consent__box">
             <input type="checkbox" id="consent">
             <span>I CONSENT TO PUBLICATION OF THIS IMAGE IN THE PUBLIC ARCHIVE.</span>
           </label>
           <p class="consent__note">IF UNCHECKED, THE IMAGE IS HELD ON THIS DEVICE ONLY AND IS
             NEVER TRANSMITTED. IT WILL BE LOST IF YOU CLEAR YOUR BROWSER DATA, AND IOS DISCARDS
-            IT AFTER ABOUT A WEEK WITHOUT A VISIT.</p>
+            IT AFTER ABOUT A WEEK WITHOUT A VISIT.</p>` : `
+          <p class="consent__note">THIS IMAGE IS HELD ON THIS DEVICE ONLY AND IS NEVER
+            TRANSMITTED. OTHERS WHO TAP THIS CARD WILL NOT SEE IT. IT WILL BE LOST IF YOU
+            CLEAR YOUR BROWSER DATA.</p>`)}
         </div>
       </div>
 

@@ -57,7 +57,7 @@ export async function onRequestPost({ request, params, env }) {
   // leaves an orphan in the bucket. A failure here costs the photo, not the record.
   let photo = false;
   const file = form.get('photo');
-  if (file && typeof file.arrayBuffer === 'function') {
+  if (env.PHOTOS && file && typeof file.arrayBuffer === 'function') {
     const { bytes, error } = await readJpeg(file);
     if (!error) {
       try {

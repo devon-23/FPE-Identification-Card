@@ -13,7 +13,7 @@
 
   var nameEl    = document.getElementById('name');
   var photoEl   = document.getElementById('photo');
-  var consentEl = document.getElementById('consent');
+  var consentEl = document.getElementById('consent');   // absent when storage is off
   var consentBox = form.querySelector('.consent');
   var pickBtn   = form.querySelector('[data-action="pick"]');
   var dropBtn   = form.querySelector('[data-action="drop"]');
@@ -177,7 +177,7 @@
     submitBtn.disabled = true;
     say(mode === 'amend' ? 'FILING AMENDMENT…' : 'FILING RECORD…');
 
-    var consented = photoBlob && consentEl.checked;
+    var consented = !!(photoBlob && consentEl && consentEl.checked);
 
     var body = new FormData();
     body.append('name', nameEl.value);
@@ -189,7 +189,7 @@
     // A photo the user did not consent to publish is never attached.
     if (consented) body.append('photo', photoBlob, id + '.jpg');
 
-    var keepLocal = photoBlob && !consentEl.checked
+    var keepLocal = photoBlob && !consented
       ? blobToDataURL(photoBlob).then(function (d) { photoDataURL = d; })
       : Promise.resolve();
 

@@ -43,13 +43,18 @@ export async function onRequestPost({ request, params, env }) {
   const file = form.get('photo');
 
   if (intent === 'remove') {
-    if (rec.photo_key) { try { await env.PHOTOS.delete(rec.photo_key); } catch {} }
+    if (rec.photo_key && env.PHOTOS) { try { await env.PHOTOS.delete(rec.photo_key); } catch {} }
     await env.DB.prepare('UPDATE records SET photo_key = NULL WHERE id = ?').bind(id).run();
   } else if (file && typeof file.arrayBuffer === 'function') {
+    if (!env.PHOTOS) return json({ error: 'IMAGE STORAGE IS UNAVAILABLE.' }, 503);
     const { bytes, error } = await readJpeg(file);
     if (error) return json({ error }, 400);
-    const key = await putPhoto(env.PHOTOS, id, bytes);
-    await env.DB.prepare('UPDATE records SET photo_key = ? WHERE id = ?').bind(key, id).run();
+    try {
+      const key = await putPhoto(env.PHOTOS, id, bytes);
+      await env.DB.prepare('UPDATE records SET photo_key = ? WHERE id = ?').bind(key, id).run();
+    } catch {
+      return json({ error: 'THE IMAGE COULD NOT BE STORED.' }, 502);
+    }
   }
 
   return json({ ok: true, next: `/f/${id}` });
