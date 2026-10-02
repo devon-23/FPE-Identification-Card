@@ -35,7 +35,7 @@ export function spread(text) {
     .join('');
 }
 
-export function layout({ title, body, bodyClass = '', mastLeft = null, hideAll = false }) {
+export function layout({ title, body, bodyClass = '' }) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -48,10 +48,6 @@ export function layout({ title, body, bodyClass = '', mastLeft = null, hideAll =
 </head>
 <body class="${escapeHtml(bodyClass)}">
 <div class="sheet">
-  <header class="masthead">
-    ${hideAll ? '' : '<a class="masthead__all" href="/">ALL RECORDS</a>'}
-    <span class="bureau">${escapeHtml(mastLeft ?? FORM.bureau)}</span>
-  </header>
 ${body}
   <footer class="colophon">
     <p>UNOFFICIAL FAN-MADE RECORD. NOT AFFILIATED WITH ANY ARTIST OR LABEL.</p>

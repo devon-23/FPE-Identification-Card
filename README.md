@@ -259,7 +259,11 @@ Four fields are the claimant's and all are optional:
 
 The card carries only **name, citizen ID, bishop and escape attempt** beside
 the photograph, plus the chosen line and the designation. Everything else is
-in the attached file.
+in the attached file, which sits below the civil notice.
+
+A claimant may pick their own bishop from the nine; the field is pre-set to
+the one the archive assigned, so leaving it alone keeps that assignment. The
+lit section of the city follows the choice as it is made.
 
 The citizen ID (`847986011_98`) is derived from the designation rather than
 stored -- the same number every time, on every device, unique across the set,
@@ -268,6 +272,7 @@ with no column to migrate.
 | Field | Where it lands | Blank becomes |
 |---|---|---|
 | Shows attended | card, `ESCAPE ATTEMPT` | `01` |
+| Bishop | card, `BISHOP ASSIGNED` | the assigned one |
 | A line that means something | card, under the facts | `[REDACTED]` |
 | Handle | attached file, `ALIAS` | `[REDACTED]` |
 | First show year | attached file, `FIRST BREACH` | `[REDACTED]` |

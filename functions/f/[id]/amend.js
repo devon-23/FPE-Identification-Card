@@ -1,6 +1,7 @@
 import { normalizeId } from '../../_lib/record.js';
 import { normalizeFaction } from '../../_lib/card.js';
-import { cleanName, cleanHandle, cleanHometown, cleanBio, cleanAttempts, cleanLyric, cleanFirstShow } from '../../_lib/sanitize.js';
+import { BISHOPS } from '../../_lib/lore.js';
+import { cleanName, cleanHandle, cleanHometown, cleanBio, cleanAttempts, cleanLyric, cleanFirstShow, cleanBishop } from '../../_lib/sanitize.js';
 import { ownsRecord } from '../../_lib/auth.js';
 import { readJpeg, putPhoto } from '../../_lib/photo.js';
 import { getRecord } from '../../_lib/db.js';
@@ -38,15 +39,16 @@ export async function onRequestPost({ request, params, env }) {
   const attempts = cleanAttempts(form.get('attempts'));
   const firstShow = cleanFirstShow(form.get('firstShow'));
   const lyric = cleanLyric(form.get('lyric'));
+  const bishop = cleanBishop(form.get('bishop'), BISHOPS);
   const now = new Date().toISOString();
 
   await env.DB.prepare(`
     UPDATE records SET name = ?, name_assigned = ?, faction = ?,
-           handle = ?, hometown = ?, bio = ?, attempts = ?, first_show = ?, lyric = ?, updated_at = ?
+           handle = ?, hometown = ?, bio = ?, attempts = ?, first_show = ?, lyric = ?, bishop = ?, updated_at = ?
      WHERE id = ?
   `).bind(
     name || null, name ? 0 : 1, faction,
-    handle || null, hometown || null, bio || null, attempts, firstShow, lyric || null, now, id
+    handle || null, hometown || null, bio || null, attempts, firstShow, lyric || null, bishop, now, id
   ).run();
 
   // photo: 'keep' (default), 'remove', or a new file.

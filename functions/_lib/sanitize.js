@@ -51,6 +51,13 @@ export function cleanHandle(input) {
   return kept.slice(0, HANDLE_MAX);
 }
 
+/** A bishop the claimant picked. Anything not on the list falls back to null,
+ *  which means "leave the assigned one in place". */
+export function cleanBishop(input, bishops) {
+  const v = String(input == null ? '' : input).trim().toUpperCase();
+  return bishops.indexOf(v) === -1 ? null : v;
+}
+
 /** Year of their first show. Anything outside living memory is dropped. */
 export function cleanFirstShow(input) {
   const n = parseInt(String(input == null ? '' : input).trim(), 10);

@@ -62,6 +62,11 @@ function filedAt(iso) {
   return `${demaDate(d)} · ${p(d.getUTCHours())}${p(d.getUTCMinutes())}`;
 }
 
+/** Back to the incident report the whole set belongs to. */
+function returnLink() {
+  return h`<p class="backlink"><a href="/">&larr; INCIDENT REPORT ${FORM.statute}</a></p>`;
+}
+
 export function renderUnregistered(id, { claimingOpen = true } = {}) {
   const card = renderCard({ id, status: 'UNREGISTERED' });
   const action = claimingOpen
@@ -72,6 +77,7 @@ export function renderUnregistered(id, { claimingOpen = true } = {}) {
     ${raw(card)}
     <p class="note">THIS DESIGNATION HAS NOT BEEN CLAIMED.<br>THE FIRST SUBJECT TO REGISTER HOLDS IT.</p>
     ${raw(String(action))}
+    ${raw(returnLink())}
   </main>`;
   return layout({
     title: `FPE-${id} — UNREGISTERED`, body, bodyClass: 'page-record',
@@ -125,8 +131,9 @@ export function renderRecord(rec, { rank = null } = {}) {
       <button class="button button--primary" type="button" data-action="save">SAVE CARD</button>
       <a class="button" href="/f/${rec.id}/register" data-owner-only hidden>AMEND RECORD</a>
     </p>
-    ${raw(dossier(rec, rank))}
     ${raw(civilNotice(rec))}
+    ${raw(dossier(rec, rank))}
+    ${raw(returnLink())}
   </main>
   <script src="/record.js" defer></script>`;
 

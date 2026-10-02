@@ -18,6 +18,7 @@
   var bioEl       = document.getElementById('bio');
   var lyricEl     = document.getElementById('lyric');
   var firstShowEl = document.getElementById('firstShow');
+  var bishopEl    = document.getElementById('bishop');
   var photoEl   = document.getElementById('photo');
   var consentEl = document.getElementById('consent');   // absent when storage is off
   var consentBox = form.querySelector('.consent');
@@ -32,6 +33,7 @@
   var slotHometown = card.querySelector('[data-slot="hometown"]');
   var slotLyric     = card.querySelector('[data-slot="lyric"]');
   var slotFirstShow = card.querySelector('[data-slot="firstShow"]');
+  var slotBishop    = card.querySelector('[data-slot="bishop"]');
   var REDACTED = '[REDACTED]';
   var plate       = card.querySelector('.card__plate');
 
@@ -114,10 +116,23 @@
     slotAttempts.textContent = String(n).padStart(2, '0');
   }
 
+  // Picking a bishop moves the lit section of the city with it.
+  function paintBishop() {
+    var v = bishopEl.value;
+    slotBishop.textContent = v;
+    var lit = bishopEl.selectedIndex;
+    var segs = card.querySelectorAll('.mark__wall');
+    for (var i = 0; i < segs.length; i++) {
+      segs[i].classList.toggle('mark__wall--lit', Number(segs[i].getAttribute('data-seg')) === lit);
+    }
+    card.setAttribute('data-bishop', String(lit));
+  }
+
   function paintAll() {
     paintName();
     paintFaction();
     paintAttempts();
+    paintBishop();
     paintOptional(handleEl, slotHandle, function (v) { return '@' + v.replace(/^@+/, ''); });
     paintOptional(hometownEl, slotHometown);
     paintOptional(lyricEl, slotLyric);
@@ -126,6 +141,7 @@
 
   nameEl.addEventListener('input', paintName);
   attemptsEl.addEventListener('input', paintAttempts);
+  bishopEl.addEventListener('change', paintBishop);
   handleEl.addEventListener('input', function () {
     paintOptional(handleEl, slotHandle, function (v) { return '@' + v.replace(/^@+/, ''); });
   });
@@ -231,6 +247,7 @@
     body.append('bio', bioEl.value);
     body.append('lyric', lyricEl.value);
     body.append('firstShow', firstShowEl.value);
+    body.append('bishop', bishopEl.value);
     if (mode === 'amend') {
       body.append('token', token);
       body.append('photo_action', removePhoto ? 'remove' : (consented ? 'replace' : 'keep'));

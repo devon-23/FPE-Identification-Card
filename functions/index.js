@@ -65,7 +65,5 @@ export async function onRequestGet({ env }) {
     title: `DMAORG — INCIDENT RPT ${FORM.statute}`,
     body,
     bodyClass: 'page-index',
-    mastLeft: 'DEMA ARCHIVES',
-    hideAll: true,
   }), { headers: { 'cache-control': 'public, max-age=30' } });
 }

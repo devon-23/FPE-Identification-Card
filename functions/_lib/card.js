@@ -4,7 +4,7 @@
 // public/claim.js for the live preview, so both share one markup contract.
 
 import { h, raw, spread } from './html.js';
-import { generate, assignedDesignation, citizenId } from './lore.js';
+import { generate, assignedDesignation, citizenId, BISHOPS } from './lore.js';
 import { cityMark } from './glyph.js';
 import { EVENT, FORM, demaDate } from './config.js';
 
@@ -47,6 +47,12 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
   const attempts = rec.attempts ? String(rec.attempts).padStart(2, '0') : '01';
   const lyric = rec.lyric || '';
 
+  // A claimant may pick their bishop; otherwise the assigned one stands.
+  const bishopIdx = rec.bishop && BISHOPS.indexOf(rec.bishop) !== -1
+    ? BISHOPS.indexOf(rec.bishop)
+    : g.bishopIdx;
+  const bishop = BISHOPS[bishopIdx];
+
   const venue = rec.location || EVENT.venue;
   const city = rec.city || EVENT.city;
   const date = showDate(rec.event_date);
@@ -58,10 +64,10 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
     preview ? 'card--preview' : '',
   ].filter(Boolean).join(' ');
 
-  return h`<article class="${raw(classes)}" data-fpe="${id}" data-bishop="${raw(String(g.bishopIdx))}">
+  return h`<article class="${raw(classes)}" data-fpe="${id}" data-bishop="${raw(String(bishopIdx))}">
     <p class="card__letterhead spread" data-plain="${FORM.letterhead}">${raw(spread(FORM.letterhead))}</p>
 
-    <div class="card__seal">${raw(cityMark(g.bishopIdx))}</div>
+    <div class="card__seal">${raw(cityMark(bishopIdx))}</div>
 
     <header class="card__head">
       <p class="card__charge">
@@ -80,7 +86,7 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
       <dl class="card__facts">
         ${raw(`<div class="fact fact--name"><dd data-slot="name">${h`${name}`}</dd><dt>NAME</dt></div>`)}
         ${raw(fact('CITIZEN ID', h`${citizenId(id)}`, null, 'fact--id'))}
-        ${raw(fact('BISHOP', h`${g.bishop}`))}
+        ${raw(fact('BISHOP ASSIGNED', h`${bishop}`, 'bishop'))}
         ${raw(fact('ESCAPE ATTEMPT', h`${attempts}`, 'attempts'))}
       </dl>
     </div>

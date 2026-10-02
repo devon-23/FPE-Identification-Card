@@ -29,7 +29,7 @@ function loginPage(message, status = 200, extraHeaders = {}) {
     </form>
   </main>`;
   return htmlResponse(
-    layout({ title: 'ADMIN', body, bodyClass: 'page-admin', mastLeft: 'RESTRICTED' }),
+    layout({ title: 'ADMIN', body, bodyClass: 'page-admin' }),
     { status, headers: { 'cache-control': 'no-store', ...extraHeaders } }
   );
 }

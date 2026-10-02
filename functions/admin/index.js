@@ -72,6 +72,5 @@ export async function onRequestGet({ request, env }) {
   return htmlResponse(layout({
     title: `ADMIN — ${claimed}/${SET_SIZE}`,
     body, bodyClass: 'page-admin',
-    mastLeft: 'RESTRICTED',
   }), { headers: { 'cache-control': 'no-store' } });
 }

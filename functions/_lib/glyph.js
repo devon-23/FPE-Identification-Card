@@ -37,7 +37,7 @@ export function cityMark(bishopIdx, { className = 'mark', allLit = false } = {})
     const a0 = i * step + origin + gap / 2;
     const a1 = (i + 1) * step + origin - gap / 2;
     const lit = allLit || i === bishopIdx ? ' mark__wall--lit' : '';
-    sections.push(`<path class="mark__wall${lit}" d="${block(CX, CY, R0, R1, a0, a1)}"/>`);
+    sections.push(`<path class="mark__wall${lit}" data-seg="${i}" d="${block(CX, CY, R0, R1, a0, a1)}"/>`);
   }
 
   return `<svg class="${className}" viewBox="0 0 100 100" aria-hidden="true" focusable="false">

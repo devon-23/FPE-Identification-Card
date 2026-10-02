@@ -1,6 +1,7 @@
 import { h, raw, layout, htmlResponse } from '../../_lib/html.js';
 import { normalizeId } from '../../_lib/record.js';
 import { renderCard, normalizeFaction } from '../../_lib/card.js';
+import { BISHOPS, generate } from '../../_lib/lore.js';
 import { getRecord, getSetting } from '../../_lib/db.js';
 import { NAME_MAX, HANDLE_MAX, HOMETOWN_MAX, BIO_MAX, ATTEMPTS_MAX, LYRIC_MAX, FIRST_SHOW_MIN, FIRST_SHOW_MAX } from '../../_lib/sanitize.js';
 import { SET_SIZE, FORM } from '../../_lib/config.js';
@@ -35,6 +36,11 @@ export async function onRequestGet({ request, params, env }) {
   const v = claimed ? rec : {};
   const val = (x) => (x === null || x === undefined ? '' : String(x));
 
+  // Pre-selected to whichever bishop the record was assigned, so leaving the
+  // field alone keeps the assignment the archive made.
+  const assigned = generate(id).bishop;
+  const chosen = (claimed && rec.bishop) || assigned;
+
   const body = h`  <main class="stage maker" data-fpe="${id}" data-mode="${raw(claimed ? 'amend' : 'claim')}" data-photos="${raw(canPublishPhotos ? 'server' : 'device')}">
     ${raw(card)}
 
@@ -64,6 +70,13 @@ export async function onRequestGet({ request, params, env }) {
         <input class="form__input" id="firstShow" name="firstShow" type="number"
                inputmode="numeric" min="${String(FIRST_SHOW_MIN)}" max="${String(FIRST_SHOW_MAX)}" step="1"
                autocomplete="off" placeholder="2019" value="${val(v.first_show)}">
+      </div>
+
+      <div class="form__row">
+        <label class="form__label" for="bishop">BISHOP ASSIGNED</label>
+        <select class="form__input form__select" id="bishop" name="bishop">
+          ${raw(BISHOPS.map((b) => `<option value="${b}"${b === chosen ? ' selected' : ''}>${b}</option>`).join(''))}
+        </select>
       </div>
 
       <div class="form__row">
