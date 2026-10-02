@@ -22,11 +22,10 @@ function field(label, value) {
 /** The bureaucratic dossier that sits under the card. */
 function dossier(rec) {
   const g = generate(rec.id);
+  // Name, bishop, sector and attempt are already on the card; repeating them
+  // here just pads the page. This is only what the card has no room for.
   const rows = [
     field('DISTRICT', g.district),
-    field('SECTOR', g.sector),
-    field('BISHOP ASSIGNED', g.bishop),
-    field('ESCAPE ATTEMPT', g.attempt),
     field('METHOD', g.method),
     field('ALLEGIANCE DECLARED', normalizeFaction(rec.faction)),
     field('ESCAPE LOCATION', `${rec.location || EVENT.venue}, ${rec.city || EVENT.city}`),

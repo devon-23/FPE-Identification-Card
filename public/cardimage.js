@@ -1,58 +1,57 @@
 // Renders the card to a PNG for saving or sharing.
 //
 // Loaded on demand, never on a plain record view -- a record page stays a
-// ~4 KB no-JavaScript document. Everything drawn here is read back out of the
+// ~1 KB no-JavaScript document. Every value is read back out of the rendered
 // DOM, so the image cannot drift from the card on screen.
 (function () {
   'use strict';
 
   var MONO = 'ui-monospace, "SF Mono", Menlo, "Roboto Mono", Consolas, monospace';
 
-  // The CSS card is 328px wide; drawing at 3.3x gives a crisp 1082px export
-  // and lets every measurement below be the CSS pixel value.
-  var S = 3.3;
-  var CW = 328;
-  var GUTTER = 12;
+  // The CSS card is 360px wide; 3x gives a 1080px export and lets every
+  // measurement below be the CSS pixel value.
+  var S = 3;
+  var CW = 360;
+  var PAD = 16;
 
-  var INK = '#16150f';
-  var STOCK = '#e9e5d9';
-  var STOCK_HI = '#f3f0e7';
-  var OCHRE = '#d8a52b';
-  var PLATE = '#121108';
-  var SOFT = '#6c685c';
+  var CARD  = '#121211';
+  var BLACK = '#000';
+  var INK   = '#e7e3d7';
+  var DIM   = '#8b8678';
+  var FAINT = '#4a463d';
+  var LINE  = '#2b2924';
+  var GOLD  = '#c9a227';
+
+  var SEGMENTS = 18;
 
   function px(v) { return v * S; }
+  function font(weight, size) { return weight + ' ' + px(size) + 'px ' + MONO; }
 
-  function font(weight, size) {
-    return weight + ' ' + px(size) + 'px ' + MONO;
-  }
-
-  /**
-   * Fit text to a width. Sizes in and out are CSS pixels; font() applies the
-   * scale. Prefers breaking a long name over two lines to shrinking it away.
-   */
-  function fitLines(ctx, text, maxWidth, size, weight, minSize, allowTwo) {
+  /** Fit text to a width. Sizes are CSS pixels; font() applies the scale. */
+  function fitLines(ctx, text, maxWidth, size, weight, minSize, maxLines) {
     var s = size;
     ctx.font = font(weight, s);
     if (ctx.measureText(text).width <= maxWidth) return { lines: [text], size: s };
 
-    if (allowTwo && text.indexOf(' ') > -1) {
-      var words = text.split(' ');
-      var best = null;
-      for (var i = 1; i < words.length; i++) {
-        var a = words.slice(0, i).join(' ');
-        var b = words.slice(i).join(' ');
-        var w = Math.max(ctx.measureText(a).width, ctx.measureText(b).width);
-        if (!best || w < best.w) best = { a: a, b: b, w: w };
-      }
-      if (best) {
-        var t = s;
-        while (t > minSize) {
-          ctx.font = font(weight, t);
-          if (Math.max(ctx.measureText(best.a).width, ctx.measureText(best.b).width) <= maxWidth) break;
-          t -= 1;
+    if (maxLines > 1) {
+      var words = text.split(/\s+/);   // spaces only: splitting on '-' would eat it
+      if (words.length > 1) {
+        var best = null;
+        for (var i = 1; i < words.length; i++) {
+          var a = words.slice(0, i).join(' ');
+          var b = words.slice(i).join(' ');
+          var w = Math.max(ctx.measureText(a).width, ctx.measureText(b).width);
+          if (!best || w < best.w) best = { a: a, b: b, w: w };
         }
-        return { lines: [best.a, best.b], size: t };
+        if (best) {
+          var t = s;
+          while (t > minSize) {
+            ctx.font = font(weight, t);
+            if (Math.max(ctx.measureText(best.a).width, ctx.measureText(best.b).width) <= maxWidth) break;
+            t -= 1;
+          }
+          return { lines: [best.a, best.b], size: t };
+        }
       }
     }
 
@@ -64,23 +63,53 @@
     return { lines: [text], size: s };
   }
 
-  function centred(ctx, text, cx, y) {
-    ctx.textAlign = 'center';
-    ctx.fillText(text, cx, y);
-  }
+  function centred(ctx, text, cx, y) { ctx.textAlign = 'center'; ctx.fillText(text, cx, y); }
 
-  /** Grayscale + contrast done by hand: ctx.filter is unreliable on older iOS. */
+  /** Grayscale + contrast by hand: ctx.filter is unreliable on older iOS. */
   function desaturate(ctx, x, y, w, h) {
     var img = ctx.getImageData(x, y, w, h);
     var d = img.data;
-    var contrast = 1.35, brightness = 0.92;
     for (var i = 0; i < d.length; i += 4) {
       var g = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
-      g = ((g - 128) * contrast + 128) * brightness;
-      g = g < 0 ? 0 : g > 255 ? 255 : g;
-      d[i] = d[i + 1] = d[i + 2] = g;
+      g = ((g - 128) * 1.3 + 128) * 0.86;
+      d[i] = d[i + 1] = d[i + 2] = g < 0 ? 0 : g > 255 ? 255 : g;
     }
     ctx.putImageData(img, x, y);
+  }
+
+  /** The perimeter mark, matching glyph.js. */
+  function drawMark(ctx, cx, cy, size, breach, showBreach, wallColour, edgeColour) {
+    var R1 = size * 0.43, R0 = size * 0.27, RI = size * 0.21;
+    var step = (Math.PI * 2) / SEGMENTS;
+    var gap = step * 0.22;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, RI, 0, Math.PI * 2);
+    ctx.strokeStyle = FAINT;
+    ctx.lineWidth = Math.max(1, size * 0.01);
+    ctx.stroke();
+
+    ctx.fillStyle = wallColour;
+    for (var i = 0; i < SEGMENTS; i++) {
+      if (showBreach && i === breach) continue;
+      var a0 = i * step - Math.PI / 2 + gap / 2;
+      var a1 = (i + 1) * step - Math.PI / 2 - gap / 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R1, a0, a1);
+      ctx.arc(cx, cy, R0, a1, a0, true);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    if (showBreach) {
+      var a = (breach + 0.5) * step - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(cx + (R0 - size * 0.04) * Math.cos(a), cy + (R0 - size * 0.04) * Math.sin(a));
+      ctx.lineTo(cx + (R1 + size * 0.04) * Math.cos(a), cy + (R1 + size * 0.04) * Math.sin(a));
+      ctx.strokeStyle = edgeColour;
+      ctx.lineWidth = Math.max(1, size * 0.025);
+      ctx.stroke();
+    }
   }
 
   function loadImage(src) {
@@ -89,204 +118,186 @@
       var img = new Image();
       img.onload = function () { resolve(img); };
       img.onerror = function () { resolve(null); };
-      // Same-origin or a data URL either way, so the canvas stays untainted.
-      img.src = src;
+      img.src = src;   // same-origin or a data URL, so the canvas stays clean
     });
   }
 
-  /** Read the rendered card rather than re-deriving it. */
   function readCard(card) {
-    var text = function (sel) {
+    var t = function (sel) {
       var el = card.querySelector(sel);
       return el ? el.textContent.trim() : '';
     };
-    var strip = card.querySelectorAll('.card__strip--bottom span');
-    var meta = card.querySelectorAll('.card__meta span');
+    var strips = card.querySelectorAll('.card__strip span');
+    var facts = card.querySelectorAll('.card__facts .fact');
+    var list = [];
+    for (var i = 1; i < facts.length; i++) {
+      list.push({
+        label: facts[i].querySelector('dt').textContent.trim(),
+        value: facts[i].querySelector('dd').textContent.trim(),
+      });
+    }
     var photo = card.querySelector('.card__photo');
     return {
-      bureau: text('.card__strip--top span'),
-      formcode: card.querySelectorAll('.card__strip--top span')[1].textContent.trim(),
-      name: text('.card__name'),
-      pillLabel: text('.card__pill span'),
-      pill: text('.card__pill').replace(text('.card__pill span'), '').trim(),
-      designation: text('.card__designation'),
-      sector: meta[0] ? meta[0].textContent.trim() : '',
-      attempt: meta[1] ? meta[1].textContent.trim() : '',
-      faction: text('.card__faction'),
-      line1: strip[0] ? strip[0].textContent.trim() : '',
-      line2: strip[1] ? strip[1].textContent.trim() : '',
+      bureau: strips[0] ? strips[0].textContent.trim() : '',
+      form: strips[1] ? strips[1].textContent.trim() : '',
+      kicker: t('.card__kicker'),
+      where: t('.card__where'),
+      when: t('.card__when'),
+      designation: t('.card__designation'),
+      name: t('.fact--name dd'),
+      facts: list,
+      standing: strips[2] ? strips[2].textContent.trim() : 'IF FOUND, RETURN TO DEMA',
+      faction: t('.card__faction'),
       photoSrc: photo ? photo.src : null,
       bandito: card.classList.contains('card--bandito'),
+      blank: card.classList.contains('card--blank'),
+      breach: parseInt(card.getAttribute('data-breach') || '0', 10),
     };
   }
 
   function draw(d, photo) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
-    var plateSize = CW - GUTTER * 2 - 10;      // frame border 2 + padding 3, both sides
-    var accent = d.bandito ? OCHRE : SOFT;
+    var edge = d.bandito ? GOLD : DIM;
+    var inner = CW - PAD * 2;
+    var plateW = inner * 0.38;
+    var plateH = plateW * 1.25;
+    var factsX = PAD + plateW + 12;
+    var factsW = inner - plateW - 12;
 
-    // --- measure the name first; it decides the card's height -------------
-    canvas.width = px(CW); canvas.height = px(600);
-    ctx.font = font('700', 24);
-    var nameFit = fitLines(ctx, d.name, px(CW - 28), 24, '700', 11, true);
+    // Measure the name first; it can take two lines and decide the height.
+    canvas.width = px(CW); canvas.height = px(800);
+    ctx.font = font('700', 15);
+    var nameFit = fitLines(ctx, d.name, px(factsW), 15, '700', 9, 2);
 
-    var topH = 23;
-    var nameBlock = 12 + nameFit.lines.length * (nameFit.size * 1.08) + 6;
-    var pillH = 19 + 12;
-    var frameH = plateSize + 10;
-    var metaH = 8 + 13 + 12;
-    var botH = 38;
-    var cardH = topH + nameBlock + pillH + frameH + metaH + botH;
+    var factsH = nameFit.lines.length * 17 + 10 + 8;
+    for (var i = 0; i < d.facts.length; i++) factsH += 10 + 17 + 8;
+    var bodyH = Math.max(plateH, factsH);
+
+    var H = 24 + 18 + 13 + 6 + 13 + 2 + 13 + 10 + 44 + 12 + 68 + 14 + bodyH + 18 + 24;
 
     canvas.width = Math.round(px(CW));
-    canvas.height = Math.round(px(cardH));
+    canvas.height = Math.round(px(H));
     ctx = canvas.getContext('2d');
-    ctx.textBaseline = 'alphabetic';
+
+    ctx.fillStyle = CARD;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     var cx = canvas.width / 2;
     var y = 0;
 
-    // --- card stock --------------------------------------------------------
-    ctx.fillStyle = STOCK;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // --- top strip ---------------------------------------------------------
-    ctx.fillStyle = INK;
-    ctx.fillRect(0, 0, canvas.width, px(topH));
-    ctx.fillStyle = STOCK;
-    ctx.font = font('400', 9);
+    // top strip
+    ctx.fillStyle = BLACK;
+    ctx.fillRect(0, 0, canvas.width, px(24));
+    ctx.fillStyle = LINE;
+    ctx.fillRect(0, px(23), canvas.width, Math.max(1, px(1)));
+    ctx.fillStyle = DIM;
+    ctx.font = font('400', 8);
     ctx.textAlign = 'left';
-    ctx.fillText(d.bureau, px(10), px(15.5));
+    ctx.fillText(d.bureau, px(11), px(15.5));
     ctx.textAlign = 'right';
-    ctx.fillText(d.formcode, canvas.width - px(10), px(15.5));
-    y = topH;
+    ctx.fillText(d.form, canvas.width - px(11), px(15.5));
+    y = 24;
 
-    // --- name --------------------------------------------------------------
-    ctx.fillStyle = INK;
-    ctx.font = font('700', nameFit.size);
-    var lineH = nameFit.size * 1.08;
-    for (var i = 0; i < nameFit.lines.length; i++) {
-      centred(ctx, nameFit.lines[i], cx, px(y + 12 + lineH * (i + 0.82)));
-    }
-    y += nameBlock;
-
-    // --- bishop pill -------------------------------------------------------
+    // header
+    ctx.fillStyle = DIM;
     ctx.font = font('400', 9);
-    var labelW = ctx.measureText(d.pillLabel + ' ').width;
-    var valueW = ctx.measureText(d.pill).width;
-    var pillW = labelW + valueW + px(24);
-    var pillX = cx - pillW / 2;
-    ctx.fillStyle = INK;
-    ctx.fillRect(pillX, px(y), pillW, px(19));
-    ctx.textAlign = 'left';
-    ctx.fillStyle = OCHRE;
-    ctx.fillText(d.pillLabel, pillX + px(12), px(y + 13.5));
-    ctx.fillStyle = STOCK;
-    ctx.fillText(d.pill, pillX + px(12) + labelW, px(y + 13.5));
-    y += pillH;
+    centred(ctx, d.kicker, cx, px(y + 18 + 9));
+    ctx.fillStyle = FAINT;
+    var whereFit = fitLines(ctx, d.where, px(inner), 9, '400', 6, 1);
+    ctx.font = font('400', whereFit.size);
+    centred(ctx, d.where, cx, px(y + 18 + 9 + 6 + 13));
+    ctx.font = font('400', 9);
+    centred(ctx, d.when, cx, px(y + 18 + 9 + 6 + 13 + 2 + 13));
+    y += 18 + 13 + 6 + 13 + 2 + 13;
 
-    // --- photo frame -------------------------------------------------------
-    var fx = px(GUTTER), fy = px(y);
-    ctx.fillStyle = accent;
-    ctx.fillRect(fx, fy, px(CW - GUTTER * 2), px(plateSize + 10));
-    ctx.fillStyle = PLATE;
-    ctx.fillRect(fx + px(2), fy + px(2), px(CW - GUTTER * 2 - 4), px(plateSize + 6));
+    // the number
+    ctx.fillStyle = d.blank ? DIM : INK;
+    var dFit = fitLines(ctx, d.designation, px(inner), 44, '700', 24, 1);
+    ctx.font = font('700', dFit.size);
+    centred(ctx, d.designation, cx, px(y + 10 + 38));
+    y += 10 + 44;
 
-    var pxx = fx + px(5), pyy = fy + px(5), pss = px(plateSize);
-    ctx.fillStyle = PLATE;
-    ctx.fillRect(pxx, pyy, pss, pss);
+    // the mark
+    drawMark(ctx, cx, px(y + 12 + 34), px(68),
+             d.breach, !d.blank, d.bandito ? GOLD : (d.blank ? FAINT : INK), edge);
+    y += 12 + 68 + 14;
+
+    // photo well
+    var plx = px(PAD), ply = px(y), plw = px(plateW), plh = px(plateH);
+    ctx.fillStyle = BLACK;
+    ctx.fillRect(plx, ply, plw, plh);
 
     if (photo) {
       var side = Math.min(photo.naturalWidth, photo.naturalHeight);
-      ctx.drawImage(photo,
-        (photo.naturalWidth - side) / 2, (photo.naturalHeight - side) / 2, side, side,
-        pxx, pyy, pss, pss);
-      desaturate(ctx, Math.round(pxx), Math.round(pyy), Math.round(pss), Math.round(pss));
+      var sx = (photo.naturalWidth - side) / 2;
+      var sy = (photo.naturalHeight - side) / 2;
+      // cover a 4:5 well from a square source
+      var srcH = side, srcW = side * 0.8;
+      ctx.drawImage(photo, sx + (side - srcW) / 2, sy, srcW, srcH, plx, ply, plw, plh);
+      desaturate(ctx, Math.round(plx), Math.round(ply), Math.round(plw), Math.round(plh));
     } else {
-      ctx.fillStyle = '#302d20';
-      var hr = pss * 0.075;
+      ctx.fillStyle = '#1e1c18';
+      var hc = plx + plw / 2;
       ctx.beginPath();
-      ctx.arc(pxx + pss / 2, pyy + pss * 0.235, hr, 0, Math.PI * 2);
+      ctx.arc(hc, ply + plh * 0.36, plw * 0.155, 0, Math.PI * 2);
       ctx.fill();
       ctx.beginPath();
-      ctx.moveTo(pxx + pss * 0.33, pyy + pss * 0.58);
-      ctx.arc(pxx + pss / 2, pyy + pss * 0.455, pss * 0.17, Math.PI, 0);
-      ctx.lineTo(pxx + pss * 0.67, pyy + pss * 0.58);
+      ctx.moveTo(hc - plw * 0.32, ply + plh * 0.78);
+      ctx.arc(hc, ply + plh * 0.62, plw * 0.32, Math.PI, 0);
+      ctx.lineTo(hc + plw * 0.32, ply + plh * 0.78);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = '#4a4634';
-      ctx.font = font('400', 9);
-      centred(ctx, 'NO IMAGE ON FILE', pxx + pss / 2, pyy + pss * 0.66);
+      ctx.fillStyle = '#332f28';
+      ctx.font = font('400', 7);
+      centred(ctx, 'NO IMAGE', hc, ply + plh - px(6));
+    }
+    ctx.strokeStyle = LINE;
+    ctx.lineWidth = Math.max(1, px(1));
+    ctx.strokeRect(plx, ply, plw, plh);
+
+    // facts column
+    var fy = y;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = FAINT;
+    ctx.font = font('400', 7);
+    ctx.fillText('NAME', px(factsX), px(fy + 7));
+    ctx.fillStyle = d.blank ? DIM : INK;
+    ctx.font = font('700', nameFit.size);
+    for (var n = 0; n < nameFit.lines.length; n++) {
+      ctx.fillText(nameFit.lines[n], px(factsX), px(fy + 10 + 14 + n * 17));
+    }
+    fy += 10 + nameFit.lines.length * 17 + 8;
+
+    for (var k = 0; k < d.facts.length; k++) {
+      ctx.fillStyle = FAINT;
+      ctx.font = font('400', 7);
+      ctx.fillText(d.facts[k].label, px(factsX), px(fy + 7));
+      ctx.fillStyle = INK;
+      var vFit = fitLines(ctx, d.facts[k].value, px(factsW), 12, '400', 8, 1);
+      ctx.font = font('400', vFit.size);
+      ctx.fillText(d.facts[k].value, px(factsX), px(fy + 10 + 13));
+      fy += 10 + 17 + 8;
     }
 
-    // scrim under the designation
-    var grad = ctx.createLinearGradient(0, pyy + pss * 0.48, 0, pyy + pss);
-    grad.addColorStop(0, 'rgba(10,9,4,0)');
-    grad.addColorStop(0.65, 'rgba(10,9,4,0.94)');
-    grad.addColorStop(1, 'rgba(10,9,4,0.94)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(pxx, pyy + pss * 0.48, pss, pss * 0.52);
+    y += bodyH + 18;
 
-    ctx.fillStyle = d.bandito ? OCHRE : STOCK_HI;
-    var dFit = fitLines(ctx, d.designation, pss * 0.88, 38, '700', 20, false);
-    ctx.font = font('700', dFit.size);
-    centred(ctx, d.designation, pxx + pss / 2, pyy + pss - px(6));
-    y += frameH;
-
-    // --- meta row ----------------------------------------------------------
-    ctx.font = font('400', 9);
-    ctx.fillStyle = SOFT;
-    ctx.textAlign = 'left';
-    ctx.fillText(d.sector, px(GUTTER), px(y + 16));
-    ctx.textAlign = 'center';
-    ctx.fillText(d.attempt, cx, px(y + 16));
-    ctx.textAlign = 'right';
-    ctx.fillStyle = d.bandito ? '#9a7415' : INK;
-    ctx.font = font('700', 9);
-    ctx.fillText(d.faction, canvas.width - px(GUTTER), px(y + 16));
-    y += metaH;
-
-    // --- bottom strip ------------------------------------------------------
-    ctx.fillStyle = INK;
+    // bottom strip
+    ctx.fillStyle = BLACK;
     ctx.fillRect(0, px(y), canvas.width, canvas.height - px(y));
-    ctx.fillStyle = STOCK;
+    ctx.fillStyle = LINE;
+    ctx.fillRect(0, px(y), canvas.width, Math.max(1, px(1)));
+    ctx.fillStyle = DIM;
     ctx.font = font('400', 8);
-    centred(ctx, d.line1, cx, px(y + 15));
-    var l2 = fitLines(ctx, d.line2, canvas.width - px(16), 8, '400', 5.5, false);
-    ctx.font = font('400', l2.size);
-    centred(ctx, l2.lines[0], cx, px(y + 27));
+    ctx.textAlign = 'left';
+    ctx.fillText(d.standing, px(11), px(y + 15.5));
+    ctx.textAlign = 'right';
+    ctx.fillStyle = edge;
+    ctx.font = font('700', 8);
+    ctx.fillText(d.faction, canvas.width - px(11), px(y + 15.5));
 
     return canvas;
   }
-
-  function toBlob(canvas) {
-    return new Promise(function (resolve) { canvas.toBlob(resolve, 'image/png'); });
-  }
-
-  window.FPECard = {
-    render: function (card) {
-      var d = readCard(card);
-      return loadImage(d.photoSrc).then(function (photo) { return draw(d, photo); });
-    },
-    save: function (card, filename) {
-      return window.FPECard.render(card).then(toBlob).then(function (blob) {
-        if (!blob) throw new Error('render failed');
-        var file = new File([blob], filename, { type: 'image/png' });
-
-        // Best on a phone: the native share sheet, straight into Instagram
-        // or Messages. Falls back to a download, then to opening the image.
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          return navigator.share({ files: [file] }).then(function () { return 'shared'; })
-            .catch(function (e) {
-              if (e && e.name === 'AbortError') return 'cancelled';
-              return download(blob, filename);
-            });
-        }
-        return download(blob, filename);
-      });
-    },
-  };
 
   function download(blob, filename) {
     var url = URL.createObjectURL(blob);
@@ -300,4 +311,30 @@
     window.open(url, '_blank');
     return 'opened';
   }
+
+  window.FPECard = {
+    render: function (card) {
+      var d = readCard(card);
+      return loadImage(d.photoSrc).then(function (photo) { return draw(d, photo); });
+    },
+    save: function (card, filename) {
+      return window.FPECard.render(card)
+        .then(function (c) { return new Promise(function (r) { c.toBlob(r, 'image/png'); }); })
+        .then(function (blob) {
+          if (!blob) throw new Error('render failed');
+          var file = new File([blob], filename, { type: 'image/png' });
+          // Best on a phone: the native share sheet, straight into Instagram
+          // or Messages. Falls back to a download, then to opening the image.
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            return navigator.share({ files: [file] })
+              .then(function () { return 'shared'; })
+              .catch(function (e) {
+                if (e && e.name === 'AbortError') return 'cancelled';
+                return download(blob, filename);
+              });
+          }
+          return download(blob, filename);
+        });
+    },
+  };
 })();

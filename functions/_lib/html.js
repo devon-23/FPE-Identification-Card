@@ -32,7 +32,7 @@ export function layout({ title, body, bodyClass = '', mastLeft = null, mastRight
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="dark">
 <title>${escapeHtml(title)}</title>
 <link rel="stylesheet" href="/styles.css">
 </head>
