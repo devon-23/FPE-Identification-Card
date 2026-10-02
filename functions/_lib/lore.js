@@ -51,12 +51,13 @@ const REMARKS = [
   'NO LONGER WITHIN THE WALL',
   'SINGS WHERE SINGING IS NOT PERMITTED',
   'KNOWN TO OTHERS',
-  'SPEAKS OF THE EAST',
+  'VERIFIED THREAT',
+  'ELEVATED INFLUENCE',
 ];
 
 const RECOMMENDATIONS = [
   'MONITOR. DO NOT OBSTRUCT.',
-  'OBSERVE CLOSELY. SANCTION UNADVISED.',
+  'OBSERVE CLOSELY. POWER LEVELS UNSANCTIONED.',
   'NO FURTHER PURSUIT AUTHORISED.',
   'RECORD AND RELEASE.',
   'CONTAINMENT IMPRACTICAL. FILE RETAINED.',
@@ -87,7 +88,7 @@ const NOTE_CLOSERS = [
 ];
 
 function hash(str) {
-  // FNV-1a. copied this off wikipedia at 2am. do not touch it
+  // FNV-1a. copied this off wikipedia. do not touch it
   let h = 2166136261 >>> 0;
   for (let i = 0; i < str.length; i++) {
     h ^= str.charCodeAt(i);

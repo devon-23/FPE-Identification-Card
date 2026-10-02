@@ -1,8 +1,8 @@
 // Makes one secret per designation, writes the tag URLs and the SQL that
 // teaches the database their hashes.
 //
-// RE-RUNNING THIS INVALIDATES EVERY TAG YOU HAVE ALREADY PROGRAMMED.
-// Run it once, program from the csv it writes, and keep that csv.
+// RE-RUNNING THIS INVALIDATES EVERY TAG ALREADY PROGRAMMED.
+// do not re-run pls 40 tags are already synched
 import { writeFileSync, existsSync } from 'node:fs';
 import { randomBytes, createHash } from 'node:crypto';
 

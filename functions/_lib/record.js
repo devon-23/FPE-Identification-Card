@@ -94,6 +94,14 @@ function filedAt(iso) {
   return `${demaDate(d)} · ${p(d.getUTCHours())}${p(d.getUTCMinutes())}`;
 }
 
+// same banner as the front page, dropped in above the back link
+function restrictedBanner() {
+  return h`<aside class="restricted restricted--inline">
+      <img class="restricted__img" src="/images/restricted.webp"
+           alt="RESTRICTED CONTENT. VIOLATION CODE ${FORM.violation}." width="1027" height="167">
+    </aside>`;
+}
+
 function returnLink() {
   return h`<p class="backlink"><a href="/">&larr; INCIDENT REPORT ${FORM.statute}</a></p>`;
 }
@@ -167,6 +175,7 @@ export function renderRecord(rec, { rank = null } = {}) {
     </p>
     ${raw(civilNotice(rec))}
     ${raw(dossier(rec, rank))}
+    ${raw(restrictedBanner())}
     ${raw(returnLink())}
   </main>
   <script src="/record.js" defer></script>`;

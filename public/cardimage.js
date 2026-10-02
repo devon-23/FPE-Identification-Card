@@ -2,7 +2,7 @@
   'use strict';
 
   var DISPLAY = '"Banknote Gothic", Copperplate, "Copperplate Gothic Light", "Lucida Sans", "Trebuchet MS", sans-serif';
-
+  //lawd let banknote work.
   var S = 3;
   var CW = 360;
   var PAD = 16;

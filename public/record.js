@@ -66,7 +66,7 @@
 })();
 
 // old version of the save button, before the share sheet existed.
-// kept in case ios ever breaks navigator.share again
+// keep in case ios ever breaks navigator.share again
 //
 // function oldSave(canvas, name) {
 //   var a = document.createElement('a');

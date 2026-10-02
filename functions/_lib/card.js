@@ -80,7 +80,7 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
         ${raw(`<div class="fact fact--name"><dd data-slot="name">${h`${name}`}</dd><dt>NAME</dt></div>`)}
         ${raw(fact('CITIZEN ID', h`${citizenId(id)}`, null, 'fact--id'))}
         ${raw(fact('BISHOP ASSIGNED', h`${bishop}`, 'bishop'))}
-        ${raw(fact('ESCAPE ATTEMPT', h`${attempts}`, 'attempts'))}
+        ${raw(fact('ESCAPE ATTEMPTS', h`${attempts}`, 'attempts'))}
       </dl>
     </div>
 

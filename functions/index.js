@@ -51,8 +51,7 @@ export async function onRequestGet({ env }) {
       <img class="restricted__img" src="/images/restricted.webp"
            alt="RESTRICTED CONTENT. VIOLATION CODE ${FORM.violation}." width="1027" height="167">
 
-      <!-- the hand-built version of the banner. swap back by deleting the <img>
-           above and un-commenting this. css for it is still in styles.css
+      <!-- the hand-built version of the banner. 
       <div class="restricted__box">
         <span class="restricted__mark">DMA<br>ORG</span>
         <span class="restricted__shout">RESTRICTED CONTENT</span>
