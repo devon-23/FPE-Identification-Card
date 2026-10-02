@@ -37,7 +37,7 @@ body {
   color: var(--ink);
   /* Lucida Sans Typewriter where it exists; Lucida Console and Monaco are the
      same lineage. No web font -- this has to load on one bar of signal. */
-  font-family: Courier, "Lucida Sans Typewriter", Lucida, monospace;
+  font-family: var(--display);
   font-size: 16px;
   line-height: 1.5;
 }
@@ -671,7 +671,6 @@ details.dossier .fields { padding-bottom: 0.75rem; }
   color: var(--red);
 }
 
-.doc__seal { display: grid; place-items: center; padding: 0.75rem 0 0.5rem; }
 .doc__seal .mark { width: 3rem; height: 3rem; }
 
 .doc__title {
@@ -798,32 +797,8 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
   text-align: justify;
 }
 
-/* ---------- display face + full-measure letterspacing ---------- */
+/* ---------- full-measure letterspacing ---------- */
 
-.card__letterhead,
-.card__foot,
-.card__charge,
-.card__charge b,
-.card__statute,
-.card__place,
-.doc__letterhead,
-.doc__title,
-.doc__date,
-.doc__sub,
-.doc__count,
-.restricted__shout,
-.restricted__mark,
-.restricted__code,
-.restricted__foot,
-.kicker,
-.form__head,
-.dossier__head,
-.fact dt,
-.field dt {
-  font-family: var(--display);
-}
-
-/* Each character is a flex item, so the line fills its measure exactly. */
 .spread {
   display: flex;
   justify-content: space-between;
@@ -897,6 +872,104 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
     border-right: 1px solid var(--hair);
   }
 }
+
+/* ---------- back to the report ---------- */
+
+.backlink {
+  margin: 2rem 0 0;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--ink);
+  font-family: var(--display);
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+}
+
+.backlink a {
+  display: inline-block;
+  padding: 0.5rem 0;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.backlink a:active { color: var(--red); }
+
+/* ---------- bishop select ---------- */
+
+.form__select {
+  text-transform: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position: right 1rem center, right 0.6875rem center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
+}
+
+.doc__seal {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0 0.5rem;
+}
+
+.doc__who {
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  color: var(--red);
+  text-decoration: none;
+  padding: 0.375rem 0;
+}
+
+/* ---------- about ---------- */
+
+.card--about .card__charge b { font-size: 0.75rem; }
+
+.card__bio {
+  margin: 0.25rem 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+  text-align: justify;
+}
+
+.card__contact {
+  display: grid;
+  gap: 0.625rem;
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink);
+}
+
+.card__contact a { color: var(--red); text-decoration: none; }
+.card__contact a:active { text-decoration: underline; }
+
+.sources {
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink);
+}
+
+.sources h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.5rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
+}
+
+.sources ul { margin: 0; padding: 0; list-style: none; }
+
+.sources li {
+  font-size: 0.5625rem;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+  padding: 0.125rem 0;
+}
+
+.sources a { color: var(--red); text-decoration: none; }
+.sources a:visited { color: var(--red); }
 
 /* ---------- back to the report ---------- */
 

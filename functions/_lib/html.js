@@ -1,6 +1,6 @@
 import { FORM } from './config.js';
 
-export function escapeHtml(value) {
+function escapeHtml(value) {
   return String(value == null ? '' : value)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -9,7 +9,6 @@ export function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
-/** Tagged template that escapes every interpolated value. */
 export function h(strings, ...values) {
   return strings.reduce((out, str, i) => {
     if (i >= values.length) return out + str;
@@ -18,17 +17,13 @@ export function h(strings, ...values) {
   }, '');
 }
 
-/** Marks a string as already-safe HTML so `h` leaves it alone. */
 export function raw(html) {
   const s = new String(html);
   s.__safe = true;
   return s;
 }
 
-/**
- * Letterspacing that fills the width exactly. CSS cannot justify between
- * characters reliably across browsers, so each one becomes a flex item.
- */
+// each character becomes a flex item so the line fills its measure
 export function spread(text) {
   return [...String(text)]
     .map((ch) => (ch === ' ' ? '<i></i>' : `<span>${escapeHtml(ch)}</span>`))
@@ -50,8 +45,7 @@ export function layout({ title, body, bodyClass = '' }) {
 <div class="sheet">
 ${body}
   <footer class="colophon">
-    <p>UNOFFICIAL FAN-MADE RECORD. NOT AFFILIATED WITH ANY ARTIST OR LABEL.</p>
-    <p class="colophon__who"><a href="/about">WHO FILED THIS &mdash;&mdash;&mdash;&gt;</a></p>
+    <p>UNOFFICIAL FAN-MADE - NOT AFFILIATED WITH TWENTY ONE PILOTS. MARK PLEASE DON'T BE MAD (again).</p><p class="colophon__who"><a href="/about">WHO FILED THIS &mdash;&mdash;&mdash;&gt;</a></p>
   </footer>
 </div>
 </body>

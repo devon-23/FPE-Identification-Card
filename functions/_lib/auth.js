@@ -15,16 +15,12 @@ export async function hashToken(token) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
-
-/** Length-constant comparison, so a wrong guess leaks no timing signal. */
 export function safeEqual(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
-
-/** True when `token` is the live edit token for `rec`. */
 export async function ownsRecord(rec, token) {
   if (!rec || !rec.token_hash || !token) return false;
   return safeEqual(await hashToken(token), rec.token_hash);

@@ -33,7 +33,10 @@ export async function onRequestGet({ env }) {
 
   const body = h`  <main class="stage doc">
     <p class="doc__letterhead spread">${raw(spread(FORM.letterhead))}</p>
-    <div class="doc__seal">${raw(cityMark(0, { allLit: true }))}</div>
+    <div class="doc__seal">
+      ${raw(cityMark(0, { allLit: true }))}
+      <a class="doc__who" href="/about">WHO FILED THIS &mdash;&mdash;&mdash;&gt;</a>
+    </div>
 
     <h1 class="doc__title">INVESTIGATIVE SUMMARY &mdash; INCIDENT RPT</h1>
     <p class="doc__date">${demaDate(`${EVENT.date}T00:00:00Z`)}</p>

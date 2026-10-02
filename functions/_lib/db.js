@@ -1,4 +1,3 @@
-/** Fetch one record by padded designation. Returns null if absent. */
 export async function getRecord(db, id) {
   return db.prepare('SELECT * FROM records WHERE id = ?').bind(id).first();
 }

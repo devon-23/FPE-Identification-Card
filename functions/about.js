@@ -16,9 +16,7 @@ function fact(label, value, href) {
 
 export function onRequestGet() {
   const a = ABOUT;
-  const plate = a.photo
-    ? h`<img class="card__photo" src="${a.photo}" alt="">`
-    : raw(SILHOUETTE);
+  const plate = a.photo ? h`<img class="card__photo" src="${a.photo}" alt="">` : raw(SILHOUETTE);
 
   const rows = [
     a.designation ? fact('DESIGNATION', h`${a.designation}`) : '',
@@ -30,12 +28,12 @@ export function onRequestGet() {
     .map((l) => fact(l.label, h`${l.value}`, l.href))
     .join('');
 
-  const support = a.support && a.support.value
-    ? h`<section class="support">
-      <dl class="support__line">${raw(fact(a.support.label, h`${a.support.value}`, a.support.href))}</dl>
-      ${raw(a.support.note ? h`<p class="support__note">${a.support.note}</p>` : '')}
-    </section>`
-    : '';
+  const sources = (a.sources || []).filter((s) => s && s.label).map((s) => {
+    const name = s.href
+      ? h`<a href="${s.href}" rel="noopener noreferrer" target="_blank">${s.label}</a>`
+      : h`${s.label}`;
+    return h`<li>${raw(String(name))}${raw(s.note ? h` &mdash; ${s.note}` : '')}</li>`;
+  }).join('');
 
   const body = h`  <main class="stage">
     <article class="card card--about">
@@ -62,7 +60,10 @@ export function onRequestGet() {
 
       <dl class="card__contact">${raw(links)}</dl>
 
-      ${raw(String(support))}
+      ${raw(sources ? h`<section class="sources">
+        <h2>SITES USED &middot; CREDIT &middot; INSPIRATION</h2>
+        <ul>${raw(sources)}</ul>
+      </section>` : '')}
 
       <p class="card__foot spread" data-plain="${FORM.benediction}">${raw(spread(FORM.benediction))}</p>
     </article>
@@ -74,6 +75,5 @@ export function onRequestGet() {
     title: `${a.name} — DEMA ARCHIVES`,
     body,
     bodyClass: 'page-about',
-  }), // Short, because this is the page you will be editing.
-  { headers: { 'cache-control': 'public, max-age=60' } });
+  }), { headers: { 'cache-control': 'public, max-age=60' } });
 }

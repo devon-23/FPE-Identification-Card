@@ -6,8 +6,6 @@
 (function () {
   'use strict';
 
-  var MONO = 'Courier, "Lucida Sans Typewriter", Lucida, monospace';
-  // Matches --display in the stylesheet.
   var DISPLAY = '"Banknote Gothic", Copperplate, "Copperplate Gothic Light", "Lucida Sans", "Trebuchet MS", sans-serif';
 
   // The CSS card is 360px wide; 3x gives a 1080px export and lets every
@@ -31,8 +29,6 @@
   }
 
   function px(v) { return v * S; }
-  // The card is set entirely in the display face; MONO is kept for nothing
-  // on the card itself.
   function font(weight, size) { return weight + ' ' + px(size) + 'px ' + DISPLAY; }
   function display(weight, size) { return weight + ' ' + px(size) + 'px ' + DISPLAY; }
 

@@ -1,18 +1,5 @@
-export const MAX_PHOTO_BYTES = 400 * 1024;
-
-/**
- * Strip every metadata segment from a JPEG, keeping only what a decoder
- * needs.
- *
- * The browser already re-encodes the photo through a canvas, which cannot
- * carry GPS or camera fields across -- but the encoders on Apple platforms
- * write their own APP1/Exif and APP13/Photoshop blocks into the output. None
- * of it is user data, and none of it has any business being published, so it
- * goes. APP0/JFIF is kept because some decoders expect it.
- *
- * Returns null if the structure is not a JPEG we recognise.
- */
-export function stripMetadata(buf) {
+const MAX_PHOTO_BYTES = 400 * 1024;
+function stripMetadata(buf) {
   const b = new Uint8Array(buf);
   if (b.length < 4 || b[0] !== 0xff || b[1] !== 0xd8) return null;
 
@@ -54,12 +41,6 @@ export function stripMetadata(buf) {
   for (const part of keep) { out.set(part, at); at += part.length; }
   return out;
 }
-
-/**
- * The client always sends a canvas-encoded JPEG. Verifying the magic bytes
- * means a hand-rolled request cannot park arbitrary content in the bucket
- * under an image content-type.
- */
 export async function readJpeg(file) {
   if (!file || typeof file.arrayBuffer !== 'function') return { error: 'NO FILE' };
   if (file.size > MAX_PHOTO_BYTES) return { error: 'IMAGE TOO LARGE' };

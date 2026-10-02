@@ -57,8 +57,6 @@ export async function hasSession(request, secret) {
 
   return safeEqual(raw.slice(dot + 1), await hmac(secret, `admin:${exp}`));
 }
-
-/** Addresses are only ever stored hashed, and only for throttling. */
 export async function ipHash(request, secret) {
   const ip = request.headers.get('cf-connecting-ip') || 'unknown';
   return (await hmac(secret, `ip:${ip}`)).slice(0, 32);

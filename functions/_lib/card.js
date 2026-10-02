@@ -8,7 +8,7 @@ import { generate, assignedDesignation, citizenId, BISHOPS } from './lore.js';
 import { cityMark } from './glyph.js';
 import { EVENT, FORM, demaDate } from './config.js';
 
-export const FACTIONS = ['CITIZEN', 'BANDITO'];
+const FACTIONS = ['CITIZEN', 'BANDITO'];
 export const normalizeFaction = (f) =>
   FACTIONS.includes(String(f || '').toUpperCase()) ? String(f).toUpperCase() : 'CITIZEN';
 
@@ -19,19 +19,15 @@ const SILHOUETTE = `<svg class="card__silhouette" viewBox="0 0 100 125" aria-hid
       </svg>
       <span class="card__nofile">NO IMAGE ON FILE</span>`;
 
-/**
- * A field as it appears on a form that was filled in by hand: the value
- * written on the line, the printed label underneath it.
- */
 function fact(label, value, slot, cls = '') {
   const attr = slot ? ` data-slot="${slot}"` : '';
   return `<div class="fact${cls ? ' ' + cls : ''}"><dd${attr}>${value}</dd><dt>${label}</dt></div>`;
 }
 
-/** Legacy records stored a formatted date; newer ones store ISO. */
+// anything not ISO came from before we stored ISO, so just use the event date
 function showDate(stored) {
-  if (!stored) return EVENT.dateDisplay;
-  return /^\d{4}-\d{2}-\d{2}/.test(stored) ? demaDate(stored) : stored;
+  if (stored && /^\d{4}-\d{2}-\d{2}/.test(stored)) return demaDate(stored);
+  return EVENT.dateDisplay;
 }
 
 export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
