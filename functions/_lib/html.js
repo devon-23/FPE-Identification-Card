@@ -51,6 +51,7 @@ export function layout({ title, body, bodyClass = '' }) {
 ${body}
   <footer class="colophon">
     <p>UNOFFICIAL FAN-MADE RECORD. NOT AFFILIATED WITH ANY ARTIST OR LABEL.</p>
+    <p class="colophon__who"><a href="/about">WHO FILED THIS &mdash;&mdash;&mdash;&gt;</a></p>
   </footer>
 </div>
 </body>

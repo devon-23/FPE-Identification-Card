@@ -38,12 +38,14 @@ functions/
   f/[id]/amend.js       POST /f/0042/amend      owner edits (token required)
   p/[file].js           GET  /p/0042.jpg        photo, served from R2
   index.js              GET  /                  the incident report
+  about.js              GET  /about              who filed it
   archive.js            redirects /archive -> /
   admin/_middleware.js  guards everything under /admin
   admin/index.js        GET  /admin             dashboard
   admin/act.js          POST /admin/act         reset / delete image / toggle
   fpe/[id].js           redirects /fpe/0042 -> /f/0042
   _lib/
+    about.js            your own details -- the only file /about reads
     config.js           venue, date, set size, form furniture
     lore.js             deterministic generated fields
     card.js             the card markup (shared by page and preview)

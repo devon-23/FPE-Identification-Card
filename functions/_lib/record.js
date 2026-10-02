@@ -92,17 +92,17 @@ function civilNotice(rec) {
   const name = rec.name || assignedDesignation(rec.id);
   const ref = ledgerRef(rec.id);
   return h`<section class="notice">
-      <p class="notice__body"><b>CIVIL NOTICE:</b> in mcordance wh Dema Lew Sec. A-77.03
-        persons found to be in possession of knowindne reseroine the whereabouts,
-        communication or prior contact with Subject ${name} must immediately subeil
-        form V-14-8 el their assigned congreggion desk. Falure to comply constitutes
+      <p class="notice__body"><b>CIVIL NOTICE:</b> in accordance with Dema Law Sec. A-77.03:
+        All persons found to be in possession of knowledge reguarding the whereabouts,
+        communication or prior contact with Subject ${name} must immediately submit
+        form V-14-8 at their assigned congreggion desk. Falure to comply constitutes
         civil treason.</p>
 
       <div class="notice__cols">
         <div class="notice__col">
           <h3>REPORT CLASSIFICATION:</h3>
-          <p>PENDING ESCALATION &mdash; INTERNAL SECURITY COUNCIL REVIEV</p>
-          <p>Filed by: UNITED VIALISTS / OIV, OF CIVIL ORDER AND RESTRAIKT</p>
+          <p>PENDING ESCALATION &mdash; INTERNAL SECURITY COUNCIL REVIEW</p>
+          <p>Filed by: UNITED VIALISTS / DIV. OF CIVIL ORDER AND RESTRAINT</p>
           <p>Archived In: Municioal Ledger ${ref.ledger} / Vault ${ref.vault}</p>
         </div>
         <div class="notice__col">
