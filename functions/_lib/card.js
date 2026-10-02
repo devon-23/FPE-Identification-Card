@@ -6,7 +6,7 @@
 import { h, raw } from './html.js';
 import { generate, assignedDesignation, citizenId } from './lore.js';
 import { cityMark } from './glyph.js';
-import { EVENT, FORM, SET_SIZE, demaDate } from './config.js';
+import { EVENT, FORM, demaDate } from './config.js';
 
 export const FACTIONS = ['CITIZEN', 'BANDITO'];
 export const normalizeFaction = (f) =>
@@ -19,9 +19,13 @@ const SILHOUETTE = `<svg class="card__silhouette" viewBox="0 0 100 125" aria-hid
       </svg>
       <span class="card__nofile">NO IMAGE ON FILE</span>`;
 
+/**
+ * A field as it appears on a form that was filled in by hand: the value
+ * written on the line, the printed label underneath it.
+ */
 function fact(label, value, slot, cls = '') {
   const attr = slot ? ` data-slot="${slot}"` : '';
-  return `<div class="fact${cls ? ' ' + cls : ''}"><dt>${label}</dt><dd${attr}>${value}</dd></div>`;
+  return `<div class="fact${cls ? ' ' + cls : ''}"><dd${attr}>${value}</dd><dt>${label}</dt></div>`;
 }
 
 /** Legacy records stored a formatted date; newer ones store ISO. */
@@ -41,7 +45,7 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
   const plate = src ? h`<img class="card__photo" src="${src}" alt="">` : raw(SILHOUETTE);
 
   const attempts = rec.attempts ? String(rec.attempts).padStart(2, '0') : '01';
-  const lyric = rec.lyric || REDACTED;
+  const lyric = rec.lyric || '';
 
   const venue = rec.location || EVENT.venue;
   const city = rec.city || EVENT.city;
@@ -56,8 +60,6 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
 
   return h`<article class="${raw(classes)}" data-fpe="${id}" data-bishop="${raw(String(g.bishopIdx))}">
     <p class="card__letterhead">${FORM.letterhead}</p>
-
-    <p class="card__count"><span>${id}</span> / ${raw(String(SET_SIZE).padStart(4, '0'))}</p>
 
     <div class="card__seal">${raw(cityMark(g.bishopIdx))}</div>
 
@@ -76,14 +78,14 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
     <div class="card__body">
       <div class="card__plate">${raw(String(plate))}</div>
       <dl class="card__facts">
-        ${raw(`<div class="fact fact--name"><dt>NAME</dt><dd data-slot="name">${h`${name}`}</dd></div>`)}
-        ${raw(fact('CITIZEN ID', h`${citizenId(id)}`))}
+        ${raw(`<div class="fact fact--name"><dd data-slot="name">${h`${name}`}</dd><dt>NAME</dt></div>`)}
+        ${raw(fact('CITIZEN ID', h`${citizenId(id)}`, null, 'fact--id'))}
         ${raw(fact('BISHOP', h`${g.bishop}`))}
         ${raw(fact('ESCAPE ATTEMPT', h`${attempts}`, 'attempts'))}
       </dl>
     </div>
 
-    <p class="card__lyric" data-slot="lyric">${lyric}</p>
+    <p class="card__lyric${raw(lyric ? '' : ' is-empty')}" data-slot="lyric">${lyric}</p>
 
     <p class="card__designation">FPE-${id}</p>
 
@@ -92,9 +94,7 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
       <span>${city} &middot; ${date}</span>
     </p>
 
-    <p class="card__foot">
-      <span>IF FOUND, RETURN TO DEMA</span>
-      <span class="card__faction" data-slot="faction">${faction}</span>
-    </p>
+    <p class="card__foot">${FORM.benediction}</p>
+    <span class="card__faction" data-slot="faction" hidden>${faction}</span>
   </article>`;
 }

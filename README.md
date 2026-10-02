@@ -15,7 +15,7 @@ Unofficial fan project. Not affiliated with any artist or label.
 | Database | Cloudflare D1 (SQLite) |
 | Photos | Cloudflare R2 *(stage 5)* |
 | Frontend | Server-rendered HTML + one stylesheet. No framework, no build step, no web fonts. |
-| Type | `Lucida Sans Typewriter`, falling back through Lucida Console and Monaco. |
+| Type | `Courier`, falling back through Lucida Sans Typewriter and Lucida. |
 | Theme | Follows the system; an explicit choice is kept in `localStorage`. |
 
 Viewing a record uses **no JavaScript at all** — it is one request, ~4 KB, which
@@ -37,7 +37,8 @@ functions/
   f/[id]/claim.js       POST /f/0042/claim      first registration
   f/[id]/amend.js       POST /f/0042/amend      owner edits (token required)
   p/[file].js           GET  /p/0042.jpg        photo, served from R2
-  archive.js            GET  /archive           the public register
+  index.js              GET  /                  the incident report
+  archive.js            redirects /archive -> /
   admin/_middleware.js  guards everything under /admin
   admin/index.js        GET  /admin             dashboard
   admin/act.js          POST /admin/act         reset / delete image / toggle
@@ -218,14 +219,21 @@ per address, and addresses are stored only as a salted hash.
 
 ## The look
 
-The page is black and its chrome is small white type. The record itself is a
-**document** -- paper, a centred letterhead, oxblood ink, a numbered box, a
-seal -- because that is what it is. Drawn from the look of the DEMA material
-rather than copied from it: no artwork is reproduced, and the only phrase
-taken from the canon is the letterhead itself.
+Black and white, like the material it is drawn from. The front page is an
+incident report on white stock. A record is a white sheet with a hard outline,
+a centred letterhead, and a small seal; oxblood is reserved for the
+letterhead, the subject's name and citizen ID, and the benediction at the
+foot.
 
-The theme switch changes the page the document sits on, not the document. A
-sheet of paper is a sheet of paper in either light.
+Fields are filled-in rather than labelled: the value sits on a dotted rule
+with its printed label beneath, the way a form looks after someone has
+completed it by hand.
+
+The theme switch changes the page a record sits on, not the record. A sheet of
+paper is a sheet of paper in either light.
+
+Drawn from the look of the DEMA material, not copied from it: no artwork is
+reproduced, and the canon phrases used are the letterhead and the benediction.
 
 ## The card
 

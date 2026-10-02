@@ -16,7 +16,7 @@ export function normalizeId(input) {
 }
 
 function field(label, value) {
-  return h`<div class="field"><dt>${label}</dt><dd>${value}</dd></div>`;
+  return h`<div class="field"><dd>${value}</dd><dt>${label}</dt></div>`;
 }
 
 /**

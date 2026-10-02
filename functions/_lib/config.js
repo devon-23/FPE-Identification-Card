@@ -29,5 +29,7 @@ export const FORM = {
   statute: '15398642_14',
   revision: 'REV. 4',
   letterhead: 'SACRED MUNICIPALITY OF DEMA \u00b7 UNITED VIALISTS',
+  benediction: 'ALL EARTHLY HONOR UNTO THE GLORIOUS GONE',
+  violation: 'DMA-8325',
   bureau: 'DEMA ARCHIVES',
 };

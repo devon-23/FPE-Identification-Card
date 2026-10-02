@@ -6,7 +6,7 @@
 (function () {
   'use strict';
 
-  var MONO = '"Lucida Sans Typewriter", "Lucida Console", Monaco, "Courier New", monospace';
+  var MONO = 'Courier, "Lucida Sans Typewriter", Lucida, monospace';
 
   // The CSS card is 360px wide; 3x gives a 1080px export and lets every
   // measurement below be the CSS pixel value.
@@ -19,13 +19,13 @@
   function readTheme() {
     var cs = getComputedStyle(document.documentElement);
     var get = function (n, f) { return (cs.getPropertyValue(n) || '').trim() || f; };
-    C.paper = get('--paper', '#efece4');
-    C.ink = get('--ink', '#15130f');
-    C.dim = get('--ink-dim', '#6b6659');
-    C.faint = get('--ink-faint', '#9a948a');
-    C.rule = get('--rule', '#c7c2b4');
+    C.paper = get('--paper', '#fff');
+    C.ink = get('--ink', '#000');
+    C.dim = get('--ink-dim', '#444');
+    C.faint = get('--ink-faint', '#777');
+    C.rule = get('--rule', '#000');
     C.red = get('--red', '#a3281f');
-    C.plate = get('--plate', '#15130f');
+    C.plate = get('--plate', '#111');
   }
 
   function px(v) { return v * S; }
@@ -141,7 +141,6 @@
     };
     var charge = card.querySelectorAll('.card__charge span');
     var statute = card.querySelectorAll('.card__statute span');
-    var foot = card.querySelectorAll('.card__foot span');
     var facts = card.querySelectorAll('.card__facts .fact');
     var list = [];
     for (var i = 1; i < facts.length; i++) {
@@ -153,7 +152,6 @@
     var photo = card.querySelector('.card__photo');
     return {
       letterhead: t('.card__letterhead'),
-      count: t('.card__count'),
       chargeTop: charge[0] ? charge[0].textContent.trim() : '',
       chargeMain: t('.card__charge b'),
       chargeBy: charge[1] ? charge[1].textContent.trim() : '',
@@ -167,8 +165,7 @@
       designation: t('.card__designation'),
       venue: t('.card__place b'),
       when: t('.card__place span'),
-      standing: foot[0] ? foot[0].textContent.trim() : '',
-      faction: t('.card__faction'),
+      benediction: t('.card__foot'),
       photoSrc: photo ? photo.src : null,
       bandito: card.classList.contains('card--bandito'),
       blank: card.classList.contains('card--blank'),
@@ -192,21 +189,21 @@
     var nameFit = fit(ctx, d.name, px(factsW), 15, '700', 9, true);
     var lyricLines = wrap(ctx, d.lyric, px(inner - 8), 12, '400');
 
-    var factsH = 10 + nameFit.lines.length * 17 + 8;
-    for (var i = 0; i < d.facts.length; i++) factsH += 10 + 17 + 8;
-    var bodyH = Math.max(plateH, factsH - 8);
+    // Each field is a value on a dotted rule with its label beneath.
+    var factsH = nameFit.lines.length * 19 + 4 + 8 + 10;
+    for (var i = 0; i < d.facts.length; i++) factsH += 17 + 4 + 8 + 10;
+    var bodyH = Math.max(plateH, factsH - 10);
 
     var H = 18                                  // top padding
       + headLines.length * 13 + 2               // letterhead
-      + 10 + 15                                 // count box
       + 6 + 42 + 12                             // seal
       + 12 + 3 + 18 + 3 + 12                    // charge
       + 10 + 24                                 // statute
       + 16 + bodyH + 14                         // body
-      + lyricLines.length * 18                  // lyric
+      + (d.lyric ? lyricLines.length * 18 : 0)  // lyric, when there is one
       + 10 + 42                                 // designation
       + 14 + 12 + 15 + 15                       // place
-      + 16 + 10 + 12                            // foot
+      + 16 + 12 + 12                            // benediction
       + 16;                                     // bottom padding
 
     canvas.width = Math.round(px(CW));
@@ -215,6 +212,9 @@
 
     ctx.fillStyle = C.paper;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = C.ink;
+    ctx.lineWidth = Math.max(2, px(1));
+    ctx.strokeRect(px(0.5), px(0.5), canvas.width - px(1), canvas.height - px(1));
 
     var cx = canvas.width / 2;
     var y = 18;
@@ -223,26 +223,7 @@
     ctx.fillStyle = C.red;
     ctx.font = font('400', 8);
     for (var h = 0; h < headLines.length; h++) centred(ctx, headLines[h], cx, px(y + 9 + h * 13));
-    y += headLines.length * 13 + 2;
-
-    // numbered box
-    y += 10;
-    ctx.font = font('400', 8);
-    var boxW = ctx.measureText(d.count).width + px(14);
-    var boxX = canvas.width - px(PAD) - boxW;
-    ctx.strokeStyle = C.red;
-    ctx.lineWidth = Math.max(1, px(1));
-    if (d.bandito) {
-      ctx.fillStyle = C.red;
-      ctx.fillRect(boxX, px(y), boxW, px(15));
-      ctx.fillStyle = C.paper;
-    } else {
-      ctx.strokeRect(boxX, px(y), boxW, px(15));
-      ctx.fillStyle = C.red;
-    }
-    ctx.textAlign = 'center';
-    ctx.fillText(d.count, boxX + boxW / 2, px(y + 10.5));
-    y += 15 + 6;
+    y += headLines.length * 13 + 2 + 6;
 
     // seal
     seal(ctx, cx, px(y + 21), px(42), d.bishop);
@@ -298,36 +279,59 @@
       centred(ctx, 'NO IMAGE ON FILE', hc, ply + plh - px(5));
     }
 
-    // facts
+    // facts: written on the line, label printed beneath
     var fy = y;
     ctx.textAlign = 'left';
-    ctx.fillStyle = C.faint;
-    ctx.font = font('400', 8);
-    ctx.fillText('NAME', px(factsX), px(fy + 8));
-    ctx.fillStyle = d.blank ? C.dim : C.ink;
+
+    function rule(atY) {
+      ctx.save();
+      ctx.strokeStyle = C.ink;
+      ctx.lineWidth = Math.max(1, px(1));
+      ctx.setLineDash([px(1.5), px(2)]);
+      ctx.beginPath();
+      ctx.moveTo(px(factsX), px(atY));
+      ctx.lineTo(px(factsX + factsW), px(atY));
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function label(text, atY) {
+      ctx.fillStyle = C.ink;
+      ctx.font = font('400', 7);
+      ctx.fillText(text, px(factsX), px(atY + 7));
+    }
+
+    ctx.fillStyle = d.blank ? C.faint : C.red;
     ctx.font = font('700', nameFit.size);
     for (var n = 0; n < nameFit.lines.length; n++) {
-      ctx.fillText(nameFit.lines[n], px(factsX), px(fy + 10 + 14 + n * 17));
+      ctx.fillText(nameFit.lines[n], px(factsX + 1), px(fy + 14 + n * 19));
     }
-    fy += 10 + nameFit.lines.length * 17 + 8;
+    fy += nameFit.lines.length * 19 + 4;
+    rule(fy);
+    label('NAME', fy + 3);
+    fy += 8 + 10;
 
     for (var k = 0; k < d.facts.length; k++) {
-      ctx.fillStyle = C.faint;
-      ctx.font = font('400', 8);
-      ctx.fillText(d.facts[k].label, px(factsX), px(fy + 8));
-      ctx.fillStyle = d.facts[k].value === '[REDACTED]' ? C.faint : C.ink;
-      var vFit = fit(ctx, d.facts[k].value, px(factsW), 12, '400', 8, false);
-      ctx.font = font('400', vFit.size);
-      ctx.fillText(d.facts[k].value, px(factsX), px(fy + 10 + 13));
-      fy += 10 + 17 + 8;
+      var isId = d.facts[k].label === 'CITIZEN ID';
+      ctx.fillStyle = isId ? C.red : (d.facts[k].value === '[REDACTED]' ? C.faint : C.ink);
+      var vFit = fit(ctx, d.facts[k].value, px(factsW), 13, '400', 8, false);
+      ctx.font = font(isId ? '700' : '400', vFit.size);
+      ctx.fillText(d.facts[k].value, px(factsX + 1), px(fy + 13));
+      fy += 17 + 4;
+      rule(fy);
+      label(d.facts[k].label, fy + 3);
+      fy += 8 + 10;
     }
     y += bodyH + 14;
 
-    // the chosen line
-    ctx.fillStyle = d.lyric === '[REDACTED]' ? C.faint : C.dim;
-    ctx.font = font('400', 12);
-    for (var b = 0; b < lyricLines.length; b++) centred(ctx, lyricLines[b], cx, px(y + 13 + b * 18));
-    y += lyricLines.length * 18 + 10;
+    // the chosen line, if there is one
+    if (d.lyric) {
+      ctx.fillStyle = C.dim;
+      ctx.font = font('400', 12);
+      for (var b = 0; b < lyricLines.length; b++) centred(ctx, lyricLines[b], cx, px(y + 13 + b * 18));
+      y += lyricLines.length * 18;
+    }
+    y += 10;
 
     // the designation
     ctx.fillStyle = d.blank ? C.dim : C.ink;
@@ -351,17 +355,16 @@
     centred(ctx, d.when, cx, px(y + 25));
     y += 30 + 16;
 
-    // foot
+    // benediction
+    ctx.strokeStyle = C.ink;
+    ctx.lineWidth = Math.max(1, px(1));
     ctx.beginPath(); ctx.moveTo(px(PAD), px(y)); ctx.lineTo(canvas.width - px(PAD), px(y)); ctx.stroke();
-    y += 10;
-    ctx.fillStyle = C.faint;
+    y += 12;
+    ctx.fillStyle = C.red;
     ctx.font = font('400', 7);
-    ctx.textAlign = 'left';
-    ctx.fillText(d.standing, px(PAD), px(y + 8));
-    ctx.textAlign = 'right';
-    ctx.fillStyle = d.bandito ? C.red : C.dim;
-    ctx.font = font('700', 7);
-    ctx.fillText(d.faction, canvas.width - px(PAD), px(y + 8));
+    var benFit = fit(ctx, d.benediction, px(inner), 7, '400', 5, false);
+    ctx.font = font('400', benFit.size);
+    centred(ctx, d.benediction, cx, px(y + 7));
 
     return canvas;
   }
