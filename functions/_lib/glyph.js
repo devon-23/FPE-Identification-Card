@@ -15,6 +15,15 @@ function block(cx, cy, r0, r1, a0, a1) {
 }
 
 export function cityMark(bishopIdx, { className = 'mark', allLit = false } = {}) {
+  return `<span class="${className} mark--img" aria-hidden="true"></span>`;
+}
+
+// hand drawn dema sectors
+// nine annular blocks, section one at twelve o'clock, the record's bishop lit.
+// swapped out for the real mark as an image -- keeping this because it is the
+// only version that can light one sector
+// eslint-disable-next-line no-unused-vars
+function cityMarkDrawn(bishopIdx, { className = 'mark', allLit = false } = {}) {
   const step = (Math.PI * 2) / SEGMENTS;
   const gap = step * 0.1;
   const origin = -Math.PI / 2 - step / 2;

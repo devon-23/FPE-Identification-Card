@@ -20,11 +20,11 @@ export function normalizeId(input) {
     return n >= 1 && n <= 999 ? `X${x[1]}` : null;
   }
 
-  // origin-only, off the map page. Y0001 upwards
-  const y = v.match(/^Y(\d{4})$/);
+  // origin-only, off the map page. Y001 upwards, same shape as the X ones
+  const y = v.match(/^Y(\d{3})$/);
   if (y) {
     const n = parseInt(y[1], 10);
-    return n >= 1 && n <= 9999 ? `Y${y[1]}` : null;
+    return n >= 1 && n <= 999 ? `Y${y[1]}` : null;
   }
 
   const m = v.match(/^(\d{1,4})$/);
@@ -34,7 +34,7 @@ export function normalizeId(input) {
   return padId(n);
 }
 
-export const isSelfRegistered = (id) => /^(?:X\d{3}|Y\d{4})$/.test(String(id || ''));
+export const isSelfRegistered = (id) => /^(?:X|Y)\d{3}$/.test(String(id || ''));
 
 function field(label, value) {
   return h`<div class="rf"><dt>${label}</dt><dd>${value}</dd></div>`;
@@ -65,15 +65,17 @@ function dossier(rec, rank) {
     field('BISHOP', bishop),
   ]);
 
-  const incident = group([
-    field('DISTRICT', g.district),
-    field('METHOD', g.method),
-    field('LOCATION', `${rec.location || EVENT.venue}, ${rec.city || EVENT.city}`),
-    field('DATE', showDate(rec.event_date)),
-    rank ? field('ORDER OF FILING', `${ordinal(rank)} OF THE NIGHT`) : '',
-    field('FILED', filedAt(rec.claimed_at)),
-    field('DISPOSITION', g.disposition),
-  ]);
+  // not used any more -- made the sheet way too long, and the venue and the
+  // date are already printed on the card
+  // const incident = group([
+  //   field('DISTRICT', g.district),
+  //   field('METHOD', g.method),
+  //   field('LOCATION', `${rec.location || EVENT.venue}, ${rec.city || EVENT.city}`),
+  //   field('DATE', showDate(rec.event_date)),
+  //   rank ? field('ORDER OF FILING', `${ordinal(rank)} OF THE NIGHT`) : '',
+  //   field('FILED', filedAt(rec.claimed_at)),
+  //   field('DISPOSITION', g.disposition),
+  // ]);
 
   const notes = rec.bio || fileNotes(rec.id, { hometown: rec.hometown, attempts: rec.attempts });
   const mark = rec.lyric || remark(rec.id);
@@ -87,9 +89,13 @@ function dossier(rec, rank) {
 
   return h`<details class="dossier">
       <summary class="dossier__head">ATTACHED FILE</summary>
-      <div class="rf__sheet">
-        ${raw(registry)}${raw(subject)}${raw(incident)}${raw(String(notesBlock))}
+      <div class="rf__sheet rf__sheet--${raw(faction.toLowerCase())}" data-sheet="${rec.id}">
+        <span class="sheet__mark" aria-hidden="true"></span>
+        ${raw(registry)}${raw(subject)}${raw(String(notesBlock))}
       </div>
+      <p class="actions actions--sheet">
+        <button class="button" type="button" data-action="save-sheet">SAVE ATTACHED FILE</button>
+      </p>
     </details>`;
 }
 

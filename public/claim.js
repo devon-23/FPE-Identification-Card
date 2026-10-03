@@ -61,9 +61,27 @@
 
   form.hidden = false;
 
+  // the other half of this lives in card.js as nameWidth(). keep them the
+  // same or the preview will not match what gets filed
+  function nameWidth(text) {
+    var w = 0;
+    var s = String(text || '').toUpperCase();
+    for (var i = 0; i < s.length; i++) {
+      var ch = s.charAt(i);
+      if (ch === 'W') w += 0.95;
+      else if (ch === 'M') w += 0.85;
+      else if ('IJLT .,\'-'.indexOf(ch) !== -1) w += 0.45;
+      else if (ch >= '0' && ch <= '9') w += 0.62;
+      else w += 0.72;
+    }
+    return Math.max(1, Math.round(w * 1.03 * 100) / 100);
+  }
+
   function paintName() {
     var v = nameEl.value.trim();
-    slotName.textContent = v ? v.toUpperCase() : 'UNREGISTERED';
+    var shown = v ? v.toUpperCase() : 'UNREGISTERED';
+    slotName.textContent = shown;
+    slotName.style.setProperty('--w', String(nameWidth(shown)));
     card.classList.toggle('card--blank', !v);
   }
 
@@ -99,6 +117,10 @@
   }
 
   function paintOptional(input, slot, decorate) {
+    // handle, hometown and first show live on the attached file, not the
+    // card, so there is nothing to paint for those. this used to throw on
+    // every keystroke in those three fields
+    if (!slot) return;
     // blank fields read [REDACTED] on the card, same as they will once filed
     var v = input.value.trim();
     slot.textContent = v ? (decorate ? decorate(v) : v) : REDACTED;

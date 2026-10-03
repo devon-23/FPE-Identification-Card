@@ -1,4 +1,13 @@
 (function () {
+  // same silent handoff as the small plot
+  try {
+    var handoff = location.hash.match(/^#t=(Y\d{3})\.([A-Za-z0-9_-]{20,})$/);
+    if (handoff) {
+      localStorage.setItem('fpe:token:' + handoff[1], handoff[2]);
+      history.replaceState(null, '', location.pathname);
+    }
+  } catch (e) {  }
+
   function start() {
     if (!window.L) return setTimeout(start, 50);
 

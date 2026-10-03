@@ -1,5 +1,5 @@
-import { normalizeId } from '../_lib/record.js';
 import { sameOrigin } from '../_lib/origin.js';
+import { SET_SIZE } from '../_lib/config.js';
 
 const back = (request, message) => {
   const url = new URL('/admin', request.url);
@@ -20,8 +20,34 @@ export async function onRequestPost({ request, env }) {
     return back(request, next === '1' ? 'CLAIMING OPENED' : 'CLAIMING CLOSED');
   }
 
-  const id = normalizeId(form.get('id'));
-  if (!id) return back(request, 'NO SUCH DESIGNATION');
+  // the three-an-hour cap on /turn-yourself-in. fine at the venue, maddening
+  // when you are the one testing it
+  if (action === 'throttle') {
+    const current = await env.DB.prepare("SELECT value FROM settings WHERE key = 'surrender_throttle'").first();
+    const next = current && current.value === '0' ? '1' : '0';
+    await env.DB.prepare(
+      "INSERT INTO settings (key, value) VALUES ('surrender_throttle', ?) ON CONFLICT(key) DO UPDATE SET value = ?"
+    ).bind(next, next).run();
+    if (next === '0') await env.DB.prepare("DELETE FROM login_attempts WHERE ip_hash LIKE 'sr:%'").run();
+    return back(request, next === '1' ? 'SURRENDER LIMIT ON' : 'SURRENDER LIMIT OFF');
+  }
+
+  // matched against the table rather than parsed, so a row left behind by an
+  // older numbering scheme is still something you can get rid of
+  const typed = String(form.get('id') || '').trim().toUpperCase();
+  const rec = /^[A-Z0-9]{1,12}$/.test(typed)
+    ? await env.DB.prepare('SELECT id, n FROM records WHERE id = ?').bind(typed).first()
+    : null;
+  if (!rec) return back(request, 'NO SUCH DESIGNATION');
+  const id = rec.id;
+
+  if (action === 'drop') {
+    // only the ones nobody is holding a card for
+    if (rec.n <= SET_SIZE) return back(request, `${id} IS AN ISSUED CARD — RESET IT INSTEAD`);
+    if (env.PHOTOS) { try { await env.PHOTOS.delete(`${id}.jpg`); } catch {  } }
+    await env.DB.prepare('DELETE FROM records WHERE id = ?').bind(id).run();
+    return back(request, `${id} DELETED`);
+  }
 
   if (action === 'unphoto') {
     if (env.PHOTOS) { try { await env.PHOTOS.delete(`${id}.jpg`); } catch {  } }

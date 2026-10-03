@@ -9,13 +9,14 @@ export async function onRequestGet({ request, env }) {
   const notice = url.searchParams.get('ok');
 
   const { results } = await env.DB.prepare(
-    'SELECT id, status, name, name_assigned, faction, photo_key, claimed_at FROM records ORDER BY n'
+    'SELECT id, n, status, name, name_assigned, faction, photo_key, claimed_at FROM records ORDER BY n'
   ).all();
 
   const all = results || [];
   const claimed = all.filter((r) => r.status === 'ESCAPED').length;
   const withPhoto = all.filter((r) => r.photo_key).length;
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
+  const throttled = (await getSetting(env.DB, 'surrender_throttle', '1')) === '1';
 
   let rows = all;
   if (filter === 'claimed') rows = rows.filter((r) => r.status === 'ESCAPED');
@@ -30,12 +31,20 @@ export async function onRequestGet({ request, env }) {
   const list = rows.map((r) => {
     const taken = r.status === 'ESCAPED';
     const name = taken ? (r.name || '(ASSIGNED)') : '—';
+    // provisional rows have no card behind them, so they can go entirely.
+    // resetting one would only leave a number nobody can ever claim
+    const provisional = r.n > SET_SIZE;
+
+    const acts = [
+      taken && r.photo_key ? h`<form method="POST" action="/admin/act"><input type="hidden" name="do" value="unphoto"><input type="hidden" name="id" value="${r.id}"><button class="mini">DEL IMG</button></form>` : '',
+      taken && !provisional ? h`<form method="POST" action="/admin/act" onsubmit="return confirm('Reset FPE-${r.id} to unregistered? This cannot be undone.')"><input type="hidden" name="do" value="reset"><input type="hidden" name="id" value="${r.id}"><button class="mini mini--warn">RESET</button></form>` : '',
+      provisional ? h`<form method="POST" action="/admin/act" onsubmit="return confirm('Delete ${r.id} for good? This cannot be undone.')"><input type="hidden" name="do" value="drop"><input type="hidden" name="id" value="${r.id}"><button class="mini mini--warn">DELETE</button></form>` : '',
+    ].filter(Boolean).join('');
+
     return h`<div class="arow">
       <div class="arow__id"><a href="/f/${r.id}">${r.id}</a></div>
       <div class="arow__name">${name}${raw(r.photo_key ? ' <span class="tag">IMG</span>' : '')}${raw(taken ? h` <span class="tag">${r.faction}</span>` : '')}</div>
-      <div class="arow__act">${raw(taken ? h`
-        ${raw(r.photo_key ? h`<form method="POST" action="/admin/act"><input type="hidden" name="do" value="unphoto"><input type="hidden" name="id" value="${r.id}"><button class="mini">DEL IMG</button></form>` : '')}
-        <form method="POST" action="/admin/act" onsubmit="return confirm('Reset FPE-${r.id} to unregistered? This cannot be undone.')"><input type="hidden" name="do" value="reset"><input type="hidden" name="id" value="${r.id}"><button class="mini mini--warn">RESET</button></form>` : '<span class="dim">unclaimed</span>')}</div>
+      <div class="arow__act">${raw(acts || '<span class="dim">unclaimed</span>')}</div>
     </div>`;
   }).join('');
 
@@ -53,6 +62,14 @@ export async function onRequestGet({ request, env }) {
       <span>CLAIMING IS <b>${raw(open ? 'OPEN' : 'CLOSED')}</b></span>
       <button class="button ${raw(open ? '' : 'button--primary')}">${raw(open ? 'CLOSE IT' : 'OPEN IT')}</button>
     </form>
+
+    <form class="switch" method="POST" action="/admin/act">
+      <input type="hidden" name="do" value="throttle">
+      <span>SURRENDER LIMIT IS <b>${raw(throttled ? 'ON' : 'OFF')}</b></span>
+      <button class="button">${raw(throttled ? 'TURN IT OFF' : 'TURN IT ON')}</button>
+    </form>
+    <p class="note">THE LIMIT IS THREE PROVISIONAL DESIGNATIONS AN HOUR PER ADDRESS.
+      TURN IT OFF TO TEST, BACK ON BEFORE THE DOORS.</p>
 
     <p class="note">VENUE: ${EVENT.venue}, ${EVENT.city} &middot; ${EVENT.dateDisplay}</p>
 

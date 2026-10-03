@@ -3,7 +3,7 @@
   // showing up is the whole message -- but the edit token is kept so the
   // record is theirs if they ever find it
   try {
-    var handoff = location.hash.match(/^#t=(Y\d{4})\.([A-Za-z0-9_-]{20,})$/);
+    var handoff = location.hash.match(/^#t=(Y\d{3})\.([A-Za-z0-9_-]{20,})$/);
     if (handoff) {
       localStorage.setItem('fpe:token:' + handoff[1], handoff[2]);
       history.replaceState(null, '', location.pathname);

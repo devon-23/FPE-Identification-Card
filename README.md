@@ -99,8 +99,9 @@ Two faces, both self-hosted as woff2 out of `public/fonts`. `assets/fonts`
 holds the ttf originals they were built from; that folder is outside the Pages
 output directory, so it never ships.
 
-- **Dema Gothic** (Bank Gothic Medium) is the engraved face the documents are
-  set in. `--display`.
+- **Dema Gothic** (Bank Gothic Medium) is let out for exactly two lines --
+  the letterhead and the benediction -- so they read as printed on while the
+  rest of the page stays typed. `--dema`.
 - **Alfredino Semimono** is the condensed mono off the FROM HERE merch, used
   on `/from-here` and nowhere else. `--mono-display`.
 
@@ -110,8 +111,9 @@ Rebuild either one after swapping the ttf:
 python3 -c "from fontTools.ttLib import TTFont; f=TTFont('assets/fonts/Main.ttf'); f.flavor='woff2'; f.save('public/fonts/alfredino.woff2')"
 ```
 
-The system gothics are still listed behind them, so the page is readable in
-the moment before the font lands.
+Everything else is `--display`: Banknote Gothic if the reader happens to have
+it, otherwise the engraved gothics that ship with macOS, iOS and Windows.
+Nothing waits on a download.
 
 ## The design
 
@@ -120,14 +122,28 @@ oxblood ink, a seal, filled-in fields with the label printed under the line.
 Nothing is copied; the mark is drawn from geometry and the only canon phrases
 are the letterhead and the benediction.
 
-The card is framed in the glyph border (`public/images/frame.webp`), set as a
-`border-image`. `cardimage.js` draws the same frame into the saved PNG by hand,
-since canvas has no nine-slice -- if you change the border width or the slice
-in the CSS, change `FRAME_W` and `FRAME_SLICE` there to match or the png and
-the screen drift apart.
+The card and the attached file are both framed in the glyph border
+(`public/images/frame.webp`), set as a `border-image`. `cardimage.js` draws
+the same frame into the saved PNGs by hand, since canvas has no nine-slice --
+if you change the border width or the slice in the CSS, change `FRAME_W` and
+`FRAME_SLICE` there to match or the png and the screen drift apart.
 
-Allegiance picks the colour everywhere it shows: citizen black, escapee red,
-bandito yellow.
+Both save as a picture: `FPECard.save` for the card, `FPECard.saveSheet` for
+the file. Each one reads the rendered page rather than the record, so a png
+cannot say something the screen does not.
+
+Allegiance picks the colour everywhere it shows -- citizen black, escapee
+red, bandito yellow in the grid -- and stamps its mark over the top right of
+the card, oversized and running off the edge. The stamp inks are their own
+tokens (`--mark-citizen`, `--mark-escapee`, `--mark-bandito`), since the
+bandito olive is not a colour anything else on the page uses.
+The marks are black pngs shown through a CSS mask, so they come out in the
+card's own ink rather than whatever colour the file happens to be;
+`cardimage.js` does the same thing with a `source-in` composite.
+
+The city mark is `dema_sectors.webp`, masked the same way. The hand-drawn
+version is still in `glyph.js` as `cityMarkDrawn` -- it is the only one that
+can light a single bishop's sector, which the flat image cannot.
 
 The mark is the city from above: nine sections, one per bishop, with the
 record's bishop lit. Section one sits at twelve o'clock and they run clockwise
@@ -161,7 +177,7 @@ share one pin rather than stacking.
 
 The page also carries a one-field form. Filling in a whole file on a phone in
 a crowd is a lot to ask, so this takes a town and nothing else: it issues a
-Y-series designation (Y0001 up, numbered from 2001), files the record as a
+Y-series designation (Y001 up, numbered from 2001), files the record as a
 bandito under a generated two-word callsign, and leaves every other field
 [REDACTED]. It posts to the same endpoint and is subject to the same rate
 limit and the same claiming switch, and it only shows while claiming is open.
@@ -175,9 +191,13 @@ theirs if they ever go looking for it.
 
 ## /from-here
 
-The landscape one, for a laptop: the title, the whole plot, and what the plot
+The landscape one, for a laptop: the title, the whole plot, what the plot
 adds up to -- biggest origin, furthest travelled, countries on file, total
-distance covered. Yellow on red, set in Alfredino, after the FROM HERE merch.
+distance covered -- and the same one-field form as `/map`. Yellow on red, set
+in Alfredino, after the FROM HERE merch. A hidden `back` field on the form
+says which plot to return to; the handler checks it against a list rather
+than trusting it, since a redirect that takes its target from a form is an
+open redirect.
 Countries are read off the tail of the `display_name` Nominatim cached in
 `places`, so a town that never resolved counts for nothing.
 

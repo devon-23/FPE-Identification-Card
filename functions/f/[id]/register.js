@@ -143,8 +143,14 @@ export async function onRequestGet({ request, params, env }) {
       <p class="form__status" role="status" aria-live="polite"></p>
 
       <button type="submit" class="button button--primary" data-action="submit">${raw(claimed ? 'SAVE AMENDMENTS' : 'FILE THIS RECORD')}</button>
-      <a class="button button--quiet" href="/f/${id}">CANCEL</a>
     </form>
+
+    ${raw(claimed
+      ? h`<p class="cancel"><a class="button button--quiet" href="/f/${id}">CANCEL</a></p>`
+      : h`<form class="cancel" method="POST" action="/f/${id}/cancel">
+      <input type="hidden" name="key" value="${key}">
+      <button type="submit" class="button button--quiet">CANCEL</button>
+    </form>`)}
   </main>
   <script src="/claim.js" defer></script>`;
 

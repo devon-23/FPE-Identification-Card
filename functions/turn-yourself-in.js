@@ -14,7 +14,7 @@ import { lookup } from './_lib/geo.js';
 const MAX_PER_WINDOW = 3;
 const WINDOW_SECONDS = 60 * 60;
 
-// X001.. is the full form, Y0001.. is the origin-only one off the map.
+// X001.. is the full form, Y001.. is the origin-only one off the map.
 // separate blocks of n so neither can wander into the other
 const X_BASE = 1000;
 const X_TOP = 1999;
@@ -61,22 +61,31 @@ export async function onRequestGet({ env }) {
 export async function onRequestPost({ request, env }) {
   if (!sameOrigin(request)) return htmlResponse(page('REJECTED.'), { status: 403 });
 
-  // the map posts a town here. everything else posts an empty form
+  // either plot posts a town here. everything else posts an empty form
   let hometown = '';
-  try { hometown = cleanHometown((await request.formData()).get('hometown')); }
-  catch {  }
+  let back = '/map';
+  try {
+    const form = await request.formData();
+    hometown = cleanHometown(form.get('hometown'));
+    // whichever plot they were looking at. an allowlist, not the raw value --
+    // a redirect that takes its target off a form is an open redirect
+    if (form.get('back') === '/from-here') back = '/from-here';
+  } catch {  }
 
   if ((await getSetting(env.DB, 'claiming_open', '0')) !== '1') {
     return htmlResponse(page(null, false), { status: 403 });
   }
 
   // same table the admin login throttle uses, prefixed so the two cannot
-  // tread on each other
+  // tread on each other. switchable from /admin, because the cap is useless
+  // at a venue if it has already locked you out while you were testing it
+  const throttle = (await getSetting(env.DB, 'surrender_throttle', '1')) === '1';
   const secret = env.SESSION_SECRET || 'fpe';
   const bucket = 'sr:' + (await ipHash(request, secret)).slice(0, 24);
   const now = Math.floor(Date.now() / 1000);
-  const row = await env.DB.prepare('SELECT n, first FROM login_attempts WHERE ip_hash = ?')
-    .bind(bucket).first();
+  const row = throttle
+    ? await env.DB.prepare('SELECT n, first FROM login_attempts WHERE ip_hash = ?').bind(bucket).first()
+    : null;
 
   if (row && row.n >= MAX_PER_WINDOW && now - row.first < WINDOW_SECONDS) {
     return htmlResponse(page('TOO MANY SURRENDERS FROM THIS TERMINAL. TRY AGAIN LATER.'), { status: 429 });
@@ -91,7 +100,7 @@ export async function onRequestPost({ request, env }) {
   const base = hometown ? Y_BASE : X_BASE;
   const top = hometown ? Y_TOP : X_TOP;
   const label = (n) => (hometown
-    ? `Y${String(n - Y_BASE).padStart(4, '0')}`
+    ? `Y${String(n - Y_BASE).padStart(3, '0')}`
     : `X${String(n - X_BASE).padStart(3, '0')}`);
 
   let id = null;
@@ -131,13 +140,15 @@ export async function onRequestPost({ request, env }) {
 
   if (!id) return htmlResponse(page('COULD NOT ISSUE A DESIGNATION. TRY AGAIN.'), { status: 503 });
 
-  const fresh = !row || now - row.first >= WINDOW_SECONDS;
-  await env.DB.prepare(`
-    INSERT INTO login_attempts (ip_hash, n, first) VALUES (?, 1, ?)
-    ON CONFLICT(ip_hash) DO UPDATE SET
-      n = CASE WHEN ? THEN 1 ELSE n + 1 END,
-      first = CASE WHEN ? THEN ? ELSE first END
-  `).bind(bucket, now, fresh ? 1 : 0, fresh ? 1 : 0, now).run();
+  if (throttle) {
+    const fresh = !row || now - row.first >= WINDOW_SECONDS;
+    await env.DB.prepare(`
+      INSERT INTO login_attempts (ip_hash, n, first) VALUES (?, 1, ?)
+      ON CONFLICT(ip_hash) DO UPDATE SET
+        n = CASE WHEN ? THEN 1 ELSE n + 1 END,
+        first = CASE WHEN ? THEN ? ELSE first END
+    `).bind(bucket, now, fresh ? 1 : 0, fresh ? 1 : 0, now).run();
+  }
 
   // came in from the map, so there is nothing else to ask for. fill the
   // record in here instead of handing them a form they already turned down
@@ -161,7 +172,7 @@ export async function onRequestPost({ request, env }) {
     // edit token rides in the fragment, which browsers keep to themselves
     return new Response(null, {
       status: 303,
-      headers: { location: `/map#t=${id}.${token}`, 'cache-control': 'no-store' },
+      headers: { location: `${back}#t=${id}.${token}`, 'cache-control': 'no-store' },
     });
   }
 

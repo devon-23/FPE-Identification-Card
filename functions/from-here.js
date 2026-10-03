@@ -1,5 +1,7 @@
 import { h, raw, layout, htmlResponse } from './_lib/html.js';
 import { FORM, EVENT, demaDate } from './_lib/config.js';
+import { HOMETOWN_MAX } from './_lib/sanitize.js';
+import { getSetting } from './_lib/db.js';
 
 // the big landscape one, for a laptop. same data as /map, read differently
 const DESTINATION = { lat: 39.9612, lon: -82.9988, label: 'OHIO STATE UNIVERSITY' };
@@ -60,9 +62,10 @@ export async function onRequestGet({ env }) {
 
   const biggest = pins.slice().sort((a, b) => b.people.length - a.people.length)[0];
   const furthest = pins.slice().sort((a, b) => b.away - a.away)[0];
-  const nearest = pins.slice().sort((a, b) => a.away - b.away)[0];
 
   const countries = new Set(pins.map((p) => country(p.label)).filter(Boolean));
+
+  const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
 
   const cards = [
     stat('SUBJECTS PLOTTED', h`${String(rows.length)}`,
@@ -76,9 +79,6 @@ export async function onRequestGet({ env }) {
 
     furthest ? stat('FURTHEST TRAVELLED', h`${miles(furthest.away)} MI`,
       h`${furthest.town}`) : '',
-
-    nearest ? stat('CLOSEST TO THE WALL', h`${miles(nearest.away)} MI`,
-      h`${nearest.town}`) : '',
 
     stat('DISTANCE COVERED', h`${miles(travelled)} MI`,
       raw('EVERY SUBJECT, EVERY MILE, ADDED UP')),
@@ -97,6 +97,17 @@ export async function onRequestGet({ env }) {
     </div>
 
     <dl class="fh__stats">${raw(cards)}</dl>
+
+    ${raw(open ? h`<form class="fh__add" method="POST" action="/turn-yourself-in">
+      <input type="hidden" name="back" value="/from-here">
+      <label class="fh__addlabel" for="hometown">PUT YOURSELF ON IT</label>
+      <div class="fh__addrow">
+        <input class="fh__addinput" id="hometown" name="hometown" type="text" required
+               maxlength="${String(HOMETOWN_MAX)}" autocomplete="off"
+               autocapitalize="characters" placeholder="CITY, STATE OR COUNTRY">
+        <button class="fh__addgo" type="submit">PLOT IT</button>
+      </div>
+    </form>` : '')}
 
     <noscript><p class="fh__note">THIS PLOT REQUIRES SCRIPTING.</p></noscript>
 

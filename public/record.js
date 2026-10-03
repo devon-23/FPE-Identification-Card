@@ -37,42 +37,52 @@
     }
   } catch (e) {  }
 
-  var save = stage.querySelector('[data-action="save"]');
-  if (save) {
-    var loading = null;
-    save.addEventListener('click', function () {
-      var card = stage.querySelector('.card');
-      if (!card) return;
-      save.disabled = true;
-      var original = save.textContent;
-      save.textContent = 'PREPARING…';
+  var loading = null;
+  function exporter() {
+    loading = loading || new Promise(function (resolve, reject) {
+      if (window.FPECard) return resolve();
+      var el = document.createElement('script');
+      el.src = '/cardimage.js';
+      el.onload = resolve;
+      el.onerror = reject;
+      document.head.appendChild(el);
+    });
+    return loading;
+  }
 
-      loading = loading || new Promise(function (resolve, reject) {
-        if (window.FPECard) return resolve();
-        var el = document.createElement('script');
-        el.src = '/cardimage.js';
-        el.onload = resolve;
-        el.onerror = reject;
-        document.head.appendChild(el);
-      });
+  // the card and the attached file save the same way, they just hand the
+  // exporter a different lump of the page
+  function wire(selector, target, filename, call) {
+    var button = stage.querySelector(selector);
+    if (!button) return;
 
-      loading.then(function () {
-        return window.FPECard.save(card, 'FPE-' + id + '.png');
+    button.addEventListener('click', function () {
+      var el = stage.querySelector(target);
+      if (!el) return;
+      button.disabled = true;
+      var original = button.textContent;
+      button.textContent = 'PREPARING…';
+
+      exporter().then(function () {
+        return window.FPECard[call](el, filename);
       }).then(function (how) {
-        save.textContent = how === 'shared' ? 'SHARED'
+        button.textContent = how === 'shared' ? 'SHARED'
           : how === 'cancelled' ? original
           : 'SAVED';
-        save.disabled = false;
+        button.disabled = false;
         if (how !== 'cancelled') {
-          setTimeout(function () { save.textContent = original; }, 2500);
+          setTimeout(function () { button.textContent = original; }, 2500);
         }
       }).catch(function () {
-        save.textContent = 'COULD NOT SAVE — SCREENSHOT INSTEAD';
-        save.disabled = false;
-        setTimeout(function () { save.textContent = original; }, 3500);
+        button.textContent = 'COULD NOT SAVE — SCREENSHOT INSTEAD';
+        button.disabled = false;
+        setTimeout(function () { button.textContent = original; }, 3500);
       });
     });
   }
+
+  wire('[data-action="save"]', '.card', 'FPE-' + id + '.png', 'save');
+  wire('[data-action="save-sheet"]', '.rf__sheet', 'FPE-' + id + '-FILE.png', 'saveSheet');
 })();
 
 // old version of the save button, before the share sheet existed.

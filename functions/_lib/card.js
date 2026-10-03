@@ -10,6 +10,22 @@ export const normalizeFaction = (f) =>
 
 export const REDACTED = '[REDACTED]';
 
+// roughly how many ems wide a name sets, so the card can shrink it onto one
+// line without measuring anything. W and M are the fat ones, IJLT and the
+// punctuation are thin, the rest sit in the middle. the 1.03 is slack --
+// better a hair small than clipped. claim.js keeps its own copy of this
+export function nameWidth(text) {
+  let w = 0;
+  for (const ch of String(text || '').toUpperCase()) {
+    if (ch === 'W') w += 0.95;
+    else if (ch === 'M') w += 0.85;
+    else if ('IJLT .,\'-'.indexOf(ch) !== -1) w += 0.45;
+    else if (ch >= '0' && ch <= '9') w += 0.62;
+    else w += 0.72;
+  }
+  return Math.max(1, Math.round(w * 1.03 * 100) / 100);
+}
+
 const SILHOUETTE = `<svg class="card__silhouette" viewBox="0 0 100 125" aria-hidden="true">
         <path d="M50 30c8.6 0 15.5 7 15.5 15.7S58.6 61.4 50 61.4s-15.5-7-15.5-15.7S41.4 30 50 30Zm0 38.5c17.7 0 32 11.4 32 25.5V125H18V94c0-14.1 14.3-25.5 32-25.5Z"/>
       </svg>
@@ -62,22 +78,26 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
 
     <div class="card__seal">${raw(cityMark(bishopIdx))}</div>
 
+    <span class="card__mark" aria-hidden="true"></span>
+
     <header class="card__head">
       <p class="card__charge">
         <span>IDENTIFIED AS</span>
         <b>FAILED PERIMETER ESCAPE</b>
         <span>BY DEMA COUNCIL</span>
       </p>
+      <!--
       <p class="card__statute">
         <span>VIOLATION OF SECTION ${FORM.statute}</span>
         <span>OF VIALIST CODE OF CONDUCT</span>
       </p>
+      --> 
     </header>
 
     <div class="card__body">
       <div class="card__plate">${raw(String(plate))}</div>
       <dl class="card__facts">
-        ${raw(`<div class="fact fact--name"><dd data-slot="name">${h`${name}`}</dd><dt>NAME</dt></div>`)}
+        ${raw(`<div class="fact fact--name"><dd data-slot="name" style="--w:${nameWidth(name)}">${h`${name}`}</dd><dt>NAME</dt></div>`)}
         ${raw(fact('CITIZEN ID', h`${citizenId(id)}`, null, 'fact--id'))}
         ${raw(fact('ASSIGNED BISHOP', h`${bishop}`, 'bishop'))}
         ${raw(fact('ESCAPE ATTEMPTS', h`${attempts}`, 'attempts'))}
@@ -88,11 +108,12 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
 
     <p class="card__designation">FPE-${id}</p>
 
+    <!--
     <p class="card__place">
       <b>${venue}</b>
       <span>${city} &middot; ${date}</span>
     </p>
-
+    -->
     <p class="card__foot spread" data-plain="${FORM.benediction}">${raw(spread(FORM.benediction))}</p>
     <span class="card__faction" data-slot="faction" hidden>${faction}</span>
   </article>`;

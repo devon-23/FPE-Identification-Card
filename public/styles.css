@@ -31,6 +31,12 @@
   --red:     #a3281f;
   --plate:   #111;        /* photo well */
 
+  /* the allegiance stamps. the bandito olive is #595b3c lifted a couple of
+     stops so it still reads once the stamp is knocked back */
+  --mark-citizen: #000000;
+  --mark-escapee: #a3281f;
+  --mark-bandito: #909461;
+
   /* off the FROM HERE merch */
   --fh-red:    #d02019;
   --fh-yellow: #ffd800;
@@ -38,11 +44,16 @@
   --fh-black:  #231f20;
 }
 
-/* the fallbacks are the engraved gothics that ship with macOS, iOS and
-   Windows, for the second before the woff2 lands */
+/* Banknote Gothic is a licensed face and cannot be served from here, so it is
+   asked for first and falls back to the engraved gothics that ship with
+   macOS, iOS and Windows. This is the page.
+
+   Bank Gothic is only let out for the two canon lines -- the letterhead and
+   the benediction -- so they read as printed on and the rest stays typed. */
 :root {
-  --display: "Dema Gothic", "Banknote Gothic", Copperplate,
-             "Copperplate Gothic Light", "Lucida Sans", "Trebuchet MS", sans-serif;
+  --display: "Banknote Gothic", Copperplate, "Copperplate Gothic Light",
+             "Lucida Sans", "Trebuchet MS", sans-serif;
+  --dema: "Dema Gothic", var(--display);
   --mono-display: "Alfredino", "Oswald", "Arial Narrow", sans-serif;
 }
 
@@ -58,8 +69,6 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  /* Bank Gothic, served from /fonts. everything on the site is set in it
-     except the FROM HERE page, which has its own. */
   font-family: var(--display);
   font-size: 16px;
   line-height: 1.5;
@@ -248,7 +257,7 @@ body {
   color: #4e4a3f;
 }
 
-.card__facts { margin: 0; display: grid; gap: 0.625rem; align-content: start; }
+.card__facts { margin: 0; display: grid; gap: 0.625rem; align-content: start; container-type: inline-size; }
 
 /* Written on the line, with the printed label beneath it. */
 .fact dd {
@@ -270,9 +279,22 @@ body {
 }
 
 .fact dd { color: var(--red); }
-.fact--name dd { font-size: 1.0625rem; font-weight: 700; text-transform: uppercase; }
+/* the name never drops to a second line, it just comes down in size. --w is
+   roughly how many ems wide the text sets, worked out server side, so this
+   lands right with no javascript and no resize flicker */
+.fact--name dd {
+  font-size: min(1.0625rem, calc((100cqw - 0.3rem) / var(--w, 8)));
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
 .card--blank .fact dd { color: var(--ink-faint); }
-.card--blank .fact--name dd { font-weight: 400; font-size: 0.875rem; }
+.card--blank .fact--name dd {
+  font-weight: 400;
+  font-size: min(0.875rem, calc((100cqw - 0.3rem) / var(--w, 8)));
+}
 
 .card__lyric {
   margin: 0;
@@ -312,9 +334,9 @@ body {
 .card__place span { display: block; }
 
 .card__foot {
-  margin: 1rem 0 0;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--ink);
+  margin: 0.375rem 0 0;
+  padding-top: 0.25rem;
+  /* border-top: 1px solid var(--ink); */
   text-align: center;
   font-size: 0.4375rem;
   letter-spacing: 0.2em;
@@ -354,10 +376,17 @@ details[open] .dossier__head::after { content: "[ \2212 ]"; }
 details.dossier .fields { padding-bottom: 0.75rem; }
 
 .rf__sheet {
-  border: 1px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+  /* the plain rule it used to carry:
+  border: 1px solid var(--ink); */
+  border: 13px solid transparent;
+  border-image: url("/images/frame.webp") 130 round;
+  background: var(--paper);
   margin: 0 0 0.75rem;
   font-family: var(--display);
 }
+
 
 .rf__group {
   padding: 0.625rem 0.75rem;
@@ -543,6 +572,9 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 .form__status { margin: 0 0 0.75rem; min-height: 1.1em; font-size: 0.6875rem; letter-spacing: 0.1em; }
 .form__status:not(:empty) { color: var(--red); }
 .form > .button { margin-bottom: 0.5rem; }
+/* cancel sits outside the form -- you cannot nest one form in another,
+   and it posts somewhere else */
+.cancel { margin: 0; }
 
 /* ---------- register of designations ---------- */
 
@@ -1423,3 +1455,118 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 /* leaflet's own chrome sets its own stack and ignores the container */
 .fh__map .leaflet-control,
 .fh__map .leaflet-control-attribution { font-family: var(--mono-display); }
+
+/* ---------- the two lines in the real face ---------- */
+
+.doc__letterhead,
+.card__letterhead,
+.card__foot,
+.restricted__foot { font-family: var(--dema); }
+
+/* ---------- the allegiance mark ----------
+   stamped over the top right the way it is on the printed cards. a mask
+   rather than an <img> so the png comes through in the card's own ink. */
+
+.card { overflow: hidden; }
+
+.card__mark,
+.sheet__mark {
+  position: absolute;
+  top: 0.75rem;
+  /* hangs half off the right edge; the card clips it */
+  right: -5rem;
+  width: 10rem;
+  height: 10rem;
+  background: var(--mark-citizen);
+  opacity: 0.5;
+  pointer-events: none;
+  -webkit-mask: url("/images/citizen.webp") center / contain no-repeat;
+  mask: url("/images/citizen.webp") center / contain no-repeat;
+}
+
+.card--escapee .card__mark,
+.rf__sheet--escapee .sheet__mark {
+  background: var(--mark-escapee);
+  -webkit-mask-image: url("/images/escapee.webp");
+  mask-image: url("/images/escapee.webp");
+}
+
+/* the bandito glyph is wide and all the weight is on its left, so it needs
+   to sit further in than the two round ones to read at all */
+.card--bandito .card__mark,
+.rf__sheet--bandito .sheet__mark {
+  right: -3rem;
+  background: var(--mark-bandito);
+  opacity: 0.7;
+  -webkit-mask-image: url("/images/bandito.webp");
+  mask-image: url("/images/bandito.webp");
+}
+
+/* nothing to declare allegiance to yet -- but the maker's preview keeps it,
+   that is the point of the preview */
+.card--blank:not(.card--preview) .card__mark { display: none; }
+
+/* masked rather than dropped in as an <img> so the real mark still comes
+   through in oxblood like the drawn one did */
+.mark--img {
+  display: block;
+  background: var(--red);
+  opacity: 0.55;
+  -webkit-mask: url("/images/dema_sectors.webp") center / contain no-repeat;
+  mask: url("/images/dema_sectors.webp") center / contain no-repeat;
+}
+
+/* ---------- put yourself on the big plot ---------- */
+
+.fh__add { margin: 0; }
+
+.fh__addlabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-family: var(--mono-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  color: var(--fh-bone);
+}
+
+.fh__addrow { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+.fh__addinput {
+  flex: 1 1 14rem;
+  min-height: 3.25rem;
+  padding: 0.75rem 1rem;
+  border: 3px solid var(--fh-yellow);
+  background: transparent;
+  color: var(--fh-yellow);
+  font: inherit;
+  font-family: var(--mono-display);
+  font-size: 1rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fh__addinput::placeholder { color: var(--fh-bone); opacity: .7; }
+.fh__addinput:focus-visible { outline: 2px solid var(--fh-bone); outline-offset: 2px; }
+
+.fh__addgo {
+  min-height: 3.25rem;
+  padding: 0.75rem 2rem;
+  border: 3px solid var(--fh-yellow);
+  background: var(--fh-yellow);
+  color: var(--fh-red);
+  font: inherit;
+  font-family: var(--mono-display);
+  font-size: 0.875rem;
+  letter-spacing: 0.22em;
+  cursor: pointer;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.fh__addgo:active { background: transparent; color: var(--fh-yellow); }
+
+.actions--sheet { margin: 0 0 0.75rem; }
