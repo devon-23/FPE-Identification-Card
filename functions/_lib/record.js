@@ -11,12 +11,23 @@ const padId = (n) => String(n).padStart(4, '0');
 
 export function normalizeId(input) {
   if (input == null) return null;
-  const m = String(input).trim().toUpperCase().match(/^(?:FPE[-_]?)?(\d{1,4})$/);
+  const v = String(input).trim().toUpperCase().replace(/^FPE[-_]?/, '');
+
+  // self-registered: X001, X002... these are made on demand, not pre-seeded
+  const x = v.match(/^X(\d{3})$/);
+  if (x) {
+    const n = parseInt(x[1], 10);
+    return n >= 1 && n <= 999 ? `X${x[1]}` : null;
+  }
+
+  const m = v.match(/^(\d{1,4})$/);
   if (!m) return null;
   const n = parseInt(m[1], 10);
   if (!Number.isInteger(n) || n < 1 || n > SET_SIZE) return null;
   return padId(n);
 }
+
+export const isSelfRegistered = (id) => /^X\d{3}$/.test(String(id || ''));
 
 function field(label, value) {
   return h`<div class="rf"><dt>${label}</dt><dd>${value}</dd></div>`;

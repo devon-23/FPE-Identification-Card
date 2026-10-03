@@ -1156,6 +1156,7 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 }
 
 .map__legend span { display: inline-flex; align-items: center; gap: 0.375rem; }
+.swatch--org { background: #000; }
 .swatch--dst { background: transparent; border: 2px solid var(--red); }
 
 .sighting {
@@ -1172,3 +1173,32 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 }
 
 .sighting:active { background: #f4f4f4; }
+
+.doc__aside {
+  margin: 0.375rem 0 0;
+  font-size: 0.5625rem;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+}
+
+.grid--provisional { grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr)); }
+.grid--provisional .cell__s { font-size: 0.4375rem; overflow-wrap: anywhere; }
+
+.steps { margin: 0; padding-left: 1.125rem; }
+
+.steps li {
+  font-size: 0.5625rem;
+  line-height: 1.85;
+  letter-spacing: 0.03em;
+  color: var(--ink-dim);
+  padding: 0.1875rem 0;
+}
+
+.sources__note {
+  margin: 0 0 0.75rem;
+  font-size: 0.5625rem;
+  line-height: 1.8;
+  letter-spacing: 0.03em;
+  color: var(--ink-dim);
+}

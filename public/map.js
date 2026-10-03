@@ -21,11 +21,7 @@
 
     pins.forEach(function (p) {
       var m = L.circleMarker([p.lat, p.lon], {
-        radius: 6,
-        color: p.bandito ? '#a3281f' : '#000',
-        weight: 2,
-        fillColor: p.bandito ? '#a3281f' : '#000',
-        fillOpacity: 1,
+        radius: 6, color: '#000', weight: 2, fillColor: '#000', fillOpacity: 1,
       }).addTo(map);
 
       m.bindPopup(

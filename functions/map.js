@@ -8,7 +8,7 @@ const DESTINATION = { lat: 39.9612, lon: -82.9988, label: 'OHIO STATE UNIVERSITY
 
 export async function onRequestGet({ env }) {
   const { results } = await env.DB.prepare(`
-    SELECT r.id, r.name, r.hometown, r.faction, p.lat, p.lon
+    SELECT r.id, r.name, r.hometown, p.lat, p.lon
       FROM records r
       JOIN places p ON p.q = UPPER(TRIM(r.hometown))
      WHERE r.status = 'ESCAPED' AND p.lat IS NOT NULL
@@ -19,7 +19,6 @@ export async function onRequestGet({ env }) {
     id: r.id,
     name: r.name || `SUBJECT ${r.id}`,
     town: r.hometown,
-    bandito: r.faction === 'BANDITO',
     lat: r.lat,
     lon: r.lon,
   }));
@@ -43,8 +42,7 @@ export async function onRequestGet({ env }) {
     <div class="map" id="map" role="application" aria-label="Map of subject origins"></div>
 
     <p class="map__legend">
-      <span><b class="swatch swatch--ctz"></b> CITIZEN</span>
-      <span><b class="swatch swatch--bnd"></b> BANDITO</span>
+      <span><b class="swatch swatch--org"></b> ORIGIN</span>
       <span><b class="swatch swatch--dst"></b> TO HERE</span>
     </p>
 

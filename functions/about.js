@@ -60,6 +60,19 @@ export function onRequestGet() {
 
       <dl class="card__contact">${raw(links)}</dl>
 
+      ${raw((a.howto || []).length ? h`<section class="sources">
+        <h2>HOW THIS WORKS</h2>
+        <ol class="steps">${raw((a.howto || []).map((t) => h`<li>${t}</li>`).join(''))}</ol>
+      </section>` : '')}
+
+      ${raw(a.contact && a.contact.handle ? h`<section class="sources">
+        <h2>AMENDMENTS &middot; REMOVAL &middot; QUESTIONS</h2>
+        <p class="sources__note">Want something changed, or your record taken down
+          altogether? Ask and it is done &mdash; no reason needed. Same address for
+          anything that looks broken, or if you just want to say something.</p>
+        ${raw(fact(a.contact.label, h`${a.contact.handle}`, a.contact.href))}
+      </section>` : '')}
+
       ${raw(sources ? h`<section class="sources">
         <h2>SITES USED &middot; CREDIT &middot; INSPIRATION</h2>
         <ul>${raw(sources)}</ul>

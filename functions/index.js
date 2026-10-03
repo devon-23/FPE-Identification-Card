@@ -5,10 +5,12 @@ import { cityMark } from './_lib/glyph.js';
 export async function onRequestGet({ env }) {
   // the whole set in one query. 100 rows, nobody is paginating this
   const { results } = await env.DB
-    .prepare('SELECT id, status, faction FROM records ORDER BY n')
+    .prepare('SELECT id, status, faction, name, n FROM records ORDER BY n')
     .all();
 
-  const all = results || [];
+  // the hundred issued cards, and everyone who turned themselves in
+  const all = (results || []).filter((r) => r.n <= SET_SIZE);
+  const walkIns = (results || []).filter((r) => r.n > SET_SIZE && r.status === 'ESCAPED');
   const claimed = all.filter((r) => r.status === 'ESCAPED').length;
 
   const cells = all.map((r) => {
@@ -45,9 +47,15 @@ export async function onRequestGet({ env }) {
     <p class="doc__count"><b>${String(claimed)}</b> OF ${String(SET_SIZE)} DESIGNATIONS ACCOUNTED FOR.</p>
 
     <a class="sighting" href="/map">BANDITO SIGHTINGS &mdash;&mdash;&mdash;&gt;</a>
+    <a class="sighting" href="/turn-yourself-in">NO CARD? TURN YOURSELF IN &mdash;&mdash;&mdash;&gt;</a>
 
     <h2 class="doc__sub">IDENTIFIED PERSONNEL:</h2>
     <div class="grid">${raw(cells)}</div>
+
+    ${raw(walkIns.length ? h`<h2 class="doc__sub">UNIDENTIFIED PERSONNEL:</h2>
+    <p class="doc__aside">Provisional designations. No card was issued; these subjects
+      presented themselves.</p>
+    <div class="grid grid--provisional">${raw(walkIns.map((r) => h`<a class="cell cell--taken" href="/f/${r.id}"><span class="cell__n">${r.id}</span><span class="cell__s">${r.name || 'FILED'}</span></a>`).join(''))}</div>` : '')}
 
     <aside class="restricted">
       <img class="restricted__img" src="/images/restricted.webp"

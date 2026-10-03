@@ -105,6 +105,18 @@ record's bishop lit. Section one sits at twelve o'clock and they run clockwise
 
 Dates are written the way the archive writes them: `026 10MOON 17`.
 
+## People without a card
+
+`/turn-yourself-in` issues a provisional designation -- X001, X002 and so on,
+numbered from 1001 so they never collide with the hundred issued cards -- then
+drops you into the same registration form. There is no second claim path: the
+page allocates a record with a one-time key and redirects you to it, so
+everything after that is the ordinary flow.
+
+They show on the front page under UNIDENTIFIED PERSONNEL and on the map like
+anyone else. Capped at three per address per hour, since it is the one form
+nobody needs a card to reach.
+
 ## The map
 
 `/map` plots every claimant's hometown, with Columbus ringed as the one place
