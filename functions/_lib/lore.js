@@ -1,6 +1,7 @@
+// all the lore autofill jawn for intake form
+
 export const BISHOPS = [
-  'LISDEN', 'KEONS', 'REISDRO', 'SACARVER', 'LISTO',
-  'VETOMO', 'NILLS', 'NICO', 'ANDRE',
+  'LISDEN', 'KEONS', 'REISDRO', 'SACARVER', 'LISTO', 'VETOMO', 'NILLS', 'NICO', 'ANDRE',
 ];
 
 const METHODS = [
@@ -122,6 +123,22 @@ export function ledgerRef(id) {
   const a = hash('ledger' + id) % 90 + 10;
   const b = hash('ledgerb' + id) % 60;
   return { ledger: `${a}:${String(b).padStart(2, '0')}`, vault: `0${hash('vault' + id) % 9 + 1}` };
+}
+
+// for anyone who plots a town and gives nothing else. two words out of the
+// trench vocabulary, seeded on the designation so it never changes under them
+const CALL_FIRST = [
+  'ASHEN', 'YELLOW', 'QUIET', 'CROOKED', 'LATE', 'HOLLOW', 'EASTWARD',
+  'RUNNING', 'UNLIT', 'PAPER', 'SECOND', 'SALT', 'LOW', 'GLASS',
+];
+
+const CALL_SECOND = [
+  'TORCH', 'KITE', 'VULTURE', 'RIDGE', 'CLEARING', 'EMBER', 'BANNER',
+  'CANYON', 'SPARROW', 'LANTERN', 'CLIFF', 'TRENCH', 'SIGNAL', 'DRUM',
+];
+
+export function banditoName(id) {
+  return `${pick(CALL_FIRST, 'cn1' + id)} ${pick(CALL_SECOND, 'cn2' + id)}`;
 }
 
 export function assignedDesignation(id) {

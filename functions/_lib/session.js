@@ -1,5 +1,7 @@
 
 import { safeEqual } from './auth.js';
+//remember session so peeople can edit their cards
+// idk how long the cookies last but
 
 const COOKIE = 'fpe_admin';
 const TTL_SECONDS = 60 * 60 * 8;

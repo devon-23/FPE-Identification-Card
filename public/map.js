@@ -1,4 +1,15 @@
 (function () {
+  // off the origin-only form: the token comes back in the fragment, same as
+  // the record page does it
+  try {
+    var filed = document.querySelector('.filed');
+    var handoff = location.hash.match(/^#t=([A-Za-z0-9_-]{20,})$/);
+    if (filed && handoff) {
+      localStorage.setItem('fpe:token:' + filed.getAttribute('data-fpe'), handoff[1]);
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  } catch (e) {  }
+
   function start() {
     if (!window.L) return setTimeout(start, 50);
 
@@ -42,8 +53,10 @@
       bounds.push([p.lat, p.lon]);
     });
 
-    if (bounds.length > 1) map.fitBounds(bounds, { padding: [30, 30], maxZoom: 7 });
-    else map.setView([dest.lat, dest.lon], 5);
+    // always opens on columbus, far enough out to take in most of the states.
+    // fitting to the pins meant one person in australia zoomed everyone out
+    map.setView([dest.lat, dest.lon], 4);
+    // map.fitBounds(bounds, { padding: [30, 30], maxZoom: 7 });
   }
 
   function esc(s) {

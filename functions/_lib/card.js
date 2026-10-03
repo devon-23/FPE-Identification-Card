@@ -4,7 +4,7 @@ import { generate, assignedDesignation, citizenId, BISHOPS } from './lore.js';
 import { cityMark } from './glyph.js';
 import { EVENT, FORM, demaDate } from './config.js';
 
-const FACTIONS = ['CITIZEN', 'BANDITO'];
+const FACTIONS = ['CITIZEN', 'ESCAPEE', 'BANDITO'];
 export const normalizeFaction = (f) =>
   FACTIONS.includes(String(f || '').toUpperCase()) ? String(f).toUpperCase() : 'CITIZEN';
 
@@ -79,7 +79,7 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
       <dl class="card__facts">
         ${raw(`<div class="fact fact--name"><dd data-slot="name">${h`${name}`}</dd><dt>NAME</dt></div>`)}
         ${raw(fact('CITIZEN ID', h`${citizenId(id)}`, null, 'fact--id'))}
-        ${raw(fact('BISHOP ASSIGNED', h`${bishop}`, 'bishop'))}
+        ${raw(fact('ASSIGNED BISHOP', h`${bishop}`, 'bishop'))}
         ${raw(fact('ESCAPE ATTEMPTS', h`${attempts}`, 'attempts'))}
       </dl>
     </div>

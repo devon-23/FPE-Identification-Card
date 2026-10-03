@@ -69,7 +69,7 @@ export async function onRequestGet({ request, params, env }) {
       </div>
 
       <div class="form__row">
-        <label class="form__label" for="bishop">BISHOP ASSIGNED</label>
+        <label class="form__label" for="bishop">ASSIGNED BISHOP</label>
         <select class="form__input form__select" id="bishop" name="bishop">
           ${raw(BISHOPS.map((b) => `<option value="${b}"${b === chosen ? ' selected' : ''}>${b}</option>`).join(''))}
         </select>
@@ -86,7 +86,7 @@ export async function onRequestGet({ request, params, env }) {
         <label class="form__label" for="hometown">HOMETOWN <span>OPTIONAL</span></label>
         <input class="form__input" id="hometown" name="hometown" type="text"
                maxlength="${String(HOMETOWN_MAX)}" autocomplete="off" autocapitalize="characters"
-               placeholder="CITY, STATE" value="${val(v.hometown)}">
+               placeholder="CITY, STATE OR COUNTRY" value="${val(v.hometown)}">
       </div>
 
       <div class="form__row">
@@ -105,11 +105,12 @@ export async function onRequestGet({ request, params, env }) {
 
       <fieldset class="form__row form__fieldset">
         <legend class="form__label">ALLEGIANCE DECLARED</legend>
-        <div class="toggle">
-          <input type="radio" name="faction" id="f-citizen" value="CITIZEN"${raw(normalizeFaction(v.faction) === 'BANDITO' ? '' : ' checked')}>
-          <label for="f-citizen">CITIZEN</label>
-          <input type="radio" name="faction" id="f-bandito" value="BANDITO"${raw(normalizeFaction(v.faction) === 'BANDITO' ? ' checked' : '')}>
-          <label for="f-bandito">BANDITO</label>
+        <div class="toggle toggle--three">
+          ${raw(['CITIZEN', 'ESCAPEE', 'BANDITO'].map((f) => {
+            const on = normalizeFaction(v.faction) === f ? ' checked' : '';
+            return `<input type="radio" name="faction" id="f-${f.toLowerCase()}" value="${f}"${on}>`
+                 + `<label for="f-${f.toLowerCase()}">${f}</label>`;
+          }).join(''))}
         </div>
       </fieldset>
 

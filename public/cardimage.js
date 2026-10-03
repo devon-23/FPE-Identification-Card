@@ -1,11 +1,17 @@
 (function () {
   'use strict';
 
-  var DISPLAY = '"Banknote Gothic", Copperplate, "Copperplate Gothic Light", "Lucida Sans", "Trebuchet MS", sans-serif';
+  var DISPLAY = '"Dema Gothic", "Banknote Gothic", Copperplate, "Copperplate Gothic Light", "Lucida Sans", "Trebuchet MS", sans-serif';
   //lawd let banknote work.
   var S = 3;
   var CW = 360;
-  var PAD = 16;
+  var PAD = 21;
+
+  // the glyph frame, and how far in from the edge of that file the band sits.
+  // has to agree with the border-image on .card or the png and the screen drift
+  var FRAME = '/images/frame.webp';
+  var FRAME_SLICE = 130;
+  var FRAME_W = 13;
 
   var C = {};
 
@@ -143,6 +149,37 @@
     });
   }
 
+  // border-image: <frame> 130 round, by hand, because canvas has no such thing.
+  // corners go down whole, the four strips get tiled a whole number of times
+  function nineSlice(ctx, img, w, h) {
+    var sl = FRAME_SLICE;
+    var b = px(FRAME_W);
+    var sw = img.naturalWidth || img.width;
+    var sh = img.naturalHeight || img.height;
+    var midS = { x: sw - sl * 2, y: sh - sl * 2 };
+    var midD = { x: w - b * 2, y: h - b * 2 };
+
+    ctx.drawImage(img, 0, 0, sl, sl, 0, 0, b, b);
+    ctx.drawImage(img, sw - sl, 0, sl, sl, w - b, 0, b, b);
+    ctx.drawImage(img, 0, sh - sl, sl, sl, 0, h - b, b, b);
+    ctx.drawImage(img, sw - sl, sh - sl, sl, sl, w - b, h - b, b, b);
+
+    var scale = b / sl;
+    var nx = Math.max(1, Math.round(midD.x / (midS.x * scale)));
+    var ny = Math.max(1, Math.round(midD.y / (midS.y * scale)));
+    var tw = midD.x / nx;
+    var th = midD.y / ny;
+
+    for (var i = 0; i < nx; i++) {
+      ctx.drawImage(img, sl, 0, midS.x, sl, b + i * tw, 0, tw, b);
+      ctx.drawImage(img, sl, sh - sl, midS.x, sl, b + i * tw, h - b, tw, b);
+    }
+    for (var j = 0; j < ny; j++) {
+      ctx.drawImage(img, 0, sl, sl, midS.y, 0, b + j * th, b, th);
+      ctx.drawImage(img, sw - sl, sl, sl, midS.y, w - b, b + j * th, b, th);
+    }
+  }
+
   function readCard(card) {
     // read the rendered card rather than rebuilding it, so the png cannot
     // disagree with what is on screen
@@ -185,7 +222,7 @@
     };
   }
 
-  function draw(d, photo) {
+  function draw(d, photo, frame) {
     // everything is measured in css pixels and multiplied by S at the end.
     // if you change the card css, change the numbers here too
     var canvas = document.createElement('canvas');
@@ -224,9 +261,11 @@
 
     ctx.fillStyle = C.paper;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = C.ink;
-    ctx.lineWidth = Math.max(2, px(1));
-    ctx.strokeRect(px(0.5), px(0.5), canvas.width - px(1), canvas.height - px(1));
+    // used to be a plain rule:
+    // ctx.strokeStyle = C.ink;
+    // ctx.lineWidth = Math.max(2, px(1));
+    // ctx.strokeRect(px(0.5), px(0.5), canvas.width - px(1), canvas.height - px(1));
+    if (frame) nineSlice(ctx, frame, canvas.width, canvas.height);
 
     var cx = canvas.width / 2;
     var y = 18;
@@ -390,7 +429,9 @@
     render: function (card) {
       readTheme();
       var d = readCard(card);
-      return loadImage(d.photoSrc).then(function (photo) { return draw(d, photo); });
+      return Promise.all([loadImage(d.photoSrc), loadImage(FRAME)]).then(function (imgs) {
+        return draw(d, imgs[0], imgs[1]);
+      });
     },
     save: function (card, filename) {
       return window.FPECard.render(card)

@@ -13,11 +13,18 @@ export function normalizeId(input) {
   if (input == null) return null;
   const v = String(input).trim().toUpperCase().replace(/^FPE[-_]?/, '');
 
-  // self-registered: X001, X002... these are made on demand, not pre-seeded
+  // self-registered: X001, X002... these are made on demand, not pre-seeded. all beginging with x
   const x = v.match(/^X(\d{3})$/);
   if (x) {
     const n = parseInt(x[1], 10);
     return n >= 1 && n <= 999 ? `X${x[1]}` : null;
+  }
+
+  // origin-only, off the map page. Y0001 upwards
+  const y = v.match(/^Y(\d{4})$/);
+  if (y) {
+    const n = parseInt(y[1], 10);
+    return n >= 1 && n <= 9999 ? `Y${y[1]}` : null;
   }
 
   const m = v.match(/^(\d{1,4})$/);
@@ -27,7 +34,7 @@ export function normalizeId(input) {
   return padId(n);
 }
 
-export const isSelfRegistered = (id) => /^X\d{3}$/.test(String(id || ''));
+export const isSelfRegistered = (id) => /^(?:X\d{3}|Y\d{4})$/.test(String(id || ''));
 
 function field(label, value) {
   return h`<div class="rf"><dt>${label}</dt><dd>${value}</dd></div>`;
@@ -137,7 +144,7 @@ export function renderUnregistered(id, { claimingOpen = true, key = null, keyOk 
 }
 
 function civilNotice(rec) {
-  // typos in here are on purpose, they are meant to read like a bad scan
+  // tnotice
   const name = rec.name || assignedDesignation(rec.id);
   const ref = ledgerRef(rec.id);
   return h`<section class="notice">
@@ -150,13 +157,13 @@ function civilNotice(rec) {
       <div class="notice__cols">
         <div class="notice__col">
           <h3>REPORT CLASSIFICATION:</h3>
-          <p>PENDING ESCALATION &mdash; INTERNAL SECURITY COUNCIL REVIEV</p>
-          <p>Filed by: UNITED VIALISTS / OIV, OF CIVIL ORDER AND RESTRAIKT</p>
-          <p>Archived In: Municioal Ledger ${ref.ledger} / Vault ${ref.vault}</p>
+          <p>PENDING ESCALATION &mdash; INTERNAL SECURITY COUNCIL REVIEW</p>
+          <p>Filed by: UNITED VIALISTS / DIV, OF CIVIL ORDER AND RESTRAINT</p>
+          <p>Archived In: Municipal Ledger ${ref.ledger} / Vault ${ref.vault}</p>
         </div>
         <div class="notice__col">
           <h3>DESIGNATED INCIDENT SENTIMENT</h3>
-          <p class="notice__quote">&ldquo;All eactely honor unto the glorious gone. Let
+          <p class="notice__quote">&ldquo;All earthly honor unto the glorious gone. Let
             their ash mark the path of those who resain&rdquo;</p>
         </div>
       </div>
@@ -189,7 +196,7 @@ export function renderRecord(rec, { rank = null } = {}) {
   });
 }
 
-export function renderNotFound() {
+export function renderNotFound() { // same as dmaorg site
   const body = h`  <main class="stage void">
     <p class="void__code">404 ER_ROR</p>
     <p class="void__body">you are in violation. thEy mustn't know you were here. no one should ever find out About this. you can never tell anyone about thiS &mdash; for The sake of the others' survIval, you muSt keep this silent. we mUst keeP silent. no one can know. no one can know. no o&nbsp;ne c an kn ow_</p>

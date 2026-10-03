@@ -70,8 +70,9 @@
   function paintFaction() {
     var f = form.querySelector('input[name="faction"]:checked').value;
     slotFaction.textContent = f;
+    card.classList.toggle('card--citizen', f === 'CITIZEN');
+    card.classList.toggle('card--escapee', f === 'ESCAPEE');
     card.classList.toggle('card--bandito', f === 'BANDITO');
-    card.classList.toggle('card--citizen', f !== 'BANDITO');
   }
 
   function paintPhoto(src) {

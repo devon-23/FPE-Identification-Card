@@ -1,7 +1,8 @@
 export async function onRequestGet({ params, env }) {
   const name = String(params.file || '');
-  // 0042.jpg or X001.jpg. the X form was added later and this missed it
-  if (!/^(?:\d{4}|X\d{3})\.jpg$/.test(name)) return new Response('Not found', { status: 404 });
+  // 0042.jpg, X001.jpg or Y0001.jpg. the letter forms came later and keep
+  // catching this out, so it reads off the same shapes normalizeId knows
+  if (!/^(?:\d{4}|X\d{3}|Y\d{4})\.jpg$/.test(name)) return new Response('Not found', { status: 404 });
 
   if (!env.PHOTOS) return new Response('Not found', { status: 404 });
 

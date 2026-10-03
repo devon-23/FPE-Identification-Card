@@ -5,7 +5,7 @@ export const ABOUT = {
   designation: 'FPE-0001',
   hometown: 'Philadelphia, PA',
 
-  photo: null,
+  photo: '/images/max.webp',
 
   bio: 'I made these cards and handed them out at the show. '
      + 'One hundred of them, one number each. If you have one, it is yours. See the other banditos that attended the show. This is our drag path.',
@@ -13,13 +13,13 @@ export const ABOUT = {
   // the one to contact for amendments, removals and questions.
   // set `handle` and `href` to wherever you actually read messages.
   contact: {
-    label: 'X / TWITTER',
+    label: 'TWITTER',
     handle: '@devonisreallyco',
     href: 'https://x.com/devonisreallyco',
   },
 
   links: [
-    { label: 'X',         value: '@devonisreallyco', href: 'https://x.com/devonisreallyco' }
+    { label: 'TWITTER',         value: '@devonisreallyco', href: 'https://x.com/devonisreallyco' }
   ],
 
   howto: [

@@ -19,7 +19,7 @@ function isForbidden(cp) {
   );
 }
 
-function clean(input, max) {
+function clean(input, max) { //scrub scrub
   if (typeof input !== 'string') return '';
   let out = '';
   for (const ch of input) {

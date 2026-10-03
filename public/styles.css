@@ -1,8 +1,25 @@
 /* FPE ARCHIVE
-   Mobile-first. One stylesheet, no framework, no web fonts.
+   Mobile-first. One stylesheet, no framework.
 
    Black on white, like the material it is drawn from. Red is reserved for
    letterheads, a subject's name and citizen ID, and the benediction. */
+
+/* Two faces, both served from here as woff2. Bank Gothic is the engraved
+   one the documents are set in; Alfredino is the condensed mono off the
+   FROM HERE merch and is used on that page only. */
+@font-face {
+  font-family: "Dema Gothic";
+  src: url("/fonts/dema.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Alfredino";
+  src: url("/fonts/alfredino.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
 
 :root {
   --paper:   #fff;
@@ -13,14 +30,20 @@
   --hair:    #cfcfcf;
   --red:     #a3281f;
   --plate:   #111;        /* photo well */
+
+  /* off the FROM HERE merch */
+  --fh-red:    #d02019;
+  --fh-yellow: #ffd800;
+  --fh-bone:   #d5d0c3;
+  --fh-black:  #231f20;
 }
 
-/* Banknote Gothic is a licensed face and cannot be served from here, so it is
-   asked for first and falls back to the engraved gothics that ship with
-   macOS, iOS and Windows. */
+/* the fallbacks are the engraved gothics that ship with macOS, iOS and
+   Windows, for the second before the woff2 lands */
 :root {
-  --display: "Banknote Gothic", Copperplate, "Copperplate Gothic Light",
-             "Lucida Sans", "Trebuchet MS", sans-serif;
+  --display: "Dema Gothic", "Banknote Gothic", Copperplate,
+             "Copperplate Gothic Light", "Lucida Sans", "Trebuchet MS", sans-serif;
+  --mono-display: "Alfredino", "Oswald", "Arial Narrow", sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -127,8 +150,12 @@ body {
   position: relative;
   background: #fff;
   color: var(--ink);
+  /* the plain rule the card used to have:
   border: 1px solid var(--ink);
-  padding: 1.125rem 1rem 1rem;
+  padding: 1.125rem 1rem 1rem; */
+  border: 13px solid transparent;
+  border-image: url("/images/frame.webp") 130 round;
+  padding: 0.5rem 0.5rem 0.375rem;
   /* The whole document is set in the engraved face, not just its headings. */
   font-family: var(--display);
 }
@@ -478,8 +505,13 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 }
 
 .toggle label + input + label { border-left: 0; }
+.toggle--three { grid-template-columns: repeat(3, 1fr); font-size: 0.625rem; }
+.toggle--three label { letter-spacing: 0.1em; padding: 0.75rem 0.25rem; }
+
+/* citizen black, escapee red, bandito yellow -- same order as the grid */
 .toggle input:checked + label { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 700; }
 .toggle input:nth-of-type(2):checked + label { background: var(--red); border-color: var(--red); color: var(--paper); }
+.toggle input:nth-of-type(3):checked + label { background: var(--fh-yellow); border-color: var(--ink); color: var(--ink); }
 .toggle input:focus-visible + label { outline: 2px solid var(--red); outline-offset: -4px; }
 
 .consent { margin-top: 0.25rem; border: 1px solid var(--ink-faint); background: #f4f4f4; padding: 0.75rem; }
@@ -564,7 +596,8 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 
 .cell--taken { background: var(--ink); color: var(--paper); }
 .cell--taken .cell__n { font-weight: 700; }
-.cell--bandito { background: var(--red); color: var(--paper); }
+.cell--escapee { background: var(--red); color: var(--paper); }
+.cell--bandito { background: var(--fh-yellow); color: var(--ink); }
 .cell:active { outline: 2px solid var(--red); outline-offset: -2px; }
 
 .legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin: 0; font-size: 0.4375rem; letter-spacing: 0.14em; color: var(--ink-faint); }
@@ -596,7 +629,8 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 .entry__name small { display: block; font-size: 0.4375rem; letter-spacing: 0.14em; color: var(--ink-faint); margin-top: 0.1875rem; }
 .entry__town { color: var(--ink-faint); text-decoration: underline; text-underline-offset: 2px; }
 .entry__f { font-size: 0.4375rem; letter-spacing: 0.14em; }
-.entry--bandito .entry__f { color: var(--red); }
+.entry--escapee .entry__f { color: var(--red); }
+.entry--bandito .entry__f { color: var(--ink); background: var(--fh-yellow); padding: 0 0.25rem; }
 .entry:active { background: #f4f4f4; }
 
 /* ---------- admin ---------- */
@@ -1242,3 +1276,145 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
   letter-spacing: 0.03em;
   color: var(--ink-dim);
 }
+
+/* ---------- filed confirmation on the plot ---------- */
+
+.filed {
+  margin: 1.25rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid var(--ink);
+  background: var(--fh-yellow);
+  font-family: var(--display);
+  font-size: 0.5625rem;
+  line-height: 1.8;
+  letter-spacing: 0.1em;
+}
+
+.filed a { color: var(--ink); }
+
+/* ---------- FRØM HERE ----------
+   the landscape one. yellow on red off the merch, set in the condensed
+   mono rather than the engraved face everything else uses. */
+
+.page-fromhere { background: var(--fh-red); color: var(--fh-yellow); }
+.page-fromhere .sheet { max-width: 72rem; padding: 2rem 1.5rem 3rem; }
+
+.fh { display: grid; gap: 1.75rem; }
+
+.fh__head { text-align: center; }
+
+.fh__kicker,
+.fh__sub {
+  margin: 0;
+  font-family: var(--mono-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  color: var(--fh-bone);
+}
+
+.fh__title {
+  margin: 0.5rem 0;
+  font-family: var(--mono-display);
+  font-size: clamp(3.5rem, 15vw, 11rem);
+  line-height: 0.88;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+  color: var(--fh-yellow);
+}
+
+.fh__plot { position: relative; }
+
+.fh__map {
+  height: min(62vh, 34rem);
+  min-height: 18rem;
+  border: 3px solid var(--fh-yellow);
+  background: var(--fh-bone);
+}
+
+.fh__map .leaflet-tile-pane { filter: grayscale(1) contrast(0.85) brightness(1.1); }
+.fh__map .leaflet-container { font-family: var(--mono-display); background: var(--fh-bone); }
+
+.fh__map .leaflet-popup-content-wrapper,
+.fh__map .leaflet-popup-tip {
+  border-radius: 0;
+  background: var(--fh-yellow);
+  color: var(--fh-black);
+  border: 2px solid var(--fh-black);
+  box-shadow: none;
+}
+
+.fh__map .leaflet-popup-content { margin: 0.625rem 0.75rem; font-size: 0.75rem; letter-spacing: 0.06em; }
+.fh__map .leaflet-popup-content a { color: var(--fh-red); text-decoration: none; }
+.fh__map .leaflet-control-attribution { font-size: 0.5rem; }
+
+.fh__tohere {
+  margin: 0.625rem 0 0;
+  text-align: right;
+  font-family: var(--mono-display);
+  font-size: clamp(1rem, 3vw, 1.75rem);
+  letter-spacing: 0.22em;
+  color: var(--fh-yellow);
+}
+
+.fh__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+/* boxed one by one rather than one ruled block, so an odd number of them
+   does not leave a hole in the last row */
+.fh__stat {
+  padding: 1rem 1.125rem 1.125rem;
+  border: 3px solid var(--fh-yellow);
+  font-family: var(--mono-display);
+}
+
+.fh__stat dd {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+  line-height: 1.05;
+  color: var(--fh-yellow);
+  overflow-wrap: anywhere;
+}
+
+.fh__stat dt {
+  margin: 0.5rem 0 0;
+  font-size: 0.6875rem;
+  letter-spacing: 0.26em;
+  color: var(--fh-bone);
+}
+
+.fh__stat p {
+  margin: 0.375rem 0 0;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  line-height: 1.6;
+  color: var(--fh-bone);
+}
+
+.fh__note { font-family: var(--mono-display); letter-spacing: 0.2em; }
+
+.fh__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  justify-content: center;
+  margin: 0;
+  font-family: var(--mono-display);
+  font-size: 0.8125rem;
+  letter-spacing: 0.22em;
+}
+
+.fh__links a {
+  padding: 0.625rem 1rem;
+  border: 2px solid var(--fh-yellow);
+  color: var(--fh-yellow);
+  text-decoration: none;
+}
+
+.fh__links a:active { background: var(--fh-yellow); color: var(--fh-red); }
+
+.page-fromhere .colophon { border-top-color: var(--fh-bone); }
+.page-fromhere .colophon__who a { color: var(--fh-yellow); }

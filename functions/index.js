@@ -13,14 +13,17 @@ export async function onRequestGet({ env }) {
   const walkIns = (results || []).filter((r) => r.n > SET_SIZE && r.status === 'ESCAPED');
   const claimed = all.filter((r) => r.status === 'ESCAPED').length;
 
-  const cells = all.map((r) => {
-  // one square per designation. taken ones get filled, bandito ones go red
+  // one square per designation. taken ones get filled; citizen stays black,
+  // escapee goes red, bandito goes yellow
+  function cell(r) {
     const taken = r.status === 'ESCAPED';
-    const bandito = r.faction === 'BANDITO';
-    const cls = `cell${taken ? ' cell--taken' : ''}${taken && bandito ? ' cell--bandito' : ''}`;
+    const side = taken ? String(r.faction || '').toLowerCase() : '';
+    const cls = `cell${taken ? ' cell--taken' : ''}${side === 'escapee' || side === 'bandito' ? ` cell--${side}` : ''}`;
     const who = taken ? h`<span class="cell__who">${r.name || 'FILED'}</span>` : '';
     return h`<a class="${raw(cls)}" href="/f/${r.id}"><span class="cell__n">${r.id}</span>${raw(who)}</a>`;
-  }).join('');
+  }
+
+  const cells = all.map(cell).join('');
 
   const report = `At approximately 21:14 L.M.T, on the 17th day of October, 2026_moon (Revised Dema Calendar),
     Municipal Sensors registered a thermal disturbance at Grid Section OS-North, outside Perimeter Sector
@@ -55,7 +58,7 @@ export async function onRequestGet({ env }) {
     ${raw(walkIns.length ? h`<h2 class="doc__sub">UNIDENTIFIED PERSONNEL:</h2>
     <p class="doc__aside">Provisional designations. No card was issued; these subjects
       presented themselves.</p>
-    <div class="grid">${raw(walkIns.map((r) => h`<a class="cell cell--taken" href="/f/${r.id}"><span class="cell__n">${r.id}</span><span class="cell__who">${r.name || 'FILED'}</span></a>`).join(''))}</div>` : '')}
+    <div class="grid">${raw(walkIns.map(cell).join(''))}</div>` : '')}
 
     <a class="sighting" href="/turn-yourself-in">NO CARD? TURN YOURSELF IN &mdash;&mdash;&mdash;&gt;</a>
 

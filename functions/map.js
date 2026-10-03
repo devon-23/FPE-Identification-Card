@@ -5,11 +5,12 @@ import { normalise } from './_lib/geo.js';
 import { HOMETOWN_MAX } from './_lib/sanitize.js';
 import { REDACTED } from './_lib/card.js';
 import { getSetting } from './_lib/db.js';
+import { normalizeId } from './_lib/record.js';
 
 // where everyone came from, and the one place they all ended up
 const DESTINATION = { lat: 39.9612, lon: -82.9988, label: 'OHIO STATE UNIVERSITY' };
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ env, request }) {
   const { results } = await env.DB.prepare(`
     SELECT r.id, r.name, r.hometown, p.lat, p.lon
       FROM records r
@@ -18,8 +19,7 @@ export async function onRequestGet({ env }) {
      ORDER BY r.n
   `).all();
 
-  // two people from the same town land on the same coordinates, so group
-  // them into one pin rather than stacking markers nobody can click apart
+  // two people from the same town land on the same coordinates, so group them into one pin rather than stacking markers nobody can click apart
   const byPlace = new Map();
   for (const r of results || []) {
     const key = `${r.lat},${r.lon}`;
@@ -38,6 +38,10 @@ export async function onRequestGet({ env }) {
 
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
 
+  // just came off the origin-only form. say so and point at the record
+  const filed = normalizeId(new URL(request.url).searchParams.get('new'));
+  const plottedIt = filed && (results || []).some((r) => r.id === filed);
+
   const body = h`  <main class="stage doc">
     <p class="doc__letterhead spread" data-plain="${FORM.letterhead}">${raw(spread(FORM.letterhead))}</p>
     <div class="doc__seal">${raw(cityMark(0, { allLit: true }))}</div>
@@ -55,6 +59,12 @@ export async function onRequestGet({ env }) {
 
     <noscript><p class="note">THIS PLOT REQUIRES SCRIPTING. THE RECORDS THEMSELVES DO NOT.</p></noscript>
 
+    ${raw(filed ? h`<p class="filed" data-fpe="${filed}">FILED AS FPE-${filed}. ${raw(plottedIt
+      ? h`YOUR ORIGIN IS ON THE PLOT. <a href="/f/${filed}">OPEN YOUR RECORD &mdash;&gt;</a>`
+      : h`THE ORIGIN YOU GAVE COULD NOT BE PLACED, BUT THE RECORD STANDS. <a href="/f/${filed}">OPEN IT &mdash;&gt;</a>`)}</p>` : '')}
+
+    <a class="sighting" href="/from-here">FR&Oslash;M HERE &mdash; THE BIG PLOT &mdash;&mdash;&mdash;&gt;</a>
+
     <a class="sighting" href="/turn-yourself-in">NOT ON HERE? MAKE YOUR OWN CARD &mdash;&mdash;&mdash;&gt;</a>
 
     ${raw(open ? h`<form class="plot" method="POST" action="/turn-yourself-in">
@@ -66,7 +76,7 @@ export async function onRequestGet({ env }) {
         <label class="form__label" for="hometown">WHERE YOU CAME FROM</label>
         <input class="form__input" id="hometown" name="hometown" type="text" required
                maxlength="${String(HOMETOWN_MAX)}" autocomplete="off"
-               autocapitalize="characters" placeholder="CITY, STATE">
+               autocapitalize="characters" placeholder="CITY, STATE OR COUNTRY">
       </div>
       <button class="button button--primary" type="submit">PLOT MY HOMETOWN</button>
     </form>` : '')}
@@ -82,5 +92,5 @@ export async function onRequestGet({ env }) {
     title: 'FROM HERE — DEMA ARCHIVES',
     body,
     bodyClass: 'page-map',
-  }), { headers: { 'cache-control': 'public, max-age=60' } });
+  }), { headers: { 'cache-control': filed ? 'no-store' : 'public, max-age=60' } });
 }
