@@ -7,6 +7,7 @@ import { readJpeg, putPhoto } from '../../_lib/photo.js';
 import { getRecord, getSetting } from '../../_lib/db.js';
 import { EVENT } from '../../_lib/config.js';
 import { sameOrigin } from '../../_lib/origin.js';
+import { lookup } from '../../_lib/geo.js';
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -14,7 +15,7 @@ const json = (data, status = 200) =>
     headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
   });
 
-export async function onRequestPost({ request, params, env }) {
+export async function onRequestPost({ request, params, env, waitUntil }) {
   // first registration only. amend.js handles everything after
   const id = normalizeId(params.id);
   if (!id) return json({ error: 'NO SUCH RECORD' }, 404);
@@ -81,6 +82,9 @@ export async function onRequestPost({ request, params, env }) {
       } catch {  }
     }
   }
+
+  // after the response, so a slow geocoder never holds up a claim at the venue
+  if (hometown && waitUntil) waitUntil(lookup(env.DB, hometown));
 
   return json({ ok: true, token, photo, next: `/f/${id}` });
 }

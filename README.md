@@ -105,6 +105,20 @@ record's bishop lit. Section one sits at twelve o'clock and they run clockwise
 
 Dates are written the way the archive writes them: `026 10MOON 17`.
 
+## The map
+
+`/map` plots every claimant's hometown, with Columbus ringed as the one place
+they all ended up. Pins open the record.
+
+Hometowns are geocoded through Nominatim (OpenStreetMap, free, no key) and
+cached in a `places` table, so a town typed by twenty people is looked up
+once. The lookup runs in `waitUntil` **after** the claim response goes out —
+a slow geocoder must never hold up someone registering at the venue. A town
+that fails to resolve just gets no pin; the record is unaffected.
+
+Leaflet comes from a CDN and loads on this page only. Everything else is
+still dependency-free.
+
 ## Editing your own details
 
 `functions/_lib/about.js`. That's the only file `/about` reads — name, bio,

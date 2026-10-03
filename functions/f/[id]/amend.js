@@ -6,6 +6,7 @@ import { ownsRecord } from '../../_lib/auth.js';
 import { readJpeg, putPhoto } from '../../_lib/photo.js';
 import { getRecord } from '../../_lib/db.js';
 import { sameOrigin } from '../../_lib/origin.js';
+import { lookup } from '../../_lib/geo.js';
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -13,7 +14,7 @@ const json = (data, status = 200) =>
     headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
   });
 
-export async function onRequestPost({ request, params, env }) {
+export async function onRequestPost({ request, params, env, waitUntil }) {
   // the edit token is the whole security model here. no token, no write
   const id = normalizeId(params.id);
   if (!id) return json({ error: 'NO SUCH RECORD' }, 404);
@@ -68,6 +69,8 @@ export async function onRequestPost({ request, params, env }) {
       return json({ error: 'THE IMAGE COULD NOT BE STORED.' }, 502);
     }
   }
+
+  if (hometown && waitUntil) waitUntil(lookup(env.DB, hometown));
 
   return json({ ok: true, next: `/f/${id}` });
 }

@@ -44,6 +44,8 @@ export async function onRequestGet({ env }) {
 
     <p class="doc__count"><b>${String(claimed)}</b> OF ${String(SET_SIZE)} DESIGNATIONS ACCOUNTED FOR.</p>
 
+    <a class="sighting" href="/map">BANDITO SIGHTINGS &mdash;&mdash;&mdash;&gt;</a>
+
     <h2 class="doc__sub">IDENTIFIED PERSONNEL:</h2>
     <div class="grid">${raw(cells)}</div>
 

@@ -42,3 +42,13 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   n       INTEGER NOT NULL DEFAULT 0,
   first   INTEGER NOT NULL
 );
+
+-- looked-up coordinates for hometowns. keyed on the normalised string so the
+-- same town is only ever geocoded once, however many people type it.
+CREATE TABLE IF NOT EXISTS places (
+  q      TEXT PRIMARY KEY,
+  lat    REAL,
+  lon    REAL,
+  label  TEXT,
+  tried  INTEGER NOT NULL DEFAULT 0
+);

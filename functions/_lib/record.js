@@ -112,7 +112,7 @@ export function renderUnregistered(id, { claimingOpen = true, key = null, keyOk 
   if (!claimingOpen) {
     action = raw('<p class="note">THE ARCHIVE IS NOT ACCEPTING SUBMISSIONS AT THIS TIME.</p>');
   } else if (keyOk) {
-    action = h`<p class="actions"><a class="button button--primary" href="/f/${id}/register?k=${key}">REGISTER THIS ID</a></p>`;
+    action = h`<p class="actions"><a class="button button--primary button--flash" href="/f/${id}/register?k=${key}">REGISTER THIS ID</a></p>`;
   } else {
     action = raw('<p class="note">THIS DESIGNATION CAN ONLY BE REGISTERED FROM ITS OWN CARD. '
       + 'TAP THE CARD, OR ENTER THE FULL ADDRESS PRINTED ON IT.</p>');
@@ -134,10 +134,10 @@ function civilNotice(rec) {
   const name = rec.name || assignedDesignation(rec.id);
   const ref = ledgerRef(rec.id);
   return h`<section class="notice">
-      <p class="notice__body"><b>CIVIL NOTICE:</b> in mcordance wh Dema Lew Sec. A-77.03
-        persons found to be in possession of knowindne reseroine the whereabouts,
-        communication or prior contact with Subject ${name} must immediately subeil
-        form V-14-8 el their assigned congreggion desk. Falure to comply constitutes
+      <p class="notice__body"><b>CIVIL NOTICE:</b> in accordance with Dema Law Sec. A-77.03: All
+        persons found to be in possession of knowledge of the whereabouts,
+        communication or prior contact with Subject ${name} must immediately submit
+        form V-14-8 to their assigned congregation desk. Failure to comply constitutes
         civil treason.</p>
 
       <div class="notice__cols">
