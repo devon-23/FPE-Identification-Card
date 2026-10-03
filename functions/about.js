@@ -78,10 +78,12 @@ export function onRequestGet() {
         <ul>${raw(sources)}</ul>
       </section>` : '')}
 
+      <p class="disclaimer">UNOFFICIAL FAN-MADE &mdash; NOT AFFILIATED WITH TWENTY ONE PILOTS,
+        FUELED BY RAMEN OR ANYONE ELSE. MARK PLEASE DON'T BE MAD (again).</p>
+
       <p class="card__foot spread" data-plain="${FORM.benediction}">${raw(spread(FORM.benediction))}</p>
     </article>
 
-    <p class="backlink"><a href="/">&larr; INCIDENT REPORT ${FORM.statute}</a></p>
   </main>`;
 
   return htmlResponse(layout({

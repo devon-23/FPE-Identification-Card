@@ -2,6 +2,9 @@ import { h, raw, layout, htmlResponse, spread } from './_lib/html.js';
 import { FORM, EVENT, demaDate } from './_lib/config.js';
 import { cityMark } from './_lib/glyph.js';
 import { normalise } from './_lib/geo.js';
+import { HOMETOWN_MAX } from './_lib/sanitize.js';
+import { REDACTED } from './_lib/card.js';
+import { getSetting } from './_lib/db.js';
 
 // where everyone came from, and the one place they all ended up
 const DESTINATION = { lat: 39.9612, lon: -82.9988, label: 'OHIO STATE UNIVERSITY' };
@@ -33,6 +36,8 @@ export async function onRequestGet({ env }) {
   ).first();
   const waiting = Math.max(0, (counted ? counted.n : 0) - plotted);
 
+  const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
+
   const body = h`  <main class="stage doc">
     <p class="doc__letterhead spread" data-plain="${FORM.letterhead}">${raw(spread(FORM.letterhead))}</p>
     <div class="doc__seal">${raw(cityMark(0, { allLit: true }))}</div>
@@ -50,7 +55,21 @@ export async function onRequestGet({ env }) {
 
     <noscript><p class="note">THIS PLOT REQUIRES SCRIPTING. THE RECORDS THEMSELVES DO NOT.</p></noscript>
 
-    <p class="backlink"><a href="/">&larr; INCIDENT REPORT ${FORM.statute}</a></p>
+    <a class="sighting" href="/turn-yourself-in">NOT ON HERE? MAKE YOUR OWN CARD &mdash;&mdash;&mdash;&gt;</a>
+
+    ${raw(open ? h`<form class="plot" method="POST" action="/turn-yourself-in">
+      <h2 class="doc__sub">ORIGIN ONLY:</h2>
+      <p class="doc__aside">A whole file is a lot to fill in on a phone in a crowd. Give a
+        town and nothing else and you get a pin, under a provisional designation, with every
+        other field left ${REDACTED}. Finish it later if you want to.</p>
+      <div class="form__row">
+        <label class="form__label" for="hometown">WHERE YOU CAME FROM</label>
+        <input class="form__input" id="hometown" name="hometown" type="text" required
+               maxlength="${String(HOMETOWN_MAX)}" autocomplete="off"
+               autocapitalize="characters" placeholder="CITY, STATE">
+      </div>
+      <button class="button button--primary" type="submit">PLOT MY HOMETOWN</button>
+    </form>` : '')}
   </main>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">

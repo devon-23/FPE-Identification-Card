@@ -110,11 +110,8 @@ function restrictedBanner() {
   return h`<aside class="restricted restricted--inline">
       <img class="restricted__img" src="/images/restricted.webp"
            alt="RESTRICTED CONTENT. VIOLATION CODE ${FORM.violation}." width="1027" height="167">
+      <p class="restricted__foot spread" data-plain="${FORM.benediction}">${raw(spread(FORM.benediction))}</p>
     </aside>`;
-}
-
-function returnLink() {
-  return h`<p class="backlink"><a href="/">&larr; INCIDENT REPORT ${FORM.statute}</a></p>`;
 }
 
 export function renderUnregistered(id, { claimingOpen = true, key = null, keyOk = false } = {}) {
@@ -133,7 +130,6 @@ export function renderUnregistered(id, { claimingOpen = true, key = null, keyOk 
     ${raw(card)}
     <p class="note">THIS DESIGNATION HAS NOT BEEN CLAIMED.<br>THE FIRST SUBJECT TO REGISTER HOLDS IT.</p>
     ${raw(String(action))}
-    ${raw(returnLink())}
   </main>`;
   return layout({
     title: `FPE-${id} — UNREGISTERED`, body, bodyClass: 'page-record',
@@ -164,8 +160,6 @@ function civilNotice(rec) {
             their ash mark the path of those who resain&rdquo;</p>
         </div>
       </div>
-
-      <p class="notice__tag spread" data-plain="${FORM.benediction}">${raw(spread(FORM.benediction))}</p>
     </section>`;
 }
 
@@ -187,7 +181,6 @@ export function renderRecord(rec, { rank = null } = {}) {
     ${raw(civilNotice(rec))}
     ${raw(dossier(rec, rank))}
     ${raw(restrictedBanner())}
-    ${raw(returnLink())}
   </main>
   <script src="/record.js" defer></script>`;
 
@@ -201,7 +194,6 @@ export function renderNotFound() {
     <p class="void__code">404 ER_ROR</p>
     <p class="void__body">you are in violation. thEy mustn't know you were here. no one should ever find out About this. you can never tell anyone about thiS &mdash; for The sake of the others' survIval, you muSt keep this silent. we mUst keeP silent. no one can know. no one can know. no o&nbsp;ne c an kn ow_</p>
     <p class="void__ref">(Violation Code. ${FORM.statute})</p>
-    ${raw(returnLink())}
   </main>`;
   return layout({ title: '404 ER_ROR', body, bodyClass: 'page-void' });
 }

@@ -120,7 +120,16 @@ nobody needs a card to reach.
 ## The map
 
 `/map` plots every claimant's hometown, with Columbus ringed as the one place
-they all ended up. Pins open the record.
+they all ended up. Pins open the record, and two people from the same town
+share one pin rather than stacking.
+
+The page also carries a one-field form. Filling in a whole file on a phone in
+a crowd is a lot to ask, so this takes a town and nothing else: it issues a
+provisional designation, marks the record claimed with every other field
+[REDACTED], and hands the edit token back in the URL fragment so they can
+finish it later if they want to. It posts to the same endpoint and is subject
+to the same rate limit and the same claiming switch, and it only shows while
+claiming is open.
 
 Hometowns are geocoded through Nominatim (OpenStreetMap, free, no key) and
 cached in a `places` table, so a town typed by twenty people is looked up

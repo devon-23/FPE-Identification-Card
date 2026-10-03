@@ -3,6 +3,16 @@
   if (!stage) return;
   var id = stage.getAttribute('data-fpe');
 
+  // the origin-only shortcut sends the token in the fragment, since there is
+  // no json response to read it out of
+  try {
+    var handoff = location.hash.match(/^#t=([A-Za-z0-9_-]{20,})$/);
+    if (handoff) {
+      localStorage.setItem('fpe:token:' + id, handoff[1]);
+      history.replaceState(null, '', location.pathname);
+    }
+  } catch (e) {  }
+
   try {
     if (localStorage.getItem('fpe:token:' + id)) {
       var owned = stage.querySelectorAll('[data-owner-only]');

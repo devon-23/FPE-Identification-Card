@@ -1006,16 +1006,34 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 
 /* ---------- colophon link ---------- */
 
-.colophon { align-items: flex-start; gap: 0.75rem; }
-.colophon > p:first-child { flex: 1; }
+.colophon { align-items: center; gap: 0.75rem; }
+.colophon__who { margin-left: auto; }
 
-.colophon__who { font-family: var(--display); letter-spacing: 0.12em; font-size: 0.4375rem; white-space: nowrap; }
+.colophon__back,
+.colophon__who {
+  font-family: var(--display);
+  letter-spacing: 0.12em;
+  font-size: 0.4375rem;
+  white-space: nowrap;
+}
 
+.colophon__back a,
 .colophon__who a {
   display: inline-block;
-  padding: 0.125rem 0;
+  padding: 0.375rem 0;
   color: var(--red);
   text-decoration: none;
+}
+
+.colophon__back a { color: var(--ink); }
+.colophon__back a:active { color: var(--red); }
+
+.disclaimer {
+  margin: 1.25rem 0 0;
+  font-size: 0.5rem;
+  line-height: 1.8;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
 }
 
 /* ---------- about ---------- */
@@ -1100,6 +1118,9 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 /* on a record it sits on its own rather than closing the page like it does
    on the front, so it needs its own breathing room */
 .restricted--inline { margin: 1.75rem 0 0; }
+
+.plot { margin: 1.5rem 0 0; }
+.plot .doc__aside { margin-bottom: 0.75rem; }
 
 /* the register button pulses so it reads as the thing to press */
 @keyframes flash {

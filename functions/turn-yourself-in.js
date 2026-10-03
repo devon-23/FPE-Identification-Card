@@ -1,10 +1,12 @@
 import { h, raw, layout, htmlResponse, spread } from './_lib/html.js';
-import { FORM, SET_SIZE } from './_lib/config.js';
+import { FORM, SET_SIZE, EVENT } from './_lib/config.js';
 import { cityMark } from './_lib/glyph.js';
 import { newToken, hashToken } from './_lib/auth.js';
 import { getSetting } from './_lib/db.js';
 import { sameOrigin } from './_lib/origin.js';
 import { ipHash } from './_lib/session.js';
+import { cleanHometown } from './_lib/sanitize.js';
+import { lookup } from './_lib/geo.js';
 
 // no card, no key, so this is the one form anybody can reach. cap it per
 // address or one bored person can fill the register with nothing
@@ -33,7 +35,6 @@ function page(message) {
     <p class="note">THIS ISSUES A PROVISIONAL DESIGNATION AND TAKES YOU STRAIGHT TO THE FORM.
       NOTHING IS RECORDED UNTIL YOU SUBMIT IT.</p>
 
-    <p class="backlink"><a href="/">&larr; INCIDENT REPORT ${FORM.statute}</a></p>
   </main>`;
   return layout({ title: 'VOLUNTARY SURRENDER — DEMA ARCHIVES', body, bodyClass: 'page-surrender' });
 }
@@ -42,8 +43,13 @@ export function onRequestGet() {
   return htmlResponse(page(null), { headers: { 'cache-control': 'public, max-age=60' } });
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, waitUntil }) {
   if (!sameOrigin(request)) return htmlResponse(page('REJECTED.'), { status: 403 });
+
+  // the map posts a town here. everything else posts an empty form
+  let hometown = '';
+  try { hometown = cleanHometown((await request.formData()).get('hometown')); }
+  catch {  }
 
   if ((await getSetting(env.DB, 'claiming_open', '0')) !== '1') {
     return htmlResponse(page('THE ARCHIVE IS NOT ACCEPTING SUBMISSIONS AT THIS TIME.'), { status: 403 });
@@ -91,6 +97,28 @@ export async function onRequestPost({ request, env }) {
       n = CASE WHEN ? THEN 1 ELSE n + 1 END,
       first = CASE WHEN ? THEN ? ELSE first END
   `).bind(bucket, now, fresh ? 1 : 0, fresh ? 1 : 0, now).run();
+
+  // came in from the map, so there is nothing else to ask for. fill the
+  // record in here instead of handing them a form they already turned down
+  if (hometown) {
+    const token = newToken();
+    const stamp = new Date().toISOString();
+    await env.DB.prepare(`
+      UPDATE records
+         SET status = 'ESCAPED', name_assigned = 1, hometown = ?, token_hash = ?,
+             claimed_at = ?, updated_at = ?, location = ?, city = ?, event_date = ?
+       WHERE id = ?
+    `).bind(hometown, await hashToken(token), stamp, stamp,
+            EVENT.venue, EVENT.city, EVENT.date, id).run();
+
+    if (waitUntil) waitUntil(lookup(env.DB, hometown));
+
+    // the edit token rides in the fragment, which browsers keep to themselves
+    return new Response(null, {
+      status: 303,
+      headers: { location: `/f/${id}#t=${token}`, 'cache-control': 'no-store' },
+    });
+  }
 
   return new Response(null, {
     status: 303,

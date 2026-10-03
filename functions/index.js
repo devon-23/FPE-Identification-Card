@@ -18,7 +18,8 @@ export async function onRequestGet({ env }) {
     const taken = r.status === 'ESCAPED';
     const bandito = r.faction === 'BANDITO';
     const cls = `cell${taken ? ' cell--taken' : ''}${taken && bandito ? ' cell--bandito' : ''}`;
-    return h`<a class="${raw(cls)}" href="/f/${r.id}"><span class="cell__n">${r.id}</span></a>`;
+    const who = taken ? h`<span class="cell__who">${r.name || 'FILED'}</span>` : '';
+    return h`<a class="${raw(cls)}" href="/f/${r.id}"><span class="cell__n">${r.id}</span>${raw(who)}</a>`;
   }).join('');
 
   const report = `At approximately 21:14 L.M.T, on the 17th day of October, 2026_moon (Revised Dema Calendar),
@@ -84,5 +85,6 @@ export async function onRequestGet({ env }) {
     title: `DMAORG — INCIDENT RPT ${FORM.statute}`,
     body,
     bodyClass: 'page-index',
+    back: false,
   }), { headers: { 'cache-control': 'public, max-age=30' } });
 }
