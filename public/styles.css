@@ -58,8 +58,8 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  /* Lucida Sans Typewriter where it exists; Lucida Console and Monaco are the
-     same lineage. No web font -- this has to load on one bar of signal. */
+  /* Bank Gothic, served from /fonts. everything on the site is set in it
+     except the FROM HERE page, which has its own. */
   font-family: var(--display);
   font-size: 16px;
   line-height: 1.5;
@@ -710,11 +710,14 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 .doc__title {
   margin: 0.5rem 0 0;
   text-align: center;
+  /* bank gothic is wider than the fallback was, so this takes two lines on a
+     narrow phone. the break is in the markup; this just keeps it tight */
   font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
-  line-height: 1.4;
+  letter-spacing: 0.08em;
+  line-height: 1.6;
   color: #000;
+  text-wrap: balance;
 }
 
 .doc__date {
@@ -1153,8 +1156,7 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
    on the front, so it needs its own breathing room */
 .restricted--inline { margin: 1.75rem 0 0; }
 
-.plot { margin: 1.5rem 0 0; }
-.plot .doc__aside { margin-bottom: 0.75rem; }
+.plot { margin: 1rem 0 0; }
 
 /* the register button pulses so it reads as the thing to press */
 @keyframes flash {
@@ -1277,26 +1279,24 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
   color: var(--ink-dim);
 }
 
-/* ---------- filed confirmation on the plot ---------- */
+/* ---------- the register is shut ---------- */
 
-.filed {
+.shut {
   margin: 1.25rem 0 0;
-  padding: 0.75rem;
+  padding: 1rem;
   border: 1px solid var(--ink);
-  background: var(--fh-yellow);
-  font-family: var(--display);
-  font-size: 0.5625rem;
-  line-height: 1.8;
-  letter-spacing: 0.1em;
+  background: #f4f4f4;
+  text-align: center;
+  font-size: 0.625rem;
+  line-height: 2;
+  letter-spacing: 0.18em;
 }
-
-.filed a { color: var(--ink); }
 
 /* ---------- FRØM HERE ----------
    the landscape one. yellow on red off the merch, set in the condensed
    mono rather than the engraved face everything else uses. */
 
-.page-fromhere { background: var(--fh-red); color: var(--fh-yellow); }
+.page-fromhere { background: var(--fh-red); color: var(--fh-yellow); font-family: var(--mono-display); }
 .page-fromhere .sheet { max-width: 72rem; padding: 2rem 1.5rem 3rem; }
 
 .fh { display: grid; gap: 1.75rem; }
@@ -1417,4 +1417,9 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 .fh__links a:active { background: var(--fh-yellow); color: var(--fh-red); }
 
 .page-fromhere .colophon { border-top-color: var(--fh-bone); }
+.page-fromhere .colophon__who { font-family: var(--mono-display); }
 .page-fromhere .colophon__who a { color: var(--fh-yellow); }
+
+/* leaflet's own chrome sets its own stack and ignores the container */
+.fh__map .leaflet-control,
+.fh__map .leaflet-control-attribution { font-family: var(--mono-display); }

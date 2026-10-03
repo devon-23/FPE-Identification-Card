@@ -1,12 +1,12 @@
 (function () {
-  // off the origin-only form: the token comes back in the fragment, same as
-  // the record page does it
+  // off the origin-only form. nothing is said about it on the page -- the pin
+  // showing up is the whole message -- but the edit token is kept so the
+  // record is theirs if they ever find it
   try {
-    var filed = document.querySelector('.filed');
-    var handoff = location.hash.match(/^#t=([A-Za-z0-9_-]{20,})$/);
-    if (filed && handoff) {
-      localStorage.setItem('fpe:token:' + filed.getAttribute('data-fpe'), handoff[1]);
-      history.replaceState(null, '', location.pathname + location.search);
+    var handoff = location.hash.match(/^#t=(Y\d{4})\.([A-Za-z0-9_-]{20,})$/);
+    if (handoff) {
+      localStorage.setItem('fpe:token:' + handoff[1], handoff[2]);
+      history.replaceState(null, '', location.pathname);
     }
   } catch (e) {  }
 
@@ -54,8 +54,9 @@
     });
 
     // always opens on columbus, far enough out to take in most of the states.
-    // fitting to the pins meant one person in australia zoomed everyone out
-    map.setView([dest.lat, dest.lon], 4);
+    // fitting to the pins meant one person in australia zoomed everyone out.
+    // a phone is a third the width of a laptop, so it needs a step further out
+    map.setView([dest.lat, dest.lon], map.getSize().x < 500 ? 3 : 4);
     // map.fitBounds(bounds, { padding: [30, 30], maxZoom: 7 });
   }
 

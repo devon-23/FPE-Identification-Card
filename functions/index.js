@@ -43,7 +43,7 @@ export async function onRequestGet({ env }) {
       /* <a class="doc__who" href="/about">WHO FILED THIS &mdash;&mdash;&mdash;&gt;</a> */
     + `</div>
 
-    <h1 class="doc__title">INVESTIGATIVE SUMMARY &mdash; INCIDENT RPT</h1>
+    <h1 class="doc__title">INVESTIGATIVE SUMMARY<br>&mdash; INCIDENT RPT &mdash;</h1>
     <p class="doc__date">${demaDate(`${EVENT.date}T00:00:00Z`)}</p>
 
     <p class="doc__report">${report}</p>

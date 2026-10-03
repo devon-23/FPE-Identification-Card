@@ -25,7 +25,7 @@ const Y_TOP = 2999;
 // person. somebody who opens the form and backs out should not burn a number
 const ABANDONED_SECONDS = 20 * 60;
 
-function page(message) {
+function page(message, open = true) {
   const body = h`  <main class="stage doc">
     <p class="doc__letterhead spread" data-plain="${FORM.letterhead}">${raw(spread(FORM.letterhead))}</p>
     <div class="doc__seal">${raw(cityMark(0, { allLit: true }))}</div>
@@ -40,19 +40,22 @@ function page(message) {
 
     ${raw(message ? h`<p class="form__status">${message}</p>` : '')}
 
-    <form method="POST" action="/turn-yourself-in">
+    ${raw(open ? `<form method="POST" action="/turn-yourself-in">
       <button class="button button--primary button--flash" type="submit">TURN YOURSELF IN</button>
     </form>
 
     <p class="note">THIS ISSUES A PROVISIONAL DESIGNATION AND TAKES YOU STRAIGHT TO THE FORM.
-      NOTHING IS RECORDED UNTIL YOU SUBMIT IT.</p>
+      NOTHING IS RECORDED UNTIL YOU SUBMIT IT.</p>` : `<p class="shut">THE REGISTER IS CLOSED.<br>
+      NO DESIGNATIONS ARE BEING ISSUED AT THIS TIME.</p>`)}
 
   </main>`;
   return layout({ title: 'VOLUNTARY SURRENDER — DEMA ARCHIVES', body, bodyClass: 'page-surrender' });
 }
 
-export function onRequestGet() {
-  return htmlResponse(page(null), { headers: { 'cache-control': 'public, max-age=60' } });
+export async function onRequestGet({ env }) {
+  // no point flashing a button at somebody that is going to say no
+  const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
+  return htmlResponse(page(null, open), { headers: { 'cache-control': 'public, max-age=60' } });
 }
 
 export async function onRequestPost({ request, env }) {
@@ -64,7 +67,7 @@ export async function onRequestPost({ request, env }) {
   catch {  }
 
   if ((await getSetting(env.DB, 'claiming_open', '0')) !== '1') {
-    return htmlResponse(page('THE ARCHIVE IS NOT ACCEPTING SUBMISSIONS AT THIS TIME.'), { status: 403 });
+    return htmlResponse(page(null, false), { status: 403 });
   }
 
   // same table the admin login throttle uses, prefixed so the two cannot
@@ -153,11 +156,12 @@ export async function onRequestPost({ request, env }) {
     // is worth the second. a town already in `places` costs nothing
     await lookup(env.DB, hometown);
 
-    // back to the map so they watch themselves appear. the edit token rides
-    // in the fragment, which browsers keep to themselves
+    // straight back to the plot with nothing said. they asked for a pin, they
+    // get a pin; the record behind it is there if they ever go looking. the
+    // edit token rides in the fragment, which browsers keep to themselves
     return new Response(null, {
       status: 303,
-      headers: { location: `/map?new=${id}#t=${token}`, 'cache-control': 'no-store' },
+      headers: { location: `/map#t=${id}.${token}`, 'cache-control': 'no-store' },
     });
   }
 

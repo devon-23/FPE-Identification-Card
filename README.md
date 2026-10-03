@@ -168,9 +168,10 @@ limit and the same claiming switch, and it only shows while claiming is open.
 
 That path geocodes **before** replying rather than in `waitUntil`, which is
 the opposite of the ordinary claim -- the pin is the entire point of the form,
-so it is worth the second. It then sends you back to `/map` with the edit
-token in the URL fragment, so the page redraws with your marker on it and you
-can still finish the record later.
+so it is worth the second. It then sends you straight back to `/map` and says
+nothing at all: the marker appearing is the whole confirmation. The edit token
+still rides back in the URL fragment and is stored quietly, so the record is
+theirs if they ever go looking for it.
 
 ## /from-here
 

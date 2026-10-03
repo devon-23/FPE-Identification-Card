@@ -33,7 +33,7 @@
       radius: 12, color: '#231f20', weight: 4, fill: false,
     }).addTo(map).bindPopup('<b>TO HERE</b><br>' + esc(dest.label));
 
-    map.setView([dest.lat, dest.lon], 4);
+    map.setView([dest.lat, dest.lon], map.getSize().x < 500 ? 3 : 4);
   }
 
   function esc(s) {
