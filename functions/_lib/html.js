@@ -46,7 +46,7 @@ export function layout({ title, body, bodyClass = '' }) {
 <div class="sheet">
 ${body}
   <footer class="colophon">
-    <p>UNOFFICIAL FAN-MADE - NOT AFFILIATED WITH TWENTY ONE PILOTS. MARK PLEASE DON'T BE MAD (again).</p><p class="colophon__who"><a href="/about">WHO FILED THIS &mdash;&mdash;&mdash;&gt;</a></p>
+    <p>UNOFFICIAL FAN-MADE - NOT AFFILIATED WITH TWENTY ONE PILOTS. MARK PLEASE DON'T BE MAD (again).</p><p class="colophon__who"><a href="/about">WHO FILED THIS &mdash;&gt;</a></p>
   </footer>
 </div>
 </body>

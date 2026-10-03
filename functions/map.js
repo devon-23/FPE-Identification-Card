@@ -15,18 +15,23 @@ export async function onRequestGet({ env }) {
      ORDER BY r.n
   `).all();
 
-  const pins = (results || []).map((r) => ({
-    id: r.id,
-    name: r.name || `SUBJECT ${r.id}`,
-    town: r.hometown,
-    lat: r.lat,
-    lon: r.lon,
-  }));
+  // two people from the same town land on the same coordinates, so group
+  // them into one pin rather than stacking markers nobody can click apart
+  const byPlace = new Map();
+  for (const r of results || []) {
+    const key = `${r.lat},${r.lon}`;
+    if (!byPlace.has(key)) {
+      byPlace.set(key, { lat: r.lat, lon: r.lon, town: r.hometown, people: [] });
+    }
+    byPlace.get(key).people.push({ id: r.id, name: r.name || `SUBJECT ${r.id}` });
+  }
+  const pins = [...byPlace.values()];
+  const plotted = (results || []).length;
 
   const counted = await env.DB.prepare(
     "SELECT count(*) AS n FROM records WHERE status = 'ESCAPED' AND hometown IS NOT NULL"
   ).first();
-  const waiting = Math.max(0, (counted ? counted.n : 0) - pins.length);
+  const waiting = Math.max(0, (counted ? counted.n : 0) - plotted);
 
   const body = h`  <main class="stage doc">
     <p class="doc__letterhead spread" data-plain="${FORM.letterhead}">${raw(spread(FORM.letterhead))}</p>
@@ -41,12 +46,7 @@ export async function onRequestGet({ env }) {
 
     <div class="map" id="map" role="application" aria-label="Map of subject origins"></div>
 
-    <p class="map__legend">
-      <span><b class="swatch swatch--org"></b> ORIGIN</span>
-      <span><b class="swatch swatch--dst"></b> TO HERE</span>
-    </p>
-
-    <p class="doc__count"><b>${String(pins.length)}</b> ORIGIN${raw(pins.length === 1 ? '' : 'S')} PLOTTED${raw(waiting ? h` &middot; ${String(waiting)} AWAITING SURVEY` : '')}</p>
+    <p class="doc__count"><b>${String(plotted)}</b> ORIGIN${raw(plotted === 1 ? '' : 'S')} PLOTTED${raw(waiting ? h` &middot; ${String(waiting)} AWAITING SURVEY` : '')}</p>
 
     <noscript><p class="note">THIS PLOT REQUIRES SCRIPTING. THE RECORDS THEMSELVES DO NOT.</p></noscript>
 

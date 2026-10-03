@@ -20,14 +20,24 @@
     var bounds = [[dest.lat, dest.lon]];
 
     pins.forEach(function (p) {
+      // one pin per town. it grows a little when more than one person is on it
+      var many = p.people.length > 1;
       var m = L.circleMarker([p.lat, p.lon], {
-        radius: 6, color: '#000', weight: 2, fillColor: '#000', fillOpacity: 1,
+        radius: many ? 8 : 6,
+        color: '#000',
+        weight: 2,
+        fillColor: '#000',
+        fillOpacity: 1,
       }).addTo(map);
 
+      var rows = p.people.map(function (s) {
+        return '<a href="/f/' + s.id + '">FPE-' + s.id + ' &middot; ' + esc(s.name) + '</a>';
+      }).join('<br>');
+
       m.bindPopup(
-        '<b>FPE-' + p.id + '</b><br>' + esc(p.name) +
-        (p.town ? '<br>' + esc(p.town) : '') +
-        '<br><a href="/f/' + p.id + '">OPEN RECORD &rarr;</a>'
+        '<b>' + esc(p.town || '') + '</b>' +
+        (many ? '<br>' + p.people.length + ' SUBJECTS' : '') +
+        '<br>' + rows
       );
       bounds.push([p.lat, p.lon]);
     });
