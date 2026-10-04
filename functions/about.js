@@ -68,9 +68,9 @@ export function onRequestGet() {
       ${raw(a.contact && a.contact.handle ? h`<section class="sources">
         <h2>AMENDMENTS &middot; REMOVAL &middot; QUESTIONS</h2>
         <p class="sources__note">Want something changed, or your record taken down
-          altogether? Ask and it is done &mdash; no reason needed. Same address for
+          altogether? Ask and it is done. Reach out to me on twitter. Same address for
           anything that looks broken, or if you just want to say something.</p>
-        ${raw(fact(a.contact.label, h`${a.contact.handle}`, a.contact.href))}
+        <!-- ${raw(fact(a.contact.label, h`${a.contact.handle}`, a.contact.href))} -->
       </section>` : '')}
 
       ${raw(sources ? h`<section class="sources">

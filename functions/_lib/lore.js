@@ -95,7 +95,7 @@ function hash(str) {
     h ^= str.charCodeAt(i);
     h = Math.imul(h, 16777619) >>> 0;
   }
-  return h >>> 0;
+  return h >>> 0; // shout out oopda class
 }
 
 const pick = (list, seed) => list[hash(seed) % list.length];
@@ -125,21 +125,23 @@ export function ledgerRef(id) {
   return { ledger: `${a}:${String(b).padStart(2, '0')}`, vault: `0${hash('vault' + id) % 9 + 1}` };
 }
 
-// for anyone who plots a town and gives nothing else. two words out of the
-// trench vocabulary, seeded on the designation so it never changes under them
+// for anyone who plots a town and gives nothing else. 
 const CALL_FIRST = [
-  'ASHEN', 'YELLOW', 'QUIET', 'CROOKED', 'LATE', 'HOLLOW', 'EASTWARD',
-  'RUNNING', 'UNLIT', 'PAPER', 'SECOND', 'SALT', 'LOW', 'GLASS',
+  'SPOOKY', 'YELLOW', 'QUIET', 'GLORIOUS', 'TOWER', 'HOLLOW', 'REBEL',
+  'BANDITO', 'UNLIT', 'PAPER', 'SECOND', 'SALT', 'LOW', 'GLASS',
 ];
 
 const CALL_SECOND = [
-  'TORCH', 'KITE', 'VULTURE', 'RIDGE', 'CLEARING', 'EMBER', 'BANNER',
-  'CANYON', 'SPARROW', 'LANTERN', 'CLIFF', 'TRENCH', 'SIGNAL', 'DRUM',
+  'TORCH', 'TRASH', 'VULTURE', 'RIDGE', 'BEARER', 'EMBER', 'NED',
+  'CANYON', 'SPARROW', 'CARNATION', 'CLIFF', 'TRENCH', 'SIGNAL', 'DRUM',
 ];
 
 export function banditoName(id) {
   return `${pick(CALL_FIRST, 'cn1' + id)} ${pick(CALL_SECOND, 'cn2' + id)}`;
 }
+
+// randomly assign faction of unassigned person
+export const assignedFaction = (id) => pick(['CITIZEN', 'ESCAPEE', 'BANDITO'], 'side' + id);
 
 export function assignedDesignation(id) {
   const letters = 'ABCDEFGHJKLMNPRSTVWXYZ';
@@ -190,5 +192,4 @@ export function generate(id) {
 
 // const MOONS = ['01MOON','02MOON','03MOON','04MOON','05MOON','06MOON',
 //                '07MOON','08MOON','09MOON','10MOON','11MOON','12MOON'];
-// ^ never used it, demaDate just pads the number. keeping it because i'll
-//   forget the format otherwise
+//  never used it, demaDate just pads the number. keeping it because i'll forget the format otherwise

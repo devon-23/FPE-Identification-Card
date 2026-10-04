@@ -3,8 +3,7 @@
   if (!stage) return;
   var id = stage.getAttribute('data-fpe');
 
-  // the origin-only shortcut sends the token in the fragment, since there is
-  // no json response to read it out of
+  // the origin-only shortcut sends the token in the fragment, since there is no json response to read it out of
   try {
     var handoff = location.hash.match(/^#t=([A-Za-z0-9_-]{20,})$/);
     if (handoff) {
@@ -50,8 +49,7 @@
     return loading;
   }
 
-  // the card and the attached file save the same way, they just hand the
-  // exporter a different lump of the page
+  // the card and the attached file save the same way, they just hand the exporter a different lump of the page
   function wire(selector, target, filename, call) {
     var button = stage.querySelector(selector);
     if (!button) return;

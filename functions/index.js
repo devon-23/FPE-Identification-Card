@@ -13,8 +13,7 @@ export async function onRequestGet({ env }) {
   const walkIns = (results || []).filter((r) => r.n > SET_SIZE && r.status === 'ESCAPED');
   const claimed = all.filter((r) => r.status === 'ESCAPED').length;
 
-  // one square per designation. taken ones get filled; citizen stays black,
-  // escapee goes red, bandito goes yellow
+  // one square per designation. taken ones get filled; citizen stays black, escapee goes red, bandito goes yellow
   function cell(r) {
     const taken = r.status === 'ESCAPED';
     const side = taken ? String(r.faction || '').toLowerCase() : '';

@@ -5,15 +5,11 @@ import { cityMark } from './glyph.js';
 import { EVENT, FORM, demaDate } from './config.js';
 
 const FACTIONS = ['CITIZEN', 'ESCAPEE', 'BANDITO'];
-export const normalizeFaction = (f) =>
-  FACTIONS.includes(String(f || '').toUpperCase()) ? String(f).toUpperCase() : 'CITIZEN';
 
+export const normalizeFaction = (f) => FACTIONS.includes(String(f || '').toUpperCase()) ? String(f).toUpperCase() : 'CITIZEN';
 export const REDACTED = '[REDACTED]';
 
-// roughly how many ems wide a name sets, so the card can shrink it onto one
-// line without measuring anything. W and M are the fat ones, IJLT and the
-// punctuation are thin, the rest sit in the middle. the 1.03 is slack --
-// better a hair small than clipped. claim.js keeps its own copy of this
+// redraw the entire card {tired emoji}
 export function nameWidth(text) {
   let w = 0;
   for (const ch of String(text || '').toUpperCase()) {
@@ -43,8 +39,7 @@ function showDate(stored) {
 }
 
 export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
-  // same markup for the real record and the live preview, so the maker
-  // cannot drift from what gets filed
+  // same markup for the real record and the live preview, so the maker cannot drift from what gets filed
   const id = rec.id;
   const g = generate(id);
   const faction = normalizeFaction(rec.faction);

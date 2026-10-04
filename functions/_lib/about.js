@@ -7,11 +7,9 @@ export const ABOUT = {
 
   photo: '/images/max.webp',
 
-  bio: 'I made these cards and handed them out at the show. '
-     + 'One hundred of them, one number each. If you have one, it is yours. See the other banditos that attended the show. This is our drag path.',
+  bio: 'I made these cards and handed them out at the show. One hundred of them, one number each. If you have one, it is yours. See the other banditos that attended the show. This is our drag path.',
 
-  // the one to contact for amendments, removals and questions.
-  // set `handle` and `href` to wherever you actually read messages.
+
   contact: {
     label: 'TWITTER',
     handle: '@devonisreallyco',
@@ -19,7 +17,7 @@ export const ABOUT = {
   },
 
   links: [
-    { label: 'TWITTER',         value: '@devonisreallyco', href: 'https://x.com/devonisreallyco' }
+    { label: 'TWITTER', value: '@devonisreallyco', href: 'https://x.com/devonisreallyco' }
   ],
 
   howto: [
@@ -34,7 +32,8 @@ export const ABOUT = {
     { label: 'dmaorg.info', href: 'https://dmaorg.info', note: 'the original' },
     { label: 'Cloudflare Pages + D1', href: 'https://developers.cloudflare.com', note: 'hosting and database' },
     { label: 'DMA ORG Archive', href: 'https://www.dmaorg.site', note: 'dma archive' },
-    { label: 'Reddit post', href: 'https://www.reddit.com/r/twentyonepilots/comments/1cfi97t/official_twenty_one_pilots_clancy_lore_megathread/' },
-    { label: 'GitHub', href: 'https://github.com/devon-23/fpe-identification-card', note: 'source code' }
+    { label: 'Reddit Post', href: 'https://www.reddit.com/r/twentyonepilots/comments/1cfi97t/official_twenty_one_pilots_clancy_lore_megathread/', note: 'lore thread' },
+    { label: 'Breach Assets', href: 'https://drive.google.com/drive/u/1/folders/1jspNenSxN8xXBUmcg7fMb9WtR1sdQeyZ?direction=a', note: 'reference material' }
+    //{ label: 'GitHub', href: 'https://github.com/devon-23/fpe-identification-card', note: 'source code' }
   ],
 };

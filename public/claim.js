@@ -4,41 +4,42 @@
   var stage = document.querySelector('.maker');
   if (!stage) return;
 
-  var id    = stage.getAttribute('data-fpe');
-  var mode  = stage.getAttribute('data-mode');
-  var form  = document.getElementById('maker');
+  // make this into an el 
+  var id = stage.getAttribute('data-fpe');
+  var mode = stage.getAttribute('data-mode');
+  var form = document.getElementById('maker');
   var tagKey = form.getAttribute('data-key') || '';
-  var card  = stage.querySelector('.card');
+  var card = stage.querySelector('.card');
   var status = form.querySelector('.form__status');
 
-  var nameEl     = document.getElementById('name');
+  var nameEl = document.getElementById('name');
   var attemptsEl = document.getElementById('attempts');
-  var handleEl   = document.getElementById('handle');
+  var handleEl = document.getElementById('handle');
   var hometownEl = document.getElementById('hometown');
-  var bioEl       = document.getElementById('bio');
-  var lyricEl     = document.getElementById('lyric');
+  var bioEl = document.getElementById('bio');
+  var lyricEl = document.getElementById('lyric');
   var firstShowEl = document.getElementById('firstShow');
-  var bishopEl    = document.getElementById('bishop');
-  var photoEl   = document.getElementById('photo');
+  var bishopEl = document.getElementById('bishop');
+  var photoEl = document.getElementById('photo');
   var consentEl = document.getElementById('consent');
   var consentBox = form.querySelector('.consent');
-  var pickBtn   = form.querySelector('[data-action="pick"]');
-  var dropBtn   = form.querySelector('[data-action="drop"]');
+  var pickBtn = form.querySelector('[data-action="pick"]');
+  var dropBtn = form.querySelector('[data-action="drop"]');
   var submitBtn = form.querySelector('[data-action="submit"]');
 
-  var slotName     = card.querySelector('[data-slot="name"]');
-  var slotFaction  = card.querySelector('[data-slot="faction"]');
-  var slotHandle   = card.querySelector('[data-slot="handle"]');
+  var slotName = card.querySelector('[data-slot="name"]');
+  var slotFaction = card.querySelector('[data-slot="faction"]');
+  var slotHandle = card.querySelector('[data-slot="handle"]');
   var slotAttempts = card.querySelector('[data-slot="attempts"]');
   var slotHometown = card.querySelector('[data-slot="hometown"]');
-  var slotLyric     = card.querySelector('[data-slot="lyric"]');
+  var slotLyric = card.querySelector('[data-slot="lyric"]');
   var slotFirstShow = card.querySelector('[data-slot="firstShow"]');
-  var slotBishop    = card.querySelector('[data-slot="bishop"]');
+  var slotBishop = card.querySelector('[data-slot="bishop"]');
   var REDACTED = '[REDACTED]';
-  var plate       = card.querySelector('.card__plate');
+  var plate  = card.querySelector('.card__plate');
 
   var photoBlob = null;
-  var photoURL  = null;
+  var photoURL = null;
   var photoDataURL = null;
   var removePhoto = false;
 
@@ -50,7 +51,7 @@
   function drop(key) { try { localStorage.removeItem(key); } catch (e) {} }
 
   var token = load(TOKEN_KEY);
-  if (mode === 'amend' && !token) {
+  if (mode === 'amend' && !token) { // amend mode added for testing purposes
     stage.innerHTML =
       '<p class="kicker">ACCESS DENIED</p>' +
       '<p class="designation">FPE-' + id + '</p>' +
@@ -61,8 +62,7 @@
 
   form.hidden = false;
 
-  // the other half of this lives in card.js as nameWidth(). keep them the
-  // same or the preview will not match what gets filed
+  // the other half of this lives in card.js as nameWidth(). keep them the same or the preview will not match what gets filed
   function nameWidth(text) {
     var w = 0;
     var s = String(text || '').toUpperCase();
@@ -71,6 +71,7 @@
       if (ch === 'W') w += 0.95;
       else if (ch === 'M') w += 0.85;
       else if ('IJLT .,\'-'.indexOf(ch) !== -1) w += 0.45;
+      //else if ('IJLT .,\'-'.indexOf(ch) !== -1) w += 0.25;
       else if (ch >= '0' && ch <= '9') w += 0.62;
       else w += 0.72;
     }
@@ -117,12 +118,11 @@
   }
 
   function paintOptional(input, slot, decorate) {
-    // handle, hometown and first show live on the attached file, not the
-    // card, so there is nothing to paint for those. this used to throw on
-    // every keystroke in those three fields
+    // handle, hometown and first show live on the attached file, not the card, so there is nothing to paint for those. this used to throw on every keystroke in those three fields
     if (!slot) return;
     // blank fields read [REDACTED] on the card, same as they will once filed
     var v = input.value.trim();
+
     slot.textContent = v ? (decorate ? decorate(v) : v) : REDACTED;
     slot.classList.toggle('is-redacted', !v);
   }
@@ -134,7 +134,7 @@
     slotAttempts.textContent = String(n).padStart(2, '0');
   }
 
-  function paintBishop() {
+  function paintBishop() { // BRUHHHH
     var v = bishopEl.value;
     slotBishop.textContent = v;
     var lit = bishopEl.selectedIndex;
@@ -170,14 +170,13 @@
 
   var SIDE = 900;
 
-  function processPhoto(file) {
+  function processPhoto(file) { //🙂‍↕️😫 i just realized you can put emojis in vs code
     // 900px square, re-encoded. the re-encode is what drops the gps
     return new Promise(function (resolve, reject) {
       var url = URL.createObjectURL(file);
       var img = new Image();
       img.onload = function () {
-          // drawing through an <img> is what rotates the photo upright.
-          // don't swap this for createImageBitmap, it comes out sideways on iphones
+          // drawing through an <img> is what rotates the photo upright. don't swap this for createImageBitmap, it comes out sideways on iphones
         try {
           var side = Math.min(img.naturalWidth, img.naturalHeight);
           var sx = (img.naturalWidth  - side) / 2;
@@ -188,7 +187,13 @@
           var ctx = canvas.getContext('2d');
           ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, sx, sy, side, side, 0, 0, SIDE, SIDE);
-
+/*
+          var img = document.createElement('img');
+          img.width = img.height = SIDE;
+          var ctx = img.getContext('2d');
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, SIDE, SIDE);
+*/
           canvas.toBlob(function (blob) {
             URL.revokeObjectURL(url);
             blob ? resolve(blob) : reject(new Error('ENCODE FAILED'));
@@ -199,6 +204,8 @@
       img.src = url;
     });
   }
+
+// all event listeners
 
   pickBtn.addEventListener('click', function () { photoEl.click(); });
 
@@ -245,8 +252,7 @@
   function say(msg) { status.textContent = msg; }
 
   form.addEventListener('submit', function (ev) {
-    // a photo with the consent box unticked is never attached to the request.
-    // it goes to localStorage and nowhere else
+    // a photo with the consent box unticked is never attached to the request. it goes to localStorage and nowhere else
     ev.preventDefault();
     submitBtn.disabled = true;
     say(mode === 'amend' ? 'FILING AMENDMENT…' : 'FILING RECORD…');
@@ -280,7 +286,7 @@
       });
     }).then(function (res) {
       return res.json().then(function (data) { return { ok: res.ok, data: data }; });
-    }).then(function (r) {
+    }).then(function (r) { // never got to test this so lets hope it works
       if (!r.ok) {
         say(r.data.error || 'SUBMISSION REFUSED.');
         submitBtn.disabled = false;
@@ -305,4 +311,5 @@
   }
 
   paintAll();
-})();
+}
+)();

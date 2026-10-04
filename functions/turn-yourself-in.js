@@ -6,7 +6,7 @@ import { getSetting } from './_lib/db.js';
 import { sameOrigin } from './_lib/origin.js';
 import { ipHash } from './_lib/session.js';
 import { cleanHometown } from './_lib/sanitize.js';
-import { banditoName } from './_lib/lore.js';
+import { banditoName, assignedFaction } from './_lib/lore.js';
 import { lookup } from './_lib/geo.js';
 
 // no card, no key, so this is the one form anybody can reach. cap it per
@@ -156,11 +156,11 @@ export async function onRequestPost({ request, env }) {
     const token = newToken();
     await env.DB.prepare(`
       UPDATE records
-         SET status = 'ESCAPED', name = ?, name_assigned = 1, faction = 'BANDITO',
+         SET status = 'ESCAPED', name = ?, name_assigned = 1, faction = ?,
              hometown = ?, token_hash = ?, claimed_at = ?, updated_at = ?,
              location = ?, city = ?, event_date = ?
        WHERE id = ?
-    `).bind(banditoName(id), hometown, await hashToken(token), stamp, stamp,
+    `).bind(banditoName(id), assignedFaction(id), hometown, await hashToken(token), stamp, stamp,
             EVENT.venue, EVENT.city, EVENT.date, id).run();
 
     // awaited, not deferred: the whole point of this form is the pin, so it

@@ -1495,12 +1495,16 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
    to sit further in than the two round ones to read at all */
 .card--bandito .card__mark,
 .rf__sheet--bandito .sheet__mark {
-  right: -3rem;
+  right: -1.5rem;
   background: var(--mark-bandito);
   opacity: 0.7;
   -webkit-mask-image: url("/images/bandito.webp");
   mask-image: url("/images/bandito.webp");
 }
+
+/* the card has more going on under it than the sheet does, so it wants the
+   glyph further in again */
+.card--bandito .card__mark { right: -2rem; }
 
 /* nothing to declare allegiance to yet -- but the maker's preview keeps it,
    that is the point of the preview */

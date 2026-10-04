@@ -1,7 +1,6 @@
 const MAX_PHOTO_BYTES = 400 * 1024;
 function stripMetadata(buf) {
-  // the browser already re-encodes through a canvas so none of the
-  // original exif survives -- but apple's encoder writes its own back in.
+
   // this throws away everything that is not needed to decode the thing
   // exif my op
   const b = new Uint8Array(buf);
@@ -27,11 +26,14 @@ function stripMetadata(buf) {
     }
 
     if (i + 4 > b.length) return null;
+
     const length = (b[i + 2] << 8) | b[i + 3];
+
     if (length < 2 || i + 2 + length > b.length) return null;
 
     const isAppSegment = marker >= 0xe1 && marker <= 0xef;
     const isComment = marker === 0xfe;
+
     if (!isAppSegment && !isComment) keep.push(b.subarray(i, i + 2 + length));
 
     i += 2 + length;
@@ -40,7 +42,11 @@ function stripMetadata(buf) {
   const total = keep.reduce((n, part) => n + part.length, 0);
   const out = new Uint8Array(total);
   let at = 0;
-  for (const part of keep) { out.set(part, at); at += part.length; }
+
+  for (const part of keep) { 
+    out.set(part, at); at += part.length; 
+  }
+
   return out;
 }
 export async function readJpeg(file) {
@@ -49,18 +55,24 @@ export async function readJpeg(file) {
 
   const buf = await file.arrayBuffer();
   const b = new Uint8Array(buf);
+
   if (b.length < 4 || b[0] !== 0xff || b[1] !== 0xd8 || b[2] !== 0xff) {
     return { error: 'UNREADABLE IMAGE' };
   }
 
   const cleaned = stripMetadata(buf);
+
   if (!cleaned) return { error: 'UNREADABLE IMAGE' };
   return { bytes: cleaned };
 }
 
 export async function putPhoto(bucket, id, bytes) {
   await bucket.put(`${id}.jpg`, bytes, {
-    httpMetadata: { contentType: 'image/jpeg', cacheControl: 'public, max-age=31536000, immutable' },
+    httpMetadata: { 
+      contentType: 'image/jpeg', 
+      cacheControl: 'public, max-age=31536000, immutable' 
+    },
   });
+  
   return `${id}.jpg`;
 }

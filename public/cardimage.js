@@ -9,12 +9,17 @@
   var CW = 360;
   var PAD = 21;
 
-  // the glyph frame, and how far in from the edge of that file the band sits.
-  // has to agree with the border-image on .card or the png and the screen drift
+  // the glyph frame, and how far in from the edge of that file the band sits. has to agree with the border-image on .card or the png and the screen drift
   var FRAME = '/images/frame.webp';
   var SECTORS = '/images/dema_sectors.webp';
   var FRAME_SLICE = 130;
   var FRAME_W = 13;
+
+  // how far the allegiance stamp hangs off the right edge, in css px. why theyre different sizes i wish i knew
+  var HANG = {
+    card:  { citizen: 80, escapee: 80, bandito: 32 },
+    sheet: { citizen: 80, escapee: 80, bandito: 24 },
+  };
 
   var C = {};
 
@@ -35,40 +40,57 @@
     };
   }
 
-  function px(v) { return v * S; }
-  function font(weight, size) { return weight + ' ' + px(size) + 'px ' + DISPLAY; }
-  function display(weight, size) { return weight + ' ' + px(size) + 'px ' + DISPLAY; }
+  function px(v) { 
+    return v * S; 
+  }
+  function font(weight, size) { 
+    return weight + ' ' + px(size) + 'px ' + DISPLAY; 
+  }
+  function display(weight, size) { 
+    return weight + ' ' + px(size) + 'px ' + DISPLAY; 
+  }
   function dema(weight, size) { return weight + ' ' + px(size) + 'px ' + DEMA; }
 
     function spreadText(ctx, text, left, right, baseline, size) {
-    var chars = String(text).split('');
-    var gap = px(size) * 0.45;
-    var widths = [];
-    var total = 0;
-    for (var i = 0; i < chars.length; i++) {
-      widths[i] = chars[i] === ' ' ? gap : ctx.measureText(chars[i]).width;
-      total += widths[i];
-    }
-    var slack = (right - left - total) / Math.max(1, chars.length - 1);
-    var x = left;
-    ctx.textAlign = 'left';
-    for (var j = 0; j < chars.length; j++) {
-      if (chars[j] !== ' ') ctx.fillText(chars[j], x, baseline);
-      x += widths[j] + slack;
-    }
-  }
-  function centred(ctx, text, cx, y) { ctx.textAlign = 'center'; ctx.fillText(text, cx, y); }
+      var chars = String(text).split('');
+      var gap = px(size) * 0.45;
+      var widths = [];
+      var total = 0;
 
-    function wrap(ctx, text, maxWidth, size, weight) {
+      for (var i = 0; i < chars.length; i++) {
+        widths[i] = chars[i] === ' ' ? gap : ctx.measureText(chars[i]).width;
+        total += widths[i];
+      }
+
+      var slack = (right - left - total) / Math.max(1, chars.length - 1);
+      var x = left;
+      ctx.textAlign = 'left';
+
+      for (var j = 0; j < chars.length; j++) {
+        if (chars[j] !== ' ') ctx.fillText(chars[j], x, baseline);
+        x += widths[j] + slack;
+      }
+  }
+  function centred(ctx, text, cx, y) { 
+    ctx.textAlign = 'center'; ctx.fillText(text, cx, y); 
+  }
+
+  function wrap(ctx, text, maxWidth, size, weight) {
     ctx.font = font(weight, size);
     var words = String(text).split(/\s+/);
     var lines = [];
     var line = '';
+
     for (var i = 0; i < words.length; i++) {
       var next = line ? line + ' ' + words[i] : words[i];
-      if (ctx.measureText(next).width > maxWidth && line) { lines.push(line); line = words[i]; }
-      else { line = next; }
+      if (ctx.measureText(next).width > maxWidth && line) { 
+        lines.push(line); line = words[i]; 
+      }
+      else { 
+        line = next; 
+      }
     }
+
     if (line) lines.push(line);
     return lines;
   }
@@ -186,8 +208,7 @@
     });
   }
 
-  // border-image: <frame> 130 round, by hand, because canvas has no such thing.
-  // corners go down whole, the four strips get tiled a whole number of times
+  // border-image: <frame> 130 round, by hand, because canvas has no such thing. corners go down whole, the four strips get tiled a whole number of times
   function nineSlice(ctx, img, w, h) {
     var sl = FRAME_SLICE;
     var b = px(FRAME_W);
@@ -336,7 +357,8 @@
 
     if (badge) {
       var bw = px(160);
-      var off = d.faction === 'bandito' ? px(48) : px(80);
+      var hang = HANG.sheet[d.faction] || 80;
+      var off = px(80 - hang);
       var edge = canvas.width - px(B);
       ctx.save();
       ctx.beginPath();
@@ -354,8 +376,7 @@
   }
 
   function readCard(card) {
-    // read the rendered card rather than rebuilding it, so the png cannot
-    // disagree with what is on screen
+    // read the rendered card rather than rebuilding it, so the png cannot disagree with what is on screen
     var t = function (sel) {
       var el = card.querySelector(sel);
       if (!el) return '';
@@ -403,7 +424,6 @@
 
   function draw(d, photo, frame, sectors, badge) {
     // everything is measured in css pixels and multiplied by S at the end.
-    // if you change the card css, change the numbers here too
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     var inner = CW - PAD * 2;
@@ -423,8 +443,6 @@
     for (var i = 0; i < d.facts.length; i++) factsH += 17 + 4 + 8 + 10;
     var bodyH = Math.max(plateH, factsH - 10);
 
-    // the statute and the venue blocks can be commented out of the card. if
-    // they are not on it, they do not go in the png either
     var hasStatute = !!(d.statute[0] || d.statute[1]);
     var hasPlace = !!(d.venue || d.when);
 
@@ -446,7 +464,6 @@
 
     ctx.fillStyle = C.paper;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // used to be a plain rule:
     // ctx.strokeStyle = C.ink;
     // ctx.lineWidth = Math.max(2, px(1));
     // ctx.strokeRect(px(0.5), px(0.5), canvas.width - px(1), canvas.height - px(1));
@@ -601,19 +618,20 @@
     ctx.font = dema('400', 7);
     spreadText(ctx, d.benediction, px(PAD), canvas.width - px(PAD), px(y + 7), 7);
 
-    // the allegiance mark, stamped over the top right and running off the
-    // edge. last, so it sits on everything the way it does on the printed
-    // cards, and clipped to the inside of the frame like the css does
+    // the allegiance mark, stamped over the top right and running off the edge. last, so it sits on everything the way it does on the printed cards, and clipped to the inside of the frame like the css does
     if (badge) {
       var bw = px(160);
+      var hang = HANG.card[d.faction] || 80;
       var edge = canvas.width - px(FRAME_W);
       ctx.save();
       ctx.beginPath();
       ctx.rect(0, 0, edge, canvas.height);
       ctx.clip();
+      // the bandito glyph sits further in, same as the css
+      var off = px(80 - hang);
       ctx.globalAlpha = d.faction === 'bandito' ? 0.7 : 0.5;
       ctx.drawImage(tinted(badge, bw, bw, C.mark[d.faction] || C.ink),
-        edge - bw / 2, px(12), bw, bw);
+        edge - off - bw / 2, px(12), bw, bw);
       ctx.restore();
     }
 
