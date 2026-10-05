@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS records (
   updated_at    TEXT,                   -- ISO 8601 UTC
   location      TEXT,                   -- venue, frozen at claim time
   city          TEXT,                   -- city/state, frozen at claim time
-  event_date    TEXT                    -- show date, frozen at claim time
+  event_date    TEXT,                   -- show date, frozen at claim time
+  attending     INTEGER NOT NULL DEFAULT 1  -- 1 = was in Columbus; only these get a pin
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS records_n_idx ON records(n);

@@ -2,9 +2,12 @@ import { h, raw, layout, htmlResponse } from './_lib/html.js';
 import { FORM, EVENT, demaDate } from './_lib/config.js';
 import { HOMETOWN_MAX } from './_lib/sanitize.js';
 import { getSetting } from './_lib/db.js';
+import { normalizeId } from './_lib/record.js';
 
 // the big landscape one, for a laptop. same data as /map, read differently
-const DESTINATION = { lat: 39.9612, lon: -82.9988, label: 'OHIO STATE UNIVERSITY' };
+// the horseshoe itself, not the city. the old pair was downtown Columbus,
+// three miles southeast of where anybody actually stood
+const DESTINATION = { lat: 40.0016458, lon: -83.0197374, label: EVENT.venue };
 
 const MILES = 3958.8;
 
@@ -34,12 +37,12 @@ function stat(label, value, note) {
       </div>`;
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ env, request }) {
   const { results } = await env.DB.prepare(`
     SELECT r.id, r.name, r.hometown, r.faction, p.lat, p.lon, p.label
       FROM records r
       JOIN places p ON p.q = UPPER(TRIM(r.hometown))
-     WHERE r.status = 'ESCAPED' AND p.lat IS NOT NULL
+     WHERE r.status = 'ESCAPED' AND r.attending = 1 AND p.lat IS NOT NULL
      ORDER BY r.n
   `).all();
 
@@ -66,6 +69,7 @@ export async function onRequestGet({ env }) {
   const countries = new Set(pins.map((p) => country(p.label)).filter(Boolean));
 
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
+  const filed = normalizeId(new URL(request.url).searchParams.get('new'));
 
   const cards = [
     stat('SUBJECTS PLOTTED', h`${String(rows.length)}`,
@@ -93,12 +97,25 @@ export async function onRequestGet({ env }) {
 
     <div class="fh__plot">
       <div class="fh__map" id="map" role="application" aria-label="Map of subject origins"></div>
-      <p class="fh__tohere">&mdash;&mdash;&mdash;&gt; TO HERE</p>
+      <p class="fh__tohere"><button type="button" class="fh__recentre" data-recentre>&mdash;&mdash;&mdash;&gt; TO HERE</button></p>
     </div>
 
     <dl class="fh__stats">${raw(cards)}</dl>
 
-    ${raw(open ? h`<form class="fh__add" method="POST" action="/turn-yourself-in">
+    ${raw(filed ? h`<p class="fh__filed" data-just-filed>FILED AS <b>FPE-${filed}</b>. THAT IS YOUR RECORD &mdash;
+      <a href="/f/${filed}/register">FINISH YOUR CARD &mdash;&gt;</a></p>` : '')}
+
+    ${raw(open && !filed ? h`<section class="fh__held" data-held hidden>
+      <p>THIS TERMINAL IS ALREADY ON THE PLOT AS <b data-held-id>&mdash;</b>.
+        CHANGE THE ORIGIN ON THAT RECORD RATHER THAN FILING A SECOND ONE.</p>
+      <span class="fh__heldrow">
+        <a class="fh__addgo" data-held-link href="/">OPEN THAT RECORD</a>
+        <button class="fh__addalt" type="button" data-action="anyway">PLOT SOMEBODY ELSE</button>
+      </span>
+    </section>
+
+    <div data-held-hide>
+    <form class="fh__add" method="POST" action="/turn-yourself-in">
       <input type="hidden" name="back" value="/from-here">
       <label class="fh__addlabel" for="hometown">PUT YOURSELF ON IT</label>
       <div class="fh__addrow">
@@ -107,7 +124,12 @@ export async function onRequestGet({ env }) {
                autocapitalize="characters" placeholder="CITY, STATE OR COUNTRY">
         <button class="fh__addgo" type="submit">PLOT IT</button>
       </div>
-    </form>` : '')}
+      <label class="fh__addcheck">
+        <input type="checkbox" name="attending" value="1" required>
+        <span>I WAS AT THE COLUMBUS SHOW.</span>
+      </label>
+    </form>
+    </div>` : '')}
 
     <noscript><p class="fh__note">THIS PLOT REQUIRES SCRIPTING.</p></noscript>
 
@@ -123,12 +145,13 @@ export async function onRequestGet({ env }) {
     lat: p.lat, lon: p.lon, town: p.town, people: p.people,
   }))))}</script>
   <script id="dest" type="application/json">${raw(JSON.stringify(DESTINATION))}</script>
-  <script src="/fromhere.js" defer></script>`;
+  <script src="/fromhere.js" defer></script>
+  <script src="/held.js" defer></script>`;
 
   return htmlResponse(layout({
     title: 'FRØM HERE — DEMA ARCHIVES',
     body,
     bodyClass: 'page-fromhere',
     back: false,
-  }), { headers: { 'cache-control': 'public, max-age=60' } });
+  }), { headers: { 'cache-control': filed ? 'no-store' : 'public, max-age=60' } });
 }

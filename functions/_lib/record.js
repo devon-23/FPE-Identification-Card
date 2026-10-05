@@ -87,8 +87,16 @@ function dossier(rec, rank) {
         <div class="rf"><dt class="rf__u">RECOMMENDATION</dt><dd>${recommendation(rec.id)}</dd></div>
       </div>`;
 
-  return h`<details class="dossier">
-      <summary class="dossier__head">ATTACHED FILE</summary>
+  // it used to be a <details> you had to tap open. it is the best half of
+  // the record and half the people never found it, so it just sits open now
+  //
+  // return h`<details class="dossier">
+  //     <summary class="dossier__head">ATTACHED FILE</summary>
+  //     ...same innards...
+  //   </details>`;
+
+  return h`<section class="dossier dossier--open">
+      <h2 class="dossier__head">ATTACHED FILE</h2>
       <div class="rf__sheet rf__sheet--${raw(faction.toLowerCase())}" data-sheet="${rec.id}">
         <span class="sheet__mark" aria-hidden="true"></span>
         ${raw(registry)}${raw(subject)}${raw(String(notesBlock))}
@@ -96,7 +104,7 @@ function dossier(rec, rank) {
       <p class="actions actions--sheet">
         <button class="button" type="button" data-action="save-sheet">SAVE ATTACHED FILE</button>
       </p>
-    </details>`;
+    </section>`;
 }
 
 function ordinal(n) {

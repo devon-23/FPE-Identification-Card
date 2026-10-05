@@ -20,6 +20,7 @@
   var lyricEl = document.getElementById('lyric');
   var firstShowEl = document.getElementById('firstShow');
   var bishopEl = document.getElementById('bishop');
+  var attendingEl = document.getElementById('attending');
   var photoEl = document.getElementById('photo');
   var consentEl = document.getElementById('consent');
   var consentBox = form.querySelector('.consent');
@@ -269,6 +270,7 @@
     body.append('lyric', lyricEl.value);
     body.append('firstShow', firstShowEl.value);
     body.append('bishop', bishopEl.value);
+    body.append('attending', attendingEl && attendingEl.checked ? '1' : '0');
     if (mode !== 'amend') body.append('key', tagKey);
     if (mode === 'amend') {
       body.append('token', token);

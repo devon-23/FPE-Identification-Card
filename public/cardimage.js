@@ -279,7 +279,7 @@
       ctx.fillStyle = C.ink;
       ctx.font = display('400', 8);
       ctx.fillText(r.label + ':', x, y + px(8));
-      ctx.fillStyle = r.value === '[REDACTED]' ? C.faint : C.red;
+      ctx.fillStyle = r.value === '[REDACTED]' ? C.faint : C.ink;
       ctx.font = display('400', 9);
       for (var i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], x + px(LABEL_W), y + px(8 + i * 13.5));

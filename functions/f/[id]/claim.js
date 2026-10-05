@@ -45,6 +45,7 @@ export async function onRequestPost({ request, params, env, waitUntil }) {
   const firstShow = cleanFirstShow(form.get('firstShow'));
   const lyric = cleanLyric(form.get('lyric'));
   const bishop = cleanBishop(form.get('bishop'), BISHOPS);
+  const attending = form.get('attending') === '1' ? 1 : 0;
   const token = newToken();
   const now = new Date().toISOString();
 
@@ -52,14 +53,14 @@ export async function onRequestPost({ request, params, env, waitUntil }) {
     UPDATE records
        SET status = 'ESCAPED', name = ?, name_assigned = ?, faction = ?,
            handle = ?, hometown = ?, bio = ?, attempts = ?, first_show = ?, lyric = ?, bishop = ?,
-           token_hash = ?, claimed_at = ?, updated_at = ?,
+           attending = ?, token_hash = ?, claimed_at = ?, updated_at = ?,
            location = ?, city = ?, event_date = ?
      WHERE id = ? AND status = 'UNREGISTERED'
     -- the WHERE is the lock. two people tapping at once, one wins
   `).bind(
     name || null, name ? 0 : 1, faction,
     handle || null, hometown || null, bio || null, attempts, firstShow, lyric || null, bishop,
-    await hashToken(token), now, now,
+    attending, await hashToken(token), now, now,
     EVENT.venue, EVENT.city, EVENT.date,
     id
   ).run();
@@ -84,7 +85,8 @@ export async function onRequestPost({ request, params, env, waitUntil }) {
   }
 
   // after the response, so a slow geocoder never holds up a claim at the venue
-  if (hometown && waitUntil) waitUntil(lookup(env.DB, hometown));
+  // no pin, no point asking nominatim
+  if (hometown && attending && waitUntil) waitUntil(lookup(env.DB, hometown));
 
   return json({ ok: true, token, photo, next: `/f/${id}` });
 }

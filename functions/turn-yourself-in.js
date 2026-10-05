@@ -40,15 +40,26 @@ function page(message, open = true) {
 
     ${raw(message ? h`<p class="form__status">${message}</p>` : '')}
 
-    ${raw(open ? `<form method="POST" action="/turn-yourself-in">
-      <button class="button button--primary button--flash" type="submit">TURN YOURSELF IN</button>
-    </form>
+    ${raw(open ? `<section class="held" data-held hidden>
+      <p class="held__head">THIS TERMINAL ALREADY HOLDS A FILE.</p>
+      <p class="held__body">SUBJECT <b data-held-id>&mdash;</b> WAS ENTERED FROM THIS DEVICE.
+        A SECOND DESIGNATION WOULD ENTER YOU IN THE REGISTER TWICE.</p>
+      <a class="button button--primary button--flash" data-held-link href="/">FINISH THAT RECORD</a>
+      <button class="button button--quiet" type="button" data-action="anyway">FILE A SEPARATE ONE ANYWAY</button>
+    </section>
 
-    <p class="note">THIS ISSUES A PROVISIONAL DESIGNATION AND TAKES YOU STRAIGHT TO THE FORM.
-      NOTHING IS RECORDED UNTIL YOU SUBMIT IT.</p>` : `<p class="shut">THE REGISTER IS CLOSED.<br>
+    <div class="surrender" data-held-hide>
+      <form method="POST" action="/turn-yourself-in">
+        <button class="button button--primary button--flash" type="submit">TURN YOURSELF IN</button>
+      </form>
+
+      <p class="note">THIS ISSUES A PROVISIONAL DESIGNATION AND TAKES YOU STRAIGHT TO THE FORM.
+        NOTHING IS RECORDED UNTIL YOU SUBMIT IT.</p>
+    </div>` : `<p class="shut">THE REGISTER IS CLOSED.<br>
       NO DESIGNATIONS ARE BEING ISSUED AT THIS TIME.</p>`)}
 
-  </main>`;
+  </main>
+  <script src="/held.js" defer></script>`;
   return layout({ title: 'VOLUNTARY SURRENDER — DEMA ARCHIVES', body, bodyClass: 'page-surrender' });
 }
 
@@ -63,10 +74,12 @@ export async function onRequestPost({ request, env }) {
 
   // either plot posts a town here. everything else posts an empty form
   let hometown = '';
+  let attending = 0;
   let back = '/map';
   try {
     const form = await request.formData();
     hometown = cleanHometown(form.get('hometown'));
+    attending = form.get('attending') === '1' ? 1 : 0;
     // whichever plot they were looking at. an allowlist, not the raw value --
     // a redirect that takes its target off a form is an open redirect
     if (form.get('back') === '/from-here') back = '/from-here';
@@ -157,22 +170,23 @@ export async function onRequestPost({ request, env }) {
     await env.DB.prepare(`
       UPDATE records
          SET status = 'ESCAPED', name = ?, name_assigned = 1, faction = ?,
-             hometown = ?, token_hash = ?, claimed_at = ?, updated_at = ?,
+             hometown = ?, attending = ?, token_hash = ?, claimed_at = ?, updated_at = ?,
              location = ?, city = ?, event_date = ?
        WHERE id = ?
-    `).bind(banditoName(id), assignedFaction(id), hometown, await hashToken(token), stamp, stamp,
+    `).bind(banditoName(id), assignedFaction(id), hometown, attending,
+            await hashToken(token), stamp, stamp,
             EVENT.venue, EVENT.city, EVENT.date, id).run();
 
     // awaited, not deferred: the whole point of this form is the pin, so it
     // is worth the second. a town already in `places` costs nothing
-    await lookup(env.DB, hometown);
+    if (attending) await lookup(env.DB, hometown);
 
     // straight back to the plot with nothing said. they asked for a pin, they
     // get a pin; the record behind it is there if they ever go looking. the
     // edit token rides in the fragment, which browsers keep to themselves
     return new Response(null, {
       status: 303,
-      headers: { location: `${back}#t=${id}.${token}`, 'cache-control': 'no-store' },
+      headers: { location: `${back}?new=${id}#t=${id}.${token}`, 'cache-control': 'no-store' },
     });
   }
 

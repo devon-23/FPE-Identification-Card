@@ -41,15 +41,18 @@ export async function onRequestPost({ request, params, env, waitUntil }) {
   const firstShow = cleanFirstShow(form.get('firstShow'));
   const lyric = cleanLyric(form.get('lyric'));
   const bishop = cleanBishop(form.get('bishop'), BISHOPS);
+  const attending = form.get('attending') === '1' ? 1 : 0;
   const now = new Date().toISOString();
 
   await env.DB.prepare(`
     UPDATE records SET name = ?, name_assigned = ?, faction = ?,
-           handle = ?, hometown = ?, bio = ?, attempts = ?, first_show = ?, lyric = ?, bishop = ?, updated_at = ?
+           handle = ?, hometown = ?, bio = ?, attempts = ?, first_show = ?, lyric = ?, bishop = ?,
+           attending = ?, updated_at = ?
      WHERE id = ?
   `).bind(
     name || null, name ? 0 : 1, faction,
-    handle || null, hometown || null, bio || null, attempts, firstShow, lyric || null, bishop, now, id
+    handle || null, hometown || null, bio || null, attempts, firstShow, lyric || null, bishop,
+    attending, now, id
   ).run();
 
   const intent = String(form.get('photo_action') || 'keep');
@@ -70,7 +73,7 @@ export async function onRequestPost({ request, params, env, waitUntil }) {
     }
   }
 
-  if (hometown && waitUntil) waitUntil(lookup(env.DB, hometown));
+  if (hometown && attending && waitUntil) waitUntil(lookup(env.DB, hometown));
 
   return json({ ok: true, next: `/f/${id}` });
 }

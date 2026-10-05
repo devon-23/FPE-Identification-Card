@@ -4,7 +4,7 @@
     var handoff = location.hash.match(/^#t=(Y\d{3})\.([A-Za-z0-9_-]{20,})$/);
     if (handoff) {
       localStorage.setItem('fpe:token:' + handoff[1], handoff[2]);
-      history.replaceState(null, '', location.pathname);
+      history.replaceState(null, '', location.pathname + location.search);
     }
   } catch (e) {  }
 
@@ -42,7 +42,20 @@
       radius: 12, color: '#231f20', weight: 4, fill: false,
     }).addTo(map).bindPopup('<b>TO HERE</b><br>' + esc(dest.label));
 
-    map.setView([dest.lat, dest.lon], map.getSize().x < 500 ? 3 : 4);
+    function home() {
+      map.setView([dest.lat, dest.lon], map.getSize().x < 500 ? 3 : 4);
+    }
+    home();
+
+    // the TO HERE line puts you back over the stadium after you have been
+    // dragging around looking at everybody else
+    var recentre = document.querySelector('[data-recentre]');
+    if (recentre) {
+      recentre.addEventListener('click', function () {
+        map.closePopup();
+        home();
+      });
+    }
   }
 
   function esc(s) {

@@ -347,9 +347,15 @@ body {
 
 /* ---------- attached file ---------- */
 
-details.dossier { margin-top: 1.75rem; border-top: 1px solid var(--ink-faint); }
+details.dossier,
+.dossier { margin-top: 1.75rem; border-top: 1px solid var(--ink-faint); }
+
+/* no longer a disclosure, so no marker and nothing to press */
+.dossier--open .dossier__head { cursor: default; }
+.dossier--open .dossier__head::after { content: none; }
 
 .dossier__head {
+  font-weight: 400;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -415,7 +421,8 @@ details.dossier .fields { padding-bottom: 0.75rem; }
   font-size: 0.5625rem;
   letter-spacing: 0.06em;
   line-height: 1.5;
-  color: var(--red);
+  /* the sheet is all one ink. red is for the card */
+  color: var(--ink);
   overflow-wrap: anywhere;
 }
 
@@ -1574,3 +1581,131 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 .fh__addgo:active { background: transparent; color: var(--fh-yellow); }
 
 .actions--sheet { margin: 0 0 0.75rem; }
+
+/* ---------- who was actually there ---------- */
+
+/* same box as the photo consent, minus the grey panel around it */
+.consent__box--plain { align-items: center; padding: 0.25rem 0; }
+
+.form__hint {
+  margin: 0.375rem 0 0;
+  font-size: 0.5rem;
+  line-height: 1.7;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+
+.plot .consent__box--plain { margin: 0.75rem 0; }
+
+.fh__addcheck {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.625rem;
+  align-items: center;
+  margin-top: 0.875rem;
+  font-family: var(--mono-display);
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  color: var(--fh-bone);
+  cursor: pointer;
+}
+
+.fh__addcheck input { width: 1.25rem; height: 1.25rem; margin: 0; accent-color: var(--fh-yellow); }
+
+/* ---------- already on file ---------- */
+
+.held {
+  margin: 1.25rem 0 0;
+  padding: 0.875rem;
+  border: 1px solid var(--ink);
+}
+
+.held__head {
+  margin: 0 0 0.5rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  color: var(--red);
+}
+
+.held__body {
+  margin: 0 0 0.875rem;
+  font-size: 0.5625rem;
+  line-height: 1.8;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+}
+
+.held__body b { color: var(--ink); }
+.held .button + .button { margin-top: 0.5rem; }
+
+/* the TO HERE line doubles as a reset for the plot */
+.fh__recentre {
+  padding: 0.25rem 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.fh__recentre:hover { color: var(--fh-bone); }
+.fh__recentre:active { color: var(--fh-bone); }
+.fh__recentre:focus-visible { outline: 2px solid var(--fh-yellow); outline-offset: 3px; }
+
+/* ---------- you are already on the plot ---------- */
+
+.filed {
+  margin: 1rem 0 0;
+  padding: 0.75rem;
+  border: 1px solid var(--ink);
+  background: var(--fh-yellow);
+  font-size: 0.5625rem;
+  line-height: 1.8;
+  letter-spacing: 0.08em;
+}
+
+.filed b { letter-spacing: 0.12em; }
+.filed a { color: var(--ink); }
+
+.fh__filed {
+  margin: 0;
+  padding: 0.875rem 1rem;
+  border: 3px solid var(--fh-yellow);
+  font-family: var(--mono-display);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  letter-spacing: 0.14em;
+  color: var(--fh-bone);
+}
+
+.fh__filed b { color: var(--fh-yellow); }
+.fh__filed a { color: var(--fh-yellow); }
+
+.fh__held {
+  margin: 0;
+  padding: 0.875rem 1rem;
+  border: 3px solid var(--fh-yellow);
+  font-family: var(--mono-display);
+}
+
+.fh__held p { margin: 0 0 0.875rem; font-size: 0.875rem; line-height: 1.7; letter-spacing: 0.14em; color: var(--fh-bone); }
+.fh__held b { color: var(--fh-yellow); }
+.fh__heldrow { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.fh__heldrow .fh__addgo { display: inline-block; text-decoration: none; text-align: center; }
+
+.fh__addalt {
+  min-height: 3.25rem;
+  padding: 0.75rem 1.5rem;
+  border: 3px solid var(--fh-yellow);
+  background: transparent;
+  color: var(--fh-yellow);
+  font: inherit;
+  font-family: var(--mono-display);
+  font-size: 0.875rem;
+  letter-spacing: 0.22em;
+  cursor: pointer;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}

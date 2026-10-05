@@ -1,5 +1,5 @@
 import { h, raw, layout, htmlResponse } from '../../_lib/html.js';
-import { normalizeId } from '../../_lib/record.js';
+import { normalizeId, isSelfRegistered } from '../../_lib/record.js';
 import { renderCard, normalizeFaction } from '../../_lib/card.js';
 import { BISHOPS, generate } from '../../_lib/lore.js';
 import { getRecord, getSetting } from '../../_lib/db.js';
@@ -33,6 +33,11 @@ export async function onRequestGet({ request, params, env }) {
 
   const v = claimed ? rec : {};
   const val = (x) => (x === null || x === undefined ? '' : String(x));
+
+  // somebody holding one of the hundred cards was there -- i put it in their
+  // hand. somebody who found the link was not, until they say otherwise
+  const provisional = isSelfRegistered(id);
+  const attending = claimed ? rec.attending !== 0 : !provisional;
 
   const assigned = generate(id).bishop;
   const chosen = (claimed && rec.bishop) || assigned;
@@ -80,6 +85,15 @@ export async function onRequestGet({ request, params, env }) {
         <input class="form__input form__input--plain" id="handle" name="handle" type="text"
                maxlength="${String(HANDLE_MAX)}" autocomplete="off" autocapitalize="off"
                spellcheck="false" placeholder="@YOURHANDLE" value="${val(v.handle)}">
+      </div>
+
+      <div class="form__row">
+        <label class="consent__box consent__box--plain">
+          <input type="checkbox" id="attending" name="attending"${raw(attending ? ' checked' : '')}>
+          <span>I WAS AT THE COLUMBUS SHOW.</span>
+        </label>
+        <p class="form__hint">ONLY THE SUBJECTS WHO WERE THERE GO ON THE PLOT. LEAVE THIS
+          UNTICKED AND YOU STILL GET A RECORD AND A CARD, JUST NO PIN.</p>
       </div>
 
       <div class="form__row">
