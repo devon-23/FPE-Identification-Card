@@ -27,7 +27,18 @@ export async function onRequestGet({ request, params, env }) {
       "SELECT COUNT(*) AS n FROM records WHERE status = 'ESCAPED' AND claimed_at <= ?"
     ).bind(rec.claimed_at || '').first();
     const rank = row && row.n ? row.n : null;
-    return htmlResponse(renderRecord(rec, { rank }), { headers: { 'cache-control': 'no-cache' } });
+
+    // how many others came out of the same town, for the sighting log
+    let others = 0;
+    if (rec.hometown) {
+      const same = await env.DB.prepare(
+        "SELECT COUNT(*) AS n FROM records WHERE status = 'ESCAPED' AND attending = 1"
+        + ' AND UPPER(TRIM(hometown)) = UPPER(TRIM(?)) AND id <> ?'
+      ).bind(rec.hometown, rec.id).first();
+      others = (same && same.n) || 0;
+    }
+
+    return htmlResponse(renderRecord(rec, { rank, others }), { headers: { 'cache-control': 'no-cache' } });
   }
 
   const claimingOpen = (await getSetting(env.DB, 'claiming_open', '0')) === '1';

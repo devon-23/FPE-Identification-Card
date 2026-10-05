@@ -143,6 +143,36 @@ export function banditoName(id) {
 // randomly assign faction of unassigned person
 export const assignedFaction = (id) => pick(['CITIZEN', 'ESCAPEE', 'BANDITO'], 'side' + id);
 
+// the sighting line on a record, when the subject gave an origin
+const SEEN_FIRST = [
+  'FIRST SIGHTED IN',
+  'FIRST PUT ON RECORD IN',
+  'EARLIEST CONFIRMED SIGHTING OUT OF',
+  'TRACE BEGINS IN',
+  'FIRST REPORTED LEAVING',
+];
+
+const SEEN_AFTER = [
+  'MOVEMENT EASTWARD UNOBSTRUCTED.',
+  'NO SANCTIONED DEPARTURE ON FILE.',
+  'LEFT BY A ROUTE THAT IS ON NO MAP HELD HERE.',
+  'DID NOT RETURN TO THE ASSIGNED DISTRICT.',
+  'THE TRAIL WAS PICKED UP AGAIN AT THE PERIMETER.',
+  'WITNESSES WOULD NOT SAY WHICH WAY.',
+  'SURVEILLANCE IN THAT QUADRANT WAS FOUND DISABLED.',
+];
+
+export function sighting(id, { hometown, others = 0 } = {}) {
+  if (!hometown) return null;
+  const parts = [`${pick(SEEN_FIRST, 'seenA' + id)} ${String(hometown).toUpperCase()}.`];
+  if (others > 0) {
+    parts.push(`ALSO SEEN WITH ${others} OTHER SUBJECT${others === 1 ? '' : 'S'} `
+      + 'OUT OF THE SAME DISTRICT.');
+  }
+  parts.push(pick(SEEN_AFTER, 'seenB' + id));
+  return parts.join(' ');
+}
+
 export function assignedDesignation(id) {
   const letters = 'ABCDEFGHJKLMNPRSTVWXYZ';
   return `SUBJECT ${id}-${letters[hash('desA' + id) % letters.length]}${letters[hash('desB' + id) % letters.length]}`;

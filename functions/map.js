@@ -5,6 +5,7 @@ import { normalise } from './_lib/geo.js';
 import { HOMETOWN_MAX } from './_lib/sanitize.js';
 import { getSetting } from './_lib/db.js';
 import { normalizeId } from './_lib/record.js';
+import { heldBlock } from './_lib/held.js';
 
 // where everyone came from, and the one place they all ended up
 // the horseshoe itself, not the city. the old pair was downtown Columbus,
@@ -61,16 +62,11 @@ export async function onRequestGet({ env, request }) {
     ${raw(filed ? h`<p class="filed" data-just-filed>FILED AS <b>FPE-${filed}</b>. THAT IS YOUR RECORD &mdash;
       <a href="/f/${filed}/register">FINISH YOUR CARD &mdash;&gt;</a></p>` : '')}
 
-    ${raw(open && !filed ? h`<section class="held" data-held hidden>
-      <p class="held__head">THIS TERMINAL IS ALREADY ON THE PLOT.</p>
-      <p class="held__body">SUBJECT <b data-held-id>&mdash;</b> WAS ENTERED FROM THIS DEVICE.
-        CHANGE THE ORIGIN ON THAT RECORD RATHER THAN FILING A SECOND ONE.</p>
-      <a class="button button--primary" data-held-link href="/">OPEN THAT RECORD</a>
-      <button class="button button--quiet" type="button" data-action="anyway">PLOT SOMEBODY ELSE</button>
-    </section>
+    ${raw(open && !filed ? String(heldBlock({ cls: 'held', anyway: 'PLOT SOMEBODY ELSE' })) + h`
 
     <div data-held-hide>
     <form class="plot" method="POST" action="/turn-yourself-in">
+      <input type="hidden" name="seq" value="0" data-seq>
       <div class="form__row">
         <label class="form__label" for="hometown">ORIGIN ONLY</label>
         <input class="form__input" id="hometown" name="hometown" type="text" required

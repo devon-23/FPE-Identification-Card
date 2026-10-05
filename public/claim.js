@@ -131,7 +131,8 @@
   function paintAttempts() {
     var n = parseInt(attemptsEl.value, 10);
     if (!isFinite(n) || n < 1) n = 1;
-    if (n > 99) n = 99;
+    // keep this the same as ATTEMPTS_MAX or the preview lies about what gets filed
+    if (n > 9999) n = 9999;
     slotAttempts.textContent = String(n).padStart(2, '0');
   }
 

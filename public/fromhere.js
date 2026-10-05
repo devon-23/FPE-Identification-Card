@@ -1,7 +1,7 @@
 (function () {
   // same silent handoff as the small plot
   try {
-    var handoff = location.hash.match(/^#t=(Y\d{3})\.([A-Za-z0-9_-]{20,})$/);
+    var handoff = location.hash.match(/^#t=([XYZ]\d{3,5})\.([A-Za-z0-9_-]{20,})$/);
     if (handoff) {
       localStorage.setItem('fpe:token:' + handoff[1], handoff[2]);
       history.replaceState(null, '', location.pathname + location.search);
@@ -20,9 +20,15 @@
       attribution: '&copy; OpenStreetMap',
     }).addTo(map);
 
+    var focus = null;
+    try { focus = JSON.parse(document.getElementById('focus').textContent || 'null'); }
+    catch (e) {  }
+
+    var marked = null;
+
     pins.forEach(function (p) {
       var many = p.people.length > 1;
-      L.circleMarker([p.lat, p.lon], {
+      var pin = L.circleMarker([p.lat, p.lon], {
         radius: many ? 7 : 5,
         color: '#231f20',
         weight: 2,
@@ -35,6 +41,8 @@
           return '<a href="/f/' + s.id + '">FPE-' + s.id + ' &middot; ' + esc(s.name) + '</a>';
         }).join('<br>')
       );
+
+      if (focus && p.lat === focus.lat && p.lon === focus.lon) marked = pin;
     });
 
     // to here, drawn last so it sits over everything
@@ -45,7 +53,15 @@
     function home() {
       map.setView([dest.lat, dest.lon], map.getSize().x < 500 ? 3 : 4);
     }
-    home();
+
+    // came off somebody's sighting log, so start over their town with their
+    // pin already open. the TO HERE line still puts it back
+    if (marked) {
+      map.setView([focus.lat, focus.lon], 6);
+      marked.openPopup();
+    } else {
+      home();
+    }
 
     // the TO HERE line puts you back over the stadium after you have been
     // dragging around looking at everybody else

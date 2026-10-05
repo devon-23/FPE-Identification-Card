@@ -2,16 +2,43 @@ import { h, raw, layout, htmlResponse, spread } from './_lib/html.js';
 import { SET_SIZE, FORM, EVENT, demaDate } from './_lib/config.js';
 import { cityMark } from './_lib/glyph.js';
 
-export async function onRequestGet({ env }) {
-  // the whole set in one query. 100 rows, nobody is paginating this
-  const { results } = await env.DB
-    .prepare('SELECT id, status, faction, name, n FROM records ORDER BY n')
-    .all();
+const PAGE = 100;
 
-  // the hundred issued cards, and everyone who turned themselves in
-  const all = (results || []).filter((r) => r.n <= SET_SIZE);
-  const walkIns = (results || []).filter((r) => r.n > SET_SIZE && r.status === 'ESCAPED');
+export async function onRequestGet({ request, env }) {
+  const url = new URL(request.url);
+  // how many of the walk-ins to show, and what they are looking for. both
+  // live in the url so this still works with no javascript
+  const asked = parseInt(url.searchParams.get('u') || '', 10);
+  const shown = Number.isFinite(asked) ? Math.min(Math.max(asked, PAGE), 20000) : PAGE;
+  const q = (url.searchParams.get('q') || '').trim().slice(0, 40);
+
+  // the hundred issued cards. always all of them, it is a hundred rows
+  const { results } = await env.DB
+    .prepare('SELECT id, status, faction, name, n FROM records WHERE n <= ? ORDER BY n')
+    .bind(SET_SIZE).all();
+
+  const all = results || [];
   const claimed = all.filter((r) => r.status === 'ESCAPED').length;
+
+  // the walk-ins are a page at a time. there could be thousands of them and
+  // reading every row on every front page load is how you burn a day's quota
+  const like = `%${q.toUpperCase()}%`;
+  const filter = q
+    ? "AND (UPPER(id) LIKE ? OR UPPER(COALESCE(name, '')) LIKE ?)"
+    : '';
+  const args = q ? [SET_SIZE, like, like] : [SET_SIZE];
+
+  const tally = await env.DB
+    .prepare(`SELECT count(*) AS n FROM records WHERE n > ? AND status = 'ESCAPED' ${filter}`)
+    .bind(...args).first();
+  const walkInTotal = (tally && tally.n) || 0;
+
+  const page = await env.DB
+    .prepare(`SELECT id, status, faction, name, n FROM records
+               WHERE n > ? AND status = 'ESCAPED' ${filter}
+               ORDER BY n LIMIT ?`)
+    .bind(...args, shown).all();
+  const walkIns = page.results || [];
 
   // one square per designation. taken ones get filled; citizen stays black, escapee goes red, bandito goes yellow
   function cell(r) {
@@ -54,10 +81,29 @@ export async function onRequestGet({ env }) {
     <h2 class="doc__sub">IDENTIFIED PERSONNEL:</h2>
     <div class="grid">${raw(cells)}</div>
 
-    ${raw(walkIns.length ? h`<h2 class="doc__sub">UNIDENTIFIED PERSONNEL:</h2>
+    ${raw(walkInTotal || q ? h`<h2 class="doc__sub" id="unidentified">UNIDENTIFIED PERSONNEL:</h2>
     <p class="doc__aside">Provisional designations. No card was issued; these subjects
       presented themselves.</p>
-    <div class="grid">${raw(walkIns.map(cell).join(''))}</div>` : '')}
+
+    ${raw(walkInTotal > PAGE || q ? h`<form class="find" method="GET" action="/">
+      <label class="form__label" for="q">FIND A SUBJECT</label>
+      <div class="find__row">
+        <input class="form__input" id="q" name="q" type="search" value="${q}"
+               maxlength="40" autocomplete="off" autocapitalize="characters"
+               placeholder="NUMBER OR NAME" enterkeyhint="search">
+        <button class="button" type="submit">SEARCH</button>
+      </div>
+      ${raw(q ? h`<p class="find__clear"><a href="/#unidentified">CLEAR THE SEARCH</a></p>` : '')}
+    </form>` : '')}
+
+    ${raw(walkIns.length
+      ? h`<div class="grid">${raw(walkIns.map(cell).join(''))}</div>`
+      : h`<p class="note">NOTHING IN THE REGISTER MATCHES THAT.</p>`)}
+
+    ${raw(walkInTotal > walkIns.length ? h`<p class="more">
+      <span>SHOWING ${String(walkIns.length)} OF ${String(walkInTotal)}</span>
+      <a class="button" href="/?u=${String(shown + PAGE)}${raw(q ? `&q=${encodeURIComponent(q)}` : '')}#unidentified">LOAD NEXT ${String(PAGE)}</a>
+    </p>` : raw(walkInTotal > PAGE ? h`<p class="more"><span>SHOWING ALL ${String(walkInTotal)}</span></p>` : ''))}` : '')}
 
     <a class="sighting" href="/from-here">BANDITO SIGHTINGS &mdash;&mdash;&mdash;&gt;</a>
 

@@ -1709,3 +1709,115 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
   -webkit-appearance: none;
   appearance: none;
 }
+
+/* ---------- what this device already filed ---------- */
+
+.held__list {
+  list-style: none;
+  margin: 0 0 0.875rem;
+  padding: 0;
+  display: grid;
+  gap: 0.375rem;
+}
+
+.held__list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.625rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--hair);
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+}
+
+.held__list b { letter-spacing: 0.12em; }
+.held__list span { color: var(--ink-dim); flex: 1 1 6rem; }
+
+.held__list a,
+.held__list button {
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--ink-faint);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.held__list button { color: var(--red); border-color: var(--red); }
+.held__list button[disabled] { opacity: .5; }
+
+/* picking which record moves onto the card */
+.held__list--pick li { display: block; padding: 0; border: 0; }
+.held__list--pick label { display: flex; align-items: center; gap: 0.625rem; padding: 0.5rem 0; cursor: pointer; }
+.held__list--pick input { width: 1.25rem; height: 1.25rem; margin: 0; accent-color: var(--red); }
+
+.held__body a { color: var(--red); }
+
+.fh__held .held__list li { border-top-color: var(--fh-bone); font-family: var(--mono-display); font-size: 0.8125rem; }
+.fh__held .held__list span { color: var(--fh-bone); }
+.fh__held .held__list b { color: var(--fh-yellow); }
+
+.fh__held .held__list a,
+.fh__held .held__list button {
+  font-family: var(--mono-display);
+  font-size: 0.75rem;
+  border-color: var(--fh-yellow);
+  color: var(--fh-yellow);
+}
+
+/* ---------- sighting log ---------- */
+
+.seen {
+  margin: 1.75rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink);
+}
+
+.seen__head {
+  margin: 0 0 0.5rem;
+  font-size: 0.5rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.seen__body {
+  margin: 0;
+  font-size: 0.625rem;
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+
+.seen .sighting { margin-top: 0.875rem; }
+
+/* ---------- finding somebody in a long register ---------- */
+
+.find { margin: 0.75rem 0 0; }
+.find__row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.find__row .form__input { flex: 1; min-width: 0; }
+.find__row .button { width: auto; flex: 0 0 auto; padding-inline: 1rem; }
+
+.find__clear { margin: 0.5rem 0 0; font-size: 0.5rem; letter-spacing: 0.14em; }
+.find__clear a { color: var(--red); }
+
+.more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
+}
+
+.more .button { width: auto; min-height: 2.5rem; padding: 0.625rem 1rem; margin-left: auto; font-size: 0.5625rem; }

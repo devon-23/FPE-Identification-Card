@@ -1,7 +1,7 @@
 import { h, raw, layout } from './html.js';
 import {
   generate, assignedDesignation, ledgerRef,
-  registryFile, docType, association, fileNotes, remark, recommendation, BISHOPS,
+  registryFile, docType, association, fileNotes, remark, recommendation, sighting, BISHOPS,
 } from './lore.js';
 import { renderCard, normalizeFaction, REDACTED } from './card.js';
 import { EVENT, SET_SIZE, FORM, demaDate } from './config.js';
@@ -13,18 +13,15 @@ export function normalizeId(input) {
   if (input == null) return null;
   const v = String(input).trim().toUpperCase().replace(/^FPE[-_]?/, '');
 
-  // self-registered: X001, X002... these are made on demand, not pre-seeded. all beginging with x
-  const x = v.match(/^X(\d{3})$/);
-  if (x) {
-    const n = parseInt(x[1], 10);
-    return n >= 1 && n <= 999 ? `X${x[1]}` : null;
-  }
-
-  // origin-only, off the map page. Y001 upwards, same shape as the X ones
-  const y = v.match(/^Y(\d{3})$/);
-  if (y) {
-    const n = parseInt(y[1], 10);
-    return n >= 1 && n <= 999 ? `Y${y[1]}` : null;
+  // made on demand rather than pre-seeded. X is somebody's first record, Y
+  // their second, Z their third. there is no fourth. three digits until there
+  // are more than 999 of them, then four, then five -- X001 and X0001 are the
+  // same designation and both come back as X001
+  const letter = v.match(/^([XYZ])(\d{3,6})$/);
+  if (letter) {
+    const n = parseInt(letter[2], 10);
+    if (!(n >= 1 && n <= 99999)) return null;
+    return `${letter[1]}${String(n).padStart(3, '0')}`;
   }
 
   const m = v.match(/^(\d{1,4})$/);
@@ -34,7 +31,7 @@ export function normalizeId(input) {
   return padId(n);
 }
 
-export const isSelfRegistered = (id) => /^(?:X|Y)\d{3}$/.test(String(id || ''));
+export const isSelfRegistered = (id) => /^[XYZ]\d{3,5}$/.test(String(id || ''));
 
 function field(label, value) {
   return h`<div class="rf"><dt>${label}</dt><dd>${value}</dd></div>`;
@@ -147,11 +144,26 @@ export function renderUnregistered(id, { claimingOpen = true, key = null, keyOk 
       + 'TAP THE CARD, OR ENTER THE FULL ADDRESS PRINTED ON IT.</p>');
   }
 
+  // if this browser already holds a provisional record, offer to move it
+  // onto the card instead of filing a second one. hidden until the script
+  // finds a token, so it never flashes at somebody who has none
+  const transfer = keyOk ? h`<section class="held" data-transfer data-target="${id}" data-key="${key}" hidden>
+      <p class="held__head">LOOKS LIKE YOU ALREADY MADE A CARD.</p>
+      <p class="held__body">EVERYTHING YOU WROTE BECOMES FPE-${id} AND THE PROVISIONAL
+        RECORD GOES, SO YOU ARE IN THE REGISTER ONCE. PICK WHICH ONE MOVES.</p>
+      <ul class="held__list held__list--pick" data-held-list></ul>
+      <button class="button button--primary button--flash" type="button" data-action="transfer">TRANSFER TO THIS CARD</button>
+      <button class="button button--quiet" type="button" data-action="anyway">START A NEW RECORD INSTEAD</button>
+      <p class="form__status" role="status" aria-live="polite"></p>
+    </section>` : '';
+
   const body = h`  <main class="stage">
     ${raw(card)}
     <p class="note">THIS DESIGNATION HAS NOT BEEN CLAIMED.<br>THE FIRST SUBJECT TO REGISTER HOLDS IT.</p>
-    ${raw(String(action))}
-  </main>`;
+    ${raw(String(transfer))}
+    <div data-held-hide>${raw(String(action))}</div>
+  </main>
+  ${raw(keyOk ? '<script src="/held.js" defer></script><script src="/transfer.js" defer></script>' : '')}`;
   return layout({
     title: `FPE-${id} — UNREGISTERED`, body, bodyClass: 'page-record',
   });
@@ -184,7 +196,19 @@ function civilNotice(rec) {
     </section>`;
 }
 
-export function renderRecord(rec, { rank = null } = {}) {
+// only when they gave an origin. the count is how many other subjects came
+// out of the same town, which the route works out
+function sightingLog(rec, others) {
+  const line = sighting(rec.id, { hometown: rec.hometown, others });
+  if (!line) return '';
+  return h`<section class="seen">
+      <h3 class="seen__head">SIGHTING LOG</h3>
+      <p class="seen__body">${line}</p>
+      <a class="sighting" href="/from-here?at=${rec.id}">BANDITO SIGHTINGS &mdash;&mdash;&mdash;&gt;</a>
+    </section>`;
+}
+
+export function renderRecord(rec, { rank = null, others = 0 } = {}) {
   const name = rec.name || assignedDesignation(rec.id);
   const card = renderCard(rec);
 
@@ -200,6 +224,7 @@ export function renderRecord(rec, { rank = null } = {}) {
       <a class="button" href="/f/${rec.id}/register" data-owner-only hidden>AMEND RECORD</a>
     </p>
     ${raw(civilNotice(rec))}
+    ${raw(String(sightingLog(rec, others)))}
     ${raw(dossier(rec, rank))}
     ${raw(restrictedBanner())}
   </main>

@@ -3,6 +3,7 @@ import { FORM, EVENT, demaDate } from './_lib/config.js';
 import { HOMETOWN_MAX } from './_lib/sanitize.js';
 import { getSetting } from './_lib/db.js';
 import { normalizeId } from './_lib/record.js';
+import { heldBlock } from './_lib/held.js';
 
 // the big landscape one, for a laptop. same data as /map, read differently
 // the horseshoe itself, not the city. the old pair was downtown Columbus,
@@ -71,6 +72,11 @@ export async function onRequestGet({ env, request }) {
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
   const filed = normalizeId(new URL(request.url).searchParams.get('new'));
 
+  // ?at=X001 comes off a record's sighting log. open the plot sitting on
+  // that subject's origin rather than over the stadium
+  const at = normalizeId(new URL(request.url).searchParams.get('at'));
+  const focus = at ? pins.find((p) => p.people.some((s) => s.id === at)) || null : null;
+
   const cards = [
     stat('SUBJECTS PLOTTED', h`${String(rows.length)}`,
       h`FROM ${String(pins.length)} SEPARATE ORIGIN${raw(pins.length === 1 ? '' : 'S')}`),
@@ -100,22 +106,14 @@ export async function onRequestGet({ env, request }) {
       <p class="fh__tohere"><button type="button" class="fh__recentre" data-recentre>&mdash;&mdash;&mdash;&gt; TO HERE</button></p>
     </div>
 
-    <dl class="fh__stats">${raw(cards)}</dl>
-
     ${raw(filed ? h`<p class="fh__filed" data-just-filed>FILED AS <b>FPE-${filed}</b>. THAT IS YOUR RECORD &mdash;
       <a href="/f/${filed}/register">FINISH YOUR CARD &mdash;&gt;</a></p>` : '')}
 
-    ${raw(open && !filed ? h`<section class="fh__held" data-held hidden>
-      <p>THIS TERMINAL IS ALREADY ON THE PLOT AS <b data-held-id>&mdash;</b>.
-        CHANGE THE ORIGIN ON THAT RECORD RATHER THAN FILING A SECOND ONE.</p>
-      <span class="fh__heldrow">
-        <a class="fh__addgo" data-held-link href="/">OPEN THAT RECORD</a>
-        <button class="fh__addalt" type="button" data-action="anyway">PLOT SOMEBODY ELSE</button>
-      </span>
-    </section>
+    ${raw(open && !filed ? String(heldBlock({ cls: 'fh__held', anyway: 'PLOT SOMEBODY ELSE' })) + h`
 
     <div data-held-hide>
     <form class="fh__add" method="POST" action="/turn-yourself-in">
+      <input type="hidden" name="seq" value="0" data-seq>
       <input type="hidden" name="back" value="/from-here">
       <label class="fh__addlabel" for="hometown">PUT YOURSELF ON IT</label>
       <div class="fh__addrow">
@@ -131,11 +129,14 @@ export async function onRequestGet({ env, request }) {
     </form>
     </div>` : '')}
 
+    <dl class="fh__stats">${raw(cards)}</dl>
+
+
     <noscript><p class="fh__note">THIS PLOT REQUIRES SCRIPTING.</p></noscript>
 
     <p class="fh__links">
-      <a href="/map">THE SMALL PLOT</a>
       <a href="/">INCIDENT REPORT ${FORM.statute}</a>
+      <a href="/map">THE SMALL PLOT</a>
     </p>
   </main>
 
@@ -145,6 +146,7 @@ export async function onRequestGet({ env, request }) {
     lat: p.lat, lon: p.lon, town: p.town, people: p.people,
   }))))}</script>
   <script id="dest" type="application/json">${raw(JSON.stringify(DESTINATION))}</script>
+  <script id="focus" type="application/json">${raw(JSON.stringify(focus ? { lat: focus.lat, lon: focus.lon } : null))}</script>
   <script src="/fromhere.js" defer></script>
   <script src="/held.js" defer></script>`;
 

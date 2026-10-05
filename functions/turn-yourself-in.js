@@ -7,23 +7,22 @@ import { sameOrigin } from './_lib/origin.js';
 import { ipHash } from './_lib/session.js';
 import { cleanHometown } from './_lib/sanitize.js';
 import { banditoName, assignedFaction } from './_lib/lore.js';
+import { heldBlock } from './_lib/held.js';
 import { lookup } from './_lib/geo.js';
 
-// no card, no key, so this is the one form anybody can reach. cap it per
-// address or one bored person can fill the register with nothing
+// no card, no key, so this is the one form anybody can reach. cap it per address or one bored person can fill the register with nothing
 const MAX_PER_WINDOW = 3;
 const WINDOW_SECONDS = 60 * 60;
 
-// X001.. is the full form, Y001.. is the origin-only one off the map.
-// separate blocks of n so neither can wander into the other
-const X_BASE = 1000;
-const X_TOP = 1999;
-const Y_BASE = 2000;
-const Y_TOP = 2999;
+// X is somebody's first record, Y their second, Z their third. 
+const LETTERS = ['X', 'Y', 'Z'];
+// a hundred thousand apart, so each letter holds 99,999 designations. they
+// used to be a thousand apart and the register jammed at the 999th person
+const BLOCK = 100000;
+const blockBase = (i) => BLOCK * (i + 1);
+const blockTop = (i) => blockBase(i) + BLOCK - 1;
 
-// how long a designation sits unregistered before it is handed to the next
-// person. somebody who opens the form and backs out should not burn a number
-const ABANDONED_SECONDS = 20 * 60;
+const ABANDONED_SECONDS = 20 * 60; // how long it sits unregistered
 
 function page(message, open = true) {
   const body = h`  <main class="stage doc">
@@ -40,16 +39,11 @@ function page(message, open = true) {
 
     ${raw(message ? h`<p class="form__status">${message}</p>` : '')}
 
-    ${raw(open ? `<section class="held" data-held hidden>
-      <p class="held__head">THIS TERMINAL ALREADY HOLDS A FILE.</p>
-      <p class="held__body">SUBJECT <b data-held-id>&mdash;</b> WAS ENTERED FROM THIS DEVICE.
-        A SECOND DESIGNATION WOULD ENTER YOU IN THE REGISTER TWICE.</p>
-      <a class="button button--primary button--flash" data-held-link href="/">FINISH THAT RECORD</a>
-      <button class="button button--quiet" type="button" data-action="anyway">FILE A SEPARATE ONE ANYWAY</button>
-    </section>
+    ${raw(open ? String(heldBlock({ anyway: 'FILE A SEPARATE ONE ANYWAY' })) + `
 
     <div class="surrender" data-held-hide>
       <form method="POST" action="/turn-yourself-in">
+        <input type="hidden" name="seq" value="0" data-seq>
         <button class="button button--primary button--flash" type="submit">TURN YOURSELF IN</button>
       </form>
 
@@ -76,22 +70,23 @@ export async function onRequestPost({ request, env }) {
   let hometown = '';
   let attending = 0;
   let back = '/map';
+  // how many records this browser is already carrying.
+  let seq = 0;
   try {
     const form = await request.formData();
     hometown = cleanHometown(form.get('hometown'));
     attending = form.get('attending') === '1' ? 1 : 0;
-    // whichever plot they were looking at. an allowlist, not the raw value --
-    // a redirect that takes its target off a form is an open redirect
+    const said = parseInt(String(form.get('seq') || '0'), 10);
+    seq = Number.isFinite(said) && said > 0 ? Math.min(said, 9) : 0;
+    // whichever plot they were looking at. an allowlist, not the raw value -- a redirect that takes its target off a form is an open redirect
     if (form.get('back') === '/from-here') back = '/from-here';
-  } catch {  }
+  } catch {  } // idk what to catch
 
-  if ((await getSetting(env.DB, 'claiming_open', '0')) !== '1') {
+  if ((await getSetting(env.DB, 'claiming_open', '0')) !== '1') { // i think this'll just stay on 
     return htmlResponse(page(null, false), { status: 403 });
   }
 
-  // same table the admin login throttle uses, prefixed so the two cannot
-  // tread on each other. switchable from /admin, because the cap is useless
-  // at a venue if it has already locked you out while you were testing it
+  // same table the admin login throttle uses, prefixed so the two cannot tread on each other. switchable from /admin, because the cap is useless
   const throttle = (await getSetting(env.DB, 'surrender_throttle', '1')) === '1';
   const secret = env.SESSION_SECRET || 'fpe';
   const bucket = 'sr:' + (await ipHash(request, secret)).slice(0, 24);
@@ -104,23 +99,28 @@ export async function onRequestPost({ request, env }) {
     return htmlResponse(page('TOO MANY SURRENDERS FROM THIS TERMINAL. TRY AGAIN LATER.'), { status: 429 });
   }
 
+  if (seq >= LETTERS.length) {
+    return htmlResponse(page(`THIS TERMINAL HAS FILED ${String(LETTERS.length)} TIMES. THAT IS THE LIMIT. AMEND OR WITHDRAW ONE OF THEM INSTEAD.`), { status: 429 });
+  }
+
   const key = newToken().slice(0, 8).toUpperCase();
   const hash = await hashToken(key);
   const stamp = new Date().toISOString();
 
-  // the origin-only form lands claimed straight away, so it never leaves a
-  // half-filled row behind and gets its own block of numbers
-  const base = hometown ? Y_BASE : X_BASE;
-  const top = hometown ? Y_TOP : X_TOP;
-  const label = (n) => (hometown
-    ? `Y${String(n - Y_BASE).padStart(3, '0')}`
-    : `X${String(n - X_BASE).padStart(3, '0')}`);
+  // their own block first, then whatever is left. the letter is meant to say
+  // how many times this device has filed, but a thousand people turning up is
+  // a much better problem than a register that stops taking anybody
+  const blocks = [seq];
+  for (let i = 0; i < LETTERS.length; i++) if (i !== seq) blocks.push(i);
+
+  let which = seq;
+  let base = blockBase(which);
+  let top = blockTop(which);
+  const label = (n, i) => `${LETTERS[i]}${String(n - blockBase(i)).padStart(3, '0')}`;
 
   let id = null;
 
-  // somebody who opened the form and hit cancel left a designation sitting
-  // unregistered. give it to the next person rather than burning it. the
-  // subselect and the write are one statement, so two people cannot both win
+  // somebody who opened the form and hit cancel left a designation sitting  unregistered. give it to the next person rather than burning it. the
   if (!hometown) {
     const cutoff = new Date(Date.now() - ABANDONED_SECONDS * 1000).toISOString();
     const reused = await env.DB.prepare(`
@@ -130,24 +130,30 @@ export async function onRequestPost({ request, env }) {
                       AND (updated_at IS NULL OR updated_at < ?)
                     ORDER BY n LIMIT 1)
       RETURNING id
-    `).bind(hash, stamp, X_BASE, X_TOP, cutoff).first();
+    `).bind(hash, stamp, base, top, cutoff).first();
     if (reused) id = reused.id;
   }
 
   // the unique index on n is what settles a tie, so retry rather than lock
-  for (let attempt = 0; attempt < 5 && !id; attempt++) {
-    const highest = await env.DB
-      .prepare('SELECT MAX(n) AS top FROM records WHERE n > ? AND n <= ?')
-      .bind(base, top).first();
-    const next = ((highest && highest.top) || base) + 1;
-    if (next > top) return htmlResponse(page('THE PROVISIONAL REGISTER IS FULL.'), { status: 503 });
-    try {
-      await env.DB.prepare(
-        "INSERT INTO records (id, n, status, claim_key_hash, updated_at) VALUES (?, ?, 'UNREGISTERED', ?, ?)"
-      ).bind(label(next), next, hash, stamp).run();
-      id = label(next);
-    } catch {
-      // somebody else took that number between the read and the write
+  for (let b = 0; b < blocks.length && !id; b++) {
+    which = blocks[b];
+    base = blockBase(which);
+    top = blockTop(which);
+
+    for (let attempt = 0; attempt < 5 && !id; attempt++) {
+      const highest = await env.DB
+        .prepare('SELECT MAX(n) AS top FROM records WHERE n > ? AND n <= ?')
+        .bind(base, top).first();
+      const next = ((highest && highest.top) || base) + 1;
+      if (next > top) break;              // that block is full, try the next one
+      try {
+        await env.DB.prepare(
+          "INSERT INTO records (id, n, status, claim_key_hash, updated_at) VALUES (?, ?, 'UNREGISTERED', ?, ?)"
+        ).bind(label(next, which), next, hash, stamp).run();
+        id = label(next, which);
+      } catch {
+        // somebody else took that number between the read and the write and idk what to do with that soooo
+      }
     }
   }
 
@@ -163,8 +169,7 @@ export async function onRequestPost({ request, env }) {
     `).bind(bucket, now, fresh ? 1 : 0, fresh ? 1 : 0, now).run();
   }
 
-  // came in from the map, so there is nothing else to ask for. fill the
-  // record in here instead of handing them a form they already turned down
+  // came in from the map
   if (hometown) {
     const token = newToken();
     await env.DB.prepare(`
@@ -173,25 +178,26 @@ export async function onRequestPost({ request, env }) {
              hometown = ?, attending = ?, token_hash = ?, claimed_at = ?, updated_at = ?,
              location = ?, city = ?, event_date = ?
        WHERE id = ?
-    `).bind(banditoName(id), assignedFaction(id), hometown, attending,
-            await hashToken(token), stamp, stamp,
-            EVENT.venue, EVENT.city, EVENT.date, id).run();
+    `).bind(banditoName(id), assignedFaction(id), hometown, attending, await hashToken(token), stamp, stamp, EVENT.venue, EVENT.city, EVENT.date, id).run();
 
-    // awaited, not deferred: the whole point of this form is the pin, so it
-    // is worth the second. a town already in `places` costs nothing
+    // awaited, not deferred
     if (attending) await lookup(env.DB, hometown);
 
-    // straight back to the plot with nothing said. they asked for a pin, they
-    // get a pin; the record behind it is there if they ever go looking. the
-    // edit token rides in the fragment, which browsers keep to themselves
+    // straight back to the plot with nothing said
     return new Response(null, {
       status: 303,
-      headers: { location: `${back}?new=${id}#t=${id}.${token}`, 'cache-control': 'no-store' },
+      headers: { 
+        location: `${back}?new=${id}#t=${id}.${token}`, 
+        'cache-control': 'no-store' 
+      },
     });
   }
 
   return new Response(null, {
     status: 303,
-    headers: { location: `/f/${id}/register?k=${key}`, 'cache-control': 'no-store' },
+    headers: { 
+      location: `/f/${id}/register?k=${key}`, 
+      'cache-control': 'no-store' 
+    },
   });
 }

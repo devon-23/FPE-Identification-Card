@@ -2,7 +2,9 @@ export const NAME_MAX     = 28;
 export const HANDLE_MAX   = 30;
 export const HOMETOWN_MAX = 28;
 export const BIO_MAX      = 90;
-export const ATTEMPTS_MAX = 99;
+// nobody has been to ten thousand shows, but the number lives in a small
+// box on the card, so it cannot be unbounded either
+export const ATTEMPTS_MAX = 9999;
 export const LYRIC_MAX    = 60;
 export const FIRST_SHOW_MIN = 2009;
 export const FIRST_SHOW_MAX = 2030;
