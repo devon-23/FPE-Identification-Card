@@ -16,8 +16,7 @@ const WINDOW_SECONDS = 60 * 60;
 
 // X is somebody's first record, Y their second, Z their third. 
 const LETTERS = ['X', 'Y', 'Z'];
-// a hundred thousand apart, so each letter holds 99,999 designations. they
-// used to be a thousand apart and the register jammed at the 999th person
+// a hundred thousand apart, so each letter holds 99,999 designations. they used to be a thousand apart and the register jammed at the 999th person
 const BLOCK = 100000;
 const blockBase = (i) => BLOCK * (i + 1);
 const blockTop = (i) => blockBase(i) + BLOCK - 1;

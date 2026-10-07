@@ -9,7 +9,7 @@
 
     var target = box.getAttribute('data-target');
     var key = box.getAttribute('data-key');
-    var mine = window.FPEHeld.ids();
+    var mine = window.FPEHeld.provisional();
     if (!mine.length) return;
 
     var list = box.querySelector('[data-held-list]');

@@ -5,12 +5,12 @@ import { sameOrigin } from '../../_lib/origin.js';
 
 const home = () => new Response(null, {
   status: 303,
-  headers: { location: '/', 'cache-control': 'no-store' },
+  headers: { location: '/incident', 'cache-control': 'no-store' },
 });
 
 export async function onRequestPost({ request, params, env }) {
-  // backing out of the form always lands on the front page. there is nothing
-  // to go back to -- the record they were filling in does not exist yet
+  // backing out of the form lands on the register. there is nothing to go
+  // back to -- the record they were filling in does not exist yet
   if (!sameOrigin(request)) return home();
 
   const id = normalizeId(params.id);

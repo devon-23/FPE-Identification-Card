@@ -7,7 +7,7 @@ export const ABOUT = {
 
   photo: '/images/max.webp',
 
-  bio: 'I made these cards and handed them out at the show. One hundred of them, one number each. If you have one, it is yours. See the other banditos that attended the show. This is our drag path.',
+  bio: 'I made these cards and handed them out at the show. One hundred of them, one number each. See the other banditos that attended the show, and those i didn\'t get to meet. This is our drag path. I am a software engineer that has been creating twenty one pilots inspired websites for over 10 years (yes, since i was 15 (if you know, you know))',
 
 
   contact: {

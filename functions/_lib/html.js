@@ -33,7 +33,7 @@ export function spread(text) {
 
 export function layout({ title, body, bodyClass = '', back = true }) {
   const home = back
-    ? `<p class="colophon__back"><a href="/">&larr; INCIDENT REPORT ${FORM.statute}</a></p>`
+    ? `<p class="colophon__back"><a href="/incident">&larr; INCIDENT REPORT ${FORM.statute}</a></p>`
     : '';
 
   return `<!doctype html>

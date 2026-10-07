@@ -1,4 +1,4 @@
-import { normalizeId, isSelfRegistered } from './_lib/record.js';
+import { normalizeId } from './_lib/record.js';
 import { assignedDesignation } from './_lib/lore.js';
 
 // names for the designations a browser says it is holding, so the page can
@@ -8,7 +8,7 @@ export async function onRequestGet({ request, env }) {
   const asked = String(new URL(request.url).searchParams.get('ids') || '')
     .split(',')
     .map(normalizeId)
-    .filter((id) => id && isSelfRegistered(id))
+    .filter(Boolean)
     .slice(0, 8);
 
   if (!asked.length) return json([]);

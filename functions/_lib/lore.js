@@ -127,13 +127,13 @@ export function ledgerRef(id) {
 
 // for anyone who plots a town and gives nothing else. 
 const CALL_FIRST = [
-  'SPOOKY', 'YELLOW', 'QUIET', 'GLORIOUS', 'TOWER', 'HOLLOW', 'REBEL',
-  'BANDITO', 'UNLIT', 'PAPER', 'SECOND', 'SALT', 'LOW', 'GLASS',
+  'SPOOKY', 'YELLOW', 'QUIET', 'GLORIOUS', 'TOWER', 'REBEL', 'NEON', 'IMPLICIT',
+  'BANDITO', 'UNLIT', 'PAPER', 'BLURRY', 'BISHOP', 'LOW', 'NOVA', 'MIDWEST', 'LAVISH', 'SHY'
 ];
 
 const CALL_SECOND = [
-  'TORCH', 'TRASH', 'VULTURE', 'RIDGE', 'BEARER', 'EMBER', 'NED',
-  'CANYON', 'SPARROW', 'CARNATION', 'CLIFF', 'TRENCH', 'SIGNAL', 'DRUM',
+  'TORCH', 'TRASH', 'VULTURE', 'BEARER', 'EMBER', 'NED', 'GRAVESTONE', 'CHEETAH', 'HANDS', 'CATCHER',
+  'CHLORINE', 'SPARROW', 'CARNATION', 'CLIFF', 'TRENCH', 'SIGNAL', 'DRUM', 'STRAIT', 'INDIGO',
 ];
 
 export function banditoName(id) {

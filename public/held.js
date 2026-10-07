@@ -5,10 +5,15 @@
   // person, and that is fine -- this is a nudge, not a gate
   window.FPEHeld = {
     ids: ids,
+    provisional: provisional,
+    isProvisional: isProvisional,
     names: names,
     forget: forget,
   };
 
+  // everything this device holds, a numbered card included. somebody who
+  // claimed FPE-0042 at the show is already in the register, and plotting a
+  // town would file them a second time
   function ids() {
     var out = [];
     try {
@@ -16,11 +21,18 @@
         var k = localStorage.key(i);
         if (!k || k.indexOf('fpe:token:') !== 0) continue;
         var id = k.slice(10);
-        if (/^[XYZ]\d{3,5}$/.test(id)) out.push(id);
+        if (/^(?:[XYZ]\d{3,5}|\d{4})$/.test(id)) out.push(id);
       }
     } catch (e) {  }
-    return out.sort();
+    // numbered cards first -- that is the one somebody actually holds
+    return out.sort(function (a, b) {
+      return (isProvisional(a) ? 1 : 0) - (isProvisional(b) ? 1 : 0) || (a < b ? -1 : a > b ? 1 : 0);
+    });
   }
+
+  // the made-on-demand ones. only these can be withdrawn or moved onto a card
+  function isProvisional(id) { return /^[XYZ]\d{3,5}$/.test(id); }
+  function provisional() { return ids().filter(isProvisional); }
 
   function names(list) {
     if (!list.length) return Promise.resolve([]);
@@ -44,6 +56,16 @@
       });
   }
 
+  // the front door. with nothing on file, the door is a form that files a
+  // designation and drops them straight into the card. with something on
+  // file it stays a link to the page that lists what they have
+  var gateNew = document.querySelector('[data-gate-new]');
+  var gateHeld = document.querySelector('[data-gate-held]');
+  if (gateNew && gateHeld && !ids().length) {
+    gateNew.hidden = false;
+    gateHeld.hidden = true;
+  }
+
   var held = document.querySelector('[data-held]');
   var fresh = document.querySelector('[data-held-hide]');
   if (!held || !fresh) return;
@@ -55,7 +77,7 @@
   // rather than skipping down to Z and leaving a hole
   var LETTERS = ['X', 'Y', 'Z'];
   var have = {};
-  mine.forEach(function (id) { have[id.charAt(0)] = true; });
+  mine.filter(isProvisional).forEach(function (id) { have[id.charAt(0)] = true; });
   var next = 0;
   while (next < LETTERS.length && have[LETTERS[next]]) next++;
 
@@ -100,6 +122,13 @@
       edit.href = '/f/' + row.id + '/register';
       edit.textContent = 'AMEND';
       li.appendChild(edit);
+
+      // an issued card cannot be withdrawn here -- somebody is carrying that
+      // number, and dropping the row would strand the tag
+      if (!isProvisional(row.id)) {
+        list.appendChild(li);
+        return;
+      }
 
       var drop = document.createElement('button');
       drop.type = 'button';

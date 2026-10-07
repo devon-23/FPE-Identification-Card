@@ -135,7 +135,7 @@ export async function onRequestGet({ env, request }) {
     <noscript><p class="fh__note">THIS PLOT REQUIRES SCRIPTING.</p></noscript>
 
     <p class="fh__links">
-      <a href="/">INCIDENT REPORT ${FORM.statute}</a>
+      <a href="/incident">INCIDENT REPORT ${FORM.statute}</a>
       <a href="/map">THE SMALL PLOT</a>
     </p>
   </main>

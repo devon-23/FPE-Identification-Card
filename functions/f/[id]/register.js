@@ -9,10 +9,10 @@ import { SET_SIZE, FORM } from '../../_lib/config.js';
 
 export async function onRequestGet({ request, params, env }) {
   const id = normalizeId(params.id);
-  if (!id) return Response.redirect(new URL('/', request.url).toString(), 302);
+  if (!id) return Response.redirect(new URL('/incident', request.url).toString(), 302);
 
   const rec = await getRecord(env.DB, id);
-  if (!rec) return Response.redirect(new URL('/', request.url).toString(), 302);
+  if (!rec) return Response.redirect(new URL('/incident', request.url).toString(), 302);
 
   const claimed = rec.status === 'ESCAPED';
   const claimingOpen = (await getSetting(env.DB, 'claiming_open', '0')) === '1';

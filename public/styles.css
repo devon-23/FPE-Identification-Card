@@ -1821,3 +1821,47 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 }
 
 .more .button { width: auto; min-height: 2.5rem; padding: 0.625rem 1rem; margin-left: auto; font-size: 0.5625rem; }
+
+/* ---------- the front door ---------- */
+
+.gate__door {
+  display: block;
+  margin: 1.25rem 0 0;
+  padding: 1.125rem 1rem;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.gate__door b {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--red);
+}
+
+.gate__door span {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.5rem;
+  line-height: 1.8;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+}
+
+.gate__door:active { background: #f4f4f4; }
+.gate .doc__count { margin-top: 1.5rem; }
+.gate .sighting { margin-top: 1rem; }
+
+/* the front door's first option is a form, so one of them is a button */
+button.gate__door {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  background: none;
+  cursor: pointer;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
