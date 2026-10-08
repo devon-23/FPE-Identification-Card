@@ -21,6 +21,15 @@
   font-display: swap;
 }
 
+/* the distressed one off the letters. one weight only -- the file has no
+   bold in it -- and subset to the characters the site actually sets */
+@font-face {
+  font-family: "Bellfort";
+  src: url("/fonts/bellfort.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   --paper:   #fff;
   --ink:     #000;
@@ -55,6 +64,7 @@
              "Lucida Sans", "Trebuchet MS", sans-serif;
   --dema: "Dema Gothic", var(--display);
   --mono-display: "Alfredino", "Oswald", "Arial Narrow", sans-serif;
+  --rough: "Bellfort", var(--display);
 }
 
 * { box-sizing: border-box; }
@@ -1822,46 +1832,71 @@ body.page-index .cell { border-right-color: var(--ink); border-bottom-color: var
 
 .more .button { width: auto; min-height: 2.5rem; padding: 0.625rem 1rem; margin-left: auto; font-size: 0.5625rem; }
 
-/* ---------- the front door ---------- */
+/* ---------- the front door ----------
+   after the physical letters: one word down the middle, a narrow column of
+   small print under it, and nothing in a box. */
 
-.gate__door {
-  display: block;
-  margin: 1.25rem 0 0;
-  padding: 1.125rem 1rem;
-  border: 1px solid var(--ink);
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.gate__door b {
-  display: block;
-  font-size: 0.75rem;
+.gate__word {
+  font-family: var(--rough);
   font-weight: 700;
-  letter-spacing: 0.18em;
+  margin: 1.5rem 0 0;
+  text-align: center;
+  font-size: clamp(2.75rem, 17vw, 4.25rem);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: var(--red);
 }
 
-.gate__door span {
-  display: block;
-  margin-top: 0.5rem;
+/* the justified small print the letters carry under the title, full measure */
+.gate__small,
+.gate__call p {
+  margin: 1.5rem 0 0;
+  text-align: justify;
   font-size: 0.5rem;
-  line-height: 1.8;
-  letter-spacing: 0.1em;
-  color: var(--ink-faint);
+  line-height: 1.95;
+  letter-spacing: 0.02em;
+  color: var(--red);
 }
 
-.gate__door:active { background: #f4f4f4; }
-.gate .doc__count { margin-top: 1.5rem; }
-.gate .sighting { margin-top: 1rem; }
+/* an instruction, then the way out of it */
+.gate__call { margin-top: 1.75rem; }
+.gate__call p { margin-top: 0; }
+.gate__call form { margin: 0; }
 
-/* the front door's first option is a form, so one of them is a button */
-button.gate__door {
+/* the longest of these has to hold one line at 320px, so the size and the
+   tracking both give a little rather than letting the arrow drop */
+.gate__way {
+  display: block;
   width: 100%;
-  font: inherit;
-  text-align: left;
+  min-height: 3rem;
+  margin-top: 0.75rem;
+  padding: 1rem 0.5rem;
+  border: 1px solid var(--red);
   background: none;
+  font: inherit;
+  font-size: clamp(0.5rem, 2.7vw, 0.6875rem);
+  letter-spacing: clamp(0.1em, 0.55vw, 0.2em);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--red);
   cursor: pointer;
   border-radius: 0;
   -webkit-appearance: none;
   appearance: none;
 }
+
+.gate__way:active { background: var(--red); color: var(--paper); }
+
+
+.gate__tally {
+  margin: 2rem 0 0;
+  text-align: center;
+  font-size: 0.4375rem;
+  letter-spacing: 0.2em;
+  color: var(--ink-faint);
+}
+
+.page-gate { font-family: var(--rough); }
+.page-gate .restricted { margin-top: 2.5rem; }

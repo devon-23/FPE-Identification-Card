@@ -104,6 +104,16 @@ output directory, so it never ships.
   rest of the page stays typed. `--dema`.
 - **Alfredino Semimono** is the condensed mono off the FROM HERE merch, used
   on `/from-here` and nowhere else. `--mono-display`.
+- **Bellfort Rough** is the distressed one, on the landing page and nowhere
+  else. `--rough`. It is a demo file with a single weight, so the bold on
+  IDENTIFY is the browser faking it. Subset down to the characters the site
+  actually sets -- the whole face was 240 KB as woff2, the subset is 58 KB:
+
+```bash
+pyftsubset assets/fonts/BellfortRoughDemo.otf --output-file=public/fonts/bellfort.woff2 \
+  --flavor=woff2 --layout-features='' \
+  --unicodes="U+0020-007E,U+00B7,U+2014,U+2013,U+00D8,U+00F8,U+00C6,U+2192,U+00A0"
+```
 
 Rebuild either one after swapping the ttf:
 
