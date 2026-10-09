@@ -1,5 +1,5 @@
 import { h, raw, layout, htmlResponse } from './_lib/html.js';
-import { FORM, EVENT, demaDate } from './_lib/config.js';
+import { FORM, EVENT, demaDate, showPledge } from './_lib/config.js';
 import { HOMETOWN_MAX } from './_lib/sanitize.js';
 import { getSetting } from './_lib/db.js';
 import { normalizeId } from './_lib/record.js';
@@ -124,7 +124,7 @@ export async function onRequestGet({ env, request }) {
       </div>
       <label class="fh__addcheck">
         <input type="checkbox" name="attending" value="1" required>
-        <span>I WAS AT THE COLUMBUS SHOW.</span>
+        <span>${showPledge()}</span>
       </label>
     </form>
     </div>` : '')}

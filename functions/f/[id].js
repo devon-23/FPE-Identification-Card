@@ -38,7 +38,9 @@ export async function onRequestGet({ request, params, env }) {
       others = (same && same.n) || 0;
     }
 
-    return htmlResponse(renderRecord(rec, { rank, others }), { headers: { 'cache-control': 'no-cache' } });
+    const origin = new URL(request.url).origin;
+    const tapped = await keyMatches(rec, new URL(request.url).searchParams.get('k'));
+    return htmlResponse(renderRecord(rec, { rank, others, origin, tapped }), { headers: { 'cache-control': 'no-cache' } });
   }
 
   const claimingOpen = (await getSetting(env.DB, 'claiming_open', '0')) === '1';

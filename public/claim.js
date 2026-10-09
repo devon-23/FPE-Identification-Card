@@ -36,6 +36,7 @@
   var slotLyric = card.querySelector('[data-slot="lyric"]');
   var slotFirstShow = card.querySelector('[data-slot="firstShow"]');
   var slotBishop = card.querySelector('[data-slot="bishop"]');
+  var slotWhen = card.querySelector('[data-slot="when"]');
   var REDACTED = '[REDACTED]';
   var plate  = card.querySelector('.card__plate');
 
@@ -157,6 +158,14 @@
     paintOptional(lyricEl, slotLyric);
     paintOptional(firstShowEl, slotFirstShow);
   }
+
+  // the night only goes on the card if they say they were there
+  function paintWhen() {
+    if (!slotWhen || !attendingEl) return;
+    slotWhen.classList.toggle('is-empty', !attendingEl.checked);
+  }
+  paintWhen();
+  if (attendingEl) attendingEl.addEventListener('change', paintWhen);
 
   nameEl.addEventListener('input', paintName);
   attemptsEl.addEventListener('input', paintAttempts);

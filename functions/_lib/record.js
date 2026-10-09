@@ -4,7 +4,7 @@ import {
   registryFile, docType, association, fileNotes, remark, recommendation, sighting, BISHOPS,
 } from './lore.js';
 import { renderCard, normalizeFaction, REDACTED } from './card.js';
-import { EVENT, SET_SIZE, FORM, demaDate } from './config.js';
+import { EVENT, SET_SIZE, FORM, demaDate, SHARE_TAGS } from './config.js';
 import { spread } from './html.js';
 
 const padId = (n) => String(n).padStart(4, '0');
@@ -98,9 +98,6 @@ function dossier(rec, rank) {
         <span class="sheet__mark" aria-hidden="true"></span>
         ${raw(registry)}${raw(subject)}${raw(String(notesBlock))}
       </div>
-      <p class="actions actions--sheet">
-        <button class="button" type="button" data-action="save-sheet">SAVE ATTACHED FILE</button>
-      </p>
     </section>`;
 }
 
@@ -123,6 +120,9 @@ function filedAt(iso) {
   return `${demaDate(d)} · ${p(d.getUTCHours())}${p(d.getUTCMinutes())}`;
 }
 
+const escapeAttr = (v) => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 // same banner as the front page, dropped in above the back link
 function restrictedBanner() {
   return h`<aside class="restricted restricted--inline">
@@ -141,7 +141,7 @@ export function renderUnregistered(id, { claimingOpen = true, key = null, keyOk 
     action = h`<p class="actions"><a class="button button--primary button--flash" href="/f/${id}/register?k=${key}">REGISTER THIS ID</a></p>`;
   } else {
     action = raw('<p class="note">THIS DESIGNATION CAN ONLY BE REGISTERED FROM ITS OWN CARD. '
-      + 'TAP THE CARD, OR ENTER THE FULL ADDRESS PRINTED ON IT.</p>');
+      + 'TAP THE CARD TO CLAIM IT.</p>');
   }
 
   // if this browser already holds a provisional record, offer to move it
@@ -208,7 +208,7 @@ function sightingLog(rec, others) {
     </section>`;
 }
 
-export function renderRecord(rec, { rank = null, others = 0 } = {}) {
+export function renderRecord(rec, { rank = null, others = 0, origin = '', tapped = false } = {}) {
   const name = rec.name || assignedDesignation(rec.id);
   const card = renderCard(rec);
 
@@ -216,22 +216,53 @@ export function renderRecord(rec, { rank = null, others = 0 } = {}) {
     ? '<p class="note">SUBJECT DECLINED TO IDENTIFY. DESIGNATION ASSIGNED.</p>'
     : '';
 
-  const body = h`  <main class="stage" data-fpe="${rec.id}">
+  // what gets carried into the share sheet alongside the png, and what the
+  // intent link prefills when there is no share sheet to carry anything
+  const caption = `IDENTIFIED AS FAILED PERIMETER ESCAPE. FPE-${rec.id} \u00b7 ${name}.`;
+
+  // a pasted link should show something. the photo is already public if they
+  // consented to it; otherwise the banner does the job
+  // crawlers will not resolve a relative one, so these have to be absolute
+  const og = origin + (rec.photo_key ? `/p/${rec.id}.jpg` : '/images/restricted.webp');
+  const head = `<meta property="og:title" content="${escapeAttr(`FPE-${rec.id} \u2014 ${name}`)}">
+<meta property="og:description" content="${escapeAttr(caption)}">
+<meta property="og:image" content="${escapeAttr(og)}">
+<meta property="og:url" content="${escapeAttr(`${origin}/f/${rec.id}`)}">
+<meta name="twitter:card" content="${rec.photo_key ? 'summary_large_image' : 'summary'}">
+`;
+
+  // only somebody who physically tapped the card gets told whose it is. the
+  // key only exists on the tag, so a link off the register or out of a tweet
+  // is just somebody reading the archive
+  const whose = tapped ? h`<section class="yours" data-guest-only hidden>
+      <p class="yours__head" data-yours-head>THIS IS SOMEBODY ELSE&rsquo;S FILE.</p>
+      <p class="yours__body" data-yours-body>EVERY SUBJECT WHO PASSES THROUGH IS ENTERED
+        SEPARATELY. THIS ONE IS NOT YOURS TO AMEND.</p>
+      <a class="button button--primary button--flash" data-yours-go href="/turn-yourself-in">MAKE YOUR IDENTIFICATION CARD</a>
+    </section>` : '';
+
+  const body = h`  <main class="stage" data-fpe="${rec.id}" data-share="${caption}" data-tags="${SHARE_TAGS.join(',')}">
     ${raw(card)}
     ${raw(assignedNote)}
-    <p class="actions">
-      <button class="button button--primary" type="button" data-action="save">SAVE CARD</button>
-      <a class="button" href="/f/${rec.id}/register" data-owner-only hidden>AMEND RECORD</a>
-    </p>
+
     ${raw(civilNotice(rec))}
     ${raw(String(sightingLog(rec, others)))}
     ${raw(dossier(rec, rank))}
+
+    <p class="actions">
+      <button class="button" type="button" data-action="save">SAVE CARD &amp; FILE</button>
+      <a class="button" href="/f/${rec.id}/register" data-owner-only hidden>AMEND RECORD</a>
+    </p>
+
+    ${raw(String(whose))}
+
     ${raw(restrictedBanner())}
   </main>
+  <script src="/held.js" defer></script>
   <script src="/record.js" defer></script>`;
 
   return layout({
-    title: `FPE-${rec.id} — ${name}`, body, bodyClass: 'page-record',
+    title: `FPE-${rec.id} — ${name}`, body, bodyClass: 'page-record', head,
   });
 }
 

@@ -75,6 +75,25 @@
     ctx.textAlign = 'center'; ctx.fillText(text, cx, y); 
   }
 
+  // centred but with tracking, to match a letter-spaced line in the css.
+  // ctx.letterSpacing would do it in one go, and is missing on exactly the
+  // older iphones that turn up at a show
+  function tracked(ctx, text, cx, y, space) {
+    var chars = String(text).split('');
+    var widths = [];
+    var total = -space;
+    for (var i = 0; i < chars.length; i++) {
+      widths[i] = ctx.measureText(chars[i]).width;
+      total += widths[i] + space;
+    }
+    var x = cx - total / 2;
+    ctx.textAlign = 'left';
+    for (var j = 0; j < chars.length; j++) {
+      ctx.fillText(chars[j], x, y);
+      x += widths[j] + space;
+    }
+  }
+
   function wrap(ctx, text, maxWidth, size, weight) {
     ctx.font = font(weight, size);
     var words = String(text).split(/\s+/);
@@ -406,6 +425,10 @@
       facts: list,
       lyric: t('.card__lyric'),
       designation: t('.card__designation'),
+      showDay: (function () {
+        var el = card.querySelector('.card__when');
+        return el && !el.classList.contains('is-empty') ? el.textContent.trim() : '';
+      }()),
       venue: t('.card__place b'),
       when: t('.card__place span'),
       // the foot's rule is a css decision, so ask the css
@@ -454,6 +477,7 @@
       + (hasStatute ? 16 : 0) + bodyH + 14
       + (d.lyric ? lyricLines.length * 18 : 0)
       + 10 + 42
+      + (d.showDay ? 9 : 0)
       + 14 + (hasPlace ? 12 + 15 + 15 : 0)
       + 16 + (d.footRule ? 12 : 0) + 12
       + 16;
@@ -588,7 +612,16 @@
     var dFit = fit(ctx, d.designation, px(inner), 42, '700', 24, false);
     ctx.font = font('700', dFit.size);
     centred(ctx, d.designation, cx, px(y + 36));
-    y += 42 + 14;
+    y += 42;
+
+    if (d.showDay) {
+      ctx.fillStyle = C.dim;
+      ctx.font = display('400', 6);
+      tracked(ctx, d.showDay, cx, px(y + 6), 0.22 * px(6));
+      y += 9;
+    }
+
+    y += 14;
 
     if (hasPlace) {
       ctx.strokeStyle = C.rule;
@@ -651,12 +684,16 @@
     return 'opened';
   }
 
-  function toFile(canvas, filename) {
+  function toFile(canvas, filename, text) {
     return new Promise(function (r) { canvas.toBlob(r, 'image/png'); }).then(function (blob) {
       if (!blob) throw new Error('render failed');
       var file = new File([blob], filename, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        return navigator.share({ files: [file] })
+        var payload = { files: [file] };
+        // some targets drop a share that carries text they cannot take, so
+        // only attach it where the browser says it will go through
+        if (text && navigator.canShare({ files: [file], text: text })) payload.text = text;
+        return navigator.share(payload)
           .then(function () { return 'shared'; })
           .catch(function (e) {
             if (e && e.name === 'AbortError') return 'cancelled';
@@ -667,6 +704,9 @@
     });
   }
 
+  // save/saveSheet hand back a single file. the record page builds its own
+  // now so it can put the card and the attached file in one share, but these
+  // still work and the maker may want one again
   window.FPECard = {
     render: function (card) {
       readTheme();
@@ -680,8 +720,8 @@
         return draw(d, imgs[0], imgs[1], imgs[2], imgs[3]);
       });
     },
-    save: function (card, filename) {
-      return window.FPECard.render(card).then(function (c) { return toFile(c, filename); });
+    save: function (card, filename, text) {
+      return window.FPECard.render(card).then(function (c) { return toFile(c, filename, text); });
     },
 
     renderSheet: function (sheet) {
@@ -693,8 +733,8 @@
       ]).then(function (imgs) { return drawSheet(d, imgs[0], imgs[1]); });
     },
 
-    saveSheet: function (sheet, filename) {
-      return window.FPECard.renderSheet(sheet).then(function (c) { return toFile(c, filename); });
+    saveSheet: function (sheet, filename, text) {
+      return window.FPECard.renderSheet(sheet).then(function (c) { return toFile(c, filename, text); });
     },
   };
 })();

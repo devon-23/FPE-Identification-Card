@@ -31,7 +31,7 @@ export function spread(text) {
     .join('');
 }
 
-export function layout({ title, body, bodyClass = '', back = true }) {
+export function layout({ title, body, bodyClass = '', back = true, head = '' }) {
   const home = back
     ? `<p class="colophon__back"><a href="/incident">&larr; INCIDENT REPORT ${FORM.statute}</a></p>`
     : '';
@@ -44,7 +44,7 @@ export function layout({ title, body, bodyClass = '', back = true }) {
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="dark">
 <title>${escapeHtml(title)}</title>
-<link rel="stylesheet" href="/styles.css">
+${head}<link rel="stylesheet" href="/styles.css">
 </head>
 <body class="${escapeHtml(bodyClass)}">
 <div class="sheet">

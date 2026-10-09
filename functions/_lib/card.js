@@ -57,6 +57,11 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
     : g.bishopIdx;
   const bishop = BISHOPS[bishopIdx];
 
+  // only the ones who were in the room get the night printed on them.
+  // the preview keeps the element and hides it, so ticking the box can
+  // bring it back without a reload
+  const wasThere = rec.attending !== 0;
+
   const venue = rec.location || EVENT.venue;
   const city = rec.city || EVENT.city;
   const date = showDate(rec.event_date);
@@ -102,6 +107,8 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
     <p class="card__lyric${raw(lyric ? '' : ' is-empty')}" data-slot="lyric">${lyric}</p>
 
     <p class="card__designation">FPE-${id}</p>
+
+    <p class="card__when${raw(wasThere ? '' : ' is-empty')}" data-slot="when">${date}</p>
 
     <!--
     <p class="card__place">

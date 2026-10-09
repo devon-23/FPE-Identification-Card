@@ -5,7 +5,7 @@ import { BISHOPS, generate } from '../../_lib/lore.js';
 import { getRecord, getSetting } from '../../_lib/db.js';
 import { keyMatches } from '../../_lib/auth.js';
 import { NAME_MAX, HANDLE_MAX, HOMETOWN_MAX, BIO_MAX, ATTEMPTS_MAX, LYRIC_MAX, FIRST_SHOW_MIN, FIRST_SHOW_MAX } from '../../_lib/sanitize.js';
-import { SET_SIZE, FORM } from '../../_lib/config.js';
+import { SET_SIZE, FORM, showPledge } from '../../_lib/config.js';
 
 export async function onRequestGet({ request, params, env }) {
   const id = normalizeId(params.id);
@@ -90,10 +90,11 @@ export async function onRequestGet({ request, params, env }) {
       <div class="form__row">
         <label class="consent__box consent__box--plain">
           <input type="checkbox" id="attending" name="attending"${raw(attending ? ' checked' : '')}>
-          <span>I WAS AT THE COLUMBUS SHOW.</span>
+          <span>${showPledge()}</span>
         </label>
-        <p class="form__hint">ONLY THE SUBJECTS WHO WERE THERE GO ON THE PLOT. LEAVE THIS
-          UNTICKED AND YOU STILL GET A RECORD AND A CARD, JUST NO PIN.</p>
+        <p class="form__hint">THE ARCHIVE IS THE COLUMBUS ROOM. LEAVE THIS UNTICKED AND YOU
+          STILL GET A CARD AND A RECORD OF YOUR OWN AT THIS ADDRESS &mdash; IT JUST STAYS OFF
+          THE REGISTER, OFF THE PLOT AND OUT OF THE COUNT.</p>
       </div>
 
       <div class="form__row">

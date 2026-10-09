@@ -29,13 +29,14 @@ export async function onRequestGet({ request, env }) {
   const args = q ? [SET_SIZE, like, like] : [SET_SIZE];
 
   const tally = await env.DB
-    .prepare(`SELECT count(*) AS n FROM records WHERE n > ? AND status = 'ESCAPED' ${filter}`)
+    .prepare(`SELECT count(*) AS n FROM records
+               WHERE n > ? AND status = 'ESCAPED' AND attending = 1 ${filter}`)
     .bind(...args).first();
   const walkInTotal = (tally && tally.n) || 0;
 
   const page = await env.DB
     .prepare(`SELECT id, status, faction, name, n FROM records
-               WHERE n > ? AND status = 'ESCAPED' ${filter}
+               WHERE n > ? AND status = 'ESCAPED' AND attending = 1 ${filter}
                ORDER BY n LIMIT ?`)
     .bind(...args, shown).all();
   const walkIns = page.results || [];
@@ -46,7 +47,8 @@ export async function onRequestGet({ request, env }) {
     const side = taken ? String(r.faction || '').toLowerCase() : '';
     const cls = `cell${taken ? ' cell--taken' : ''}${side === 'escapee' || side === 'bandito' ? ` cell--${side}` : ''}`;
     const who = taken ? h`<span class="cell__who">${r.name || 'FILED'}</span>` : '';
-    return h`<a class="${raw(cls)}" href="/f/${r.id}"><span class="cell__n">${r.id}</span>${raw(who)}</a>`;
+    const mark = taken ? ` data-f="${side || 'citizen'}"` : '';
+    return h`<a class="${raw(cls)}"${raw(mark)} href="/f/${r.id}"><span class="cell__n">${r.id}</span>${raw(who)}</a>`;
   }
 
   const cells = all.map(cell).join('');
