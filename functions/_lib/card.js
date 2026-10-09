@@ -49,7 +49,7 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
   const src = photoSrc || (rec.photo_key ? `/p/${id}.jpg` : null);
   const plate = src ? h`<img class="card__photo" src="${src}" alt="">` : raw(SILHOUETTE);
 
-  const attempts = rec.attempts ? String(rec.attempts).padStart(2, '0') : '01';
+  const attempts = rec.attempts != null ? String(rec.attempts).padStart(2, '0') : '01';
   const lyric = rec.lyric || '';
 
   const bishopIdx = rec.bishop && BISHOPS.indexOf(rec.bishop) !== -1

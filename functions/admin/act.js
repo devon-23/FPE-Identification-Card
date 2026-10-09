@@ -7,6 +7,14 @@ const back = (request, message) => {
   return new Response(null, { status: 303, headers: { location: url.toString(), 'cache-control': 'no-store' } });
 };
 
+// every column a claim writes. the one-card reset and the bulk release both
+// run this, so they cannot quietly drift apart
+const BLANK = `status = 'UNREGISTERED', name = NULL, name_assigned = 0,
+       faction = 'CITIZEN', handle = NULL, hometown = NULL, bio = NULL, attempts = NULL,
+       first_show = NULL, lyric = NULL, bishop = NULL,
+       photo_key = NULL, token_hash = NULL,
+       claimed_at = NULL, updated_at = NULL, location = NULL, city = NULL, event_date = NULL`;
+
 export async function onRequestPost({ request, env }) {
   if (!sameOrigin(request)) return new Response('Rejected', { status: 403 });
 
@@ -30,6 +38,29 @@ export async function onRequestPost({ request, env }) {
     ).bind(next, next).run();
     if (next === '0') await env.DB.prepare("DELETE FROM login_attempts WHERE ip_hash LIKE 'sr:%'").run();
     return back(request, next === '1' ? 'SURRENDER LIMIT ON' : 'SURRENDER LIMIT OFF');
+  }
+
+  // after testing the tags, every one of them is locked to the phone that
+  // tested it -- the token hash on the row is what says who may amend. this
+  // drops all hundred back to unregistered so the next tap claims them
+  // properly. the provisional X/Y/Z rows are real people, so they stay
+  if (action === 'release') {
+    if (String(form.get('confirm') || '').trim().toUpperCase() !== 'RELEASE') {
+      return back(request, 'TYPE RELEASE TO CONFIRM');
+    }
+
+    const { results } = await env.DB
+      .prepare("SELECT id, photo_key FROM records WHERE n <= ? AND status = 'ESCAPED'")
+      .bind(SET_SIZE).all();
+    const hit = results || [];
+
+    const shots = hit.filter((r) => r.photo_key).map((r) => `${r.id}.jpg`);
+    if (env.PHOTOS && shots.length) { try { await env.PHOTOS.delete(shots); } catch {  } }
+
+    await env.DB.prepare(`UPDATE records SET ${BLANK} WHERE n <= ? AND status = 'ESCAPED'`)
+      .bind(SET_SIZE).run();
+
+    return back(request, `${hit.length} CARD${hit.length === 1 ? '' : 'S'} RELEASED`);
   }
 
   // matched against the table rather than parsed, so a row left behind by an
@@ -59,14 +90,7 @@ export async function onRequestPost({ request, env }) {
     // puts the number back in the pool: old edit token dies, photo goes,
     // and the physical tag starts working again for whoever taps it next
     if (env.PHOTOS) { try { await env.PHOTOS.delete(`${id}.jpg`); } catch {  } }
-    await env.DB.prepare(`
-      UPDATE records SET status = 'UNREGISTERED', name = NULL, name_assigned = 0,
-             faction = 'CITIZEN', handle = NULL, hometown = NULL, bio = NULL, attempts = NULL,
-             first_show = NULL, lyric = NULL, bishop = NULL,
-             photo_key = NULL, token_hash = NULL,
-             claimed_at = NULL, updated_at = NULL, location = NULL, city = NULL, event_date = NULL
-       WHERE id = ?
-    `).bind(id).run();
+    await env.DB.prepare(`UPDATE records SET ${BLANK} WHERE id = ?`).bind(id).run();
     return back(request, `${id} RESET TO UNREGISTERED`);
   }
 

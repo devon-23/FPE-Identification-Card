@@ -135,7 +135,6 @@ export async function onRequestGet({ env, request }) {
     <noscript><p class="fh__note">THIS PLOT REQUIRES SCRIPTING.</p></noscript>
 
     <p class="fh__links">
-      <a href="/incident">INCIDENT REPORT ${FORM.statute}</a>
       <a href="/map">THE SMALL PLOT</a>
     </p>
   </main>
@@ -154,6 +153,5 @@ export async function onRequestGet({ env, request }) {
     title: 'FRØM HERE — DEMA ARCHIVES',
     body,
     bodyClass: 'page-fromhere',
-    back: false,
   }), { headers: { 'cache-control': filed ? 'no-store' : 'public, max-age=60' } });
 }

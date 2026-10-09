@@ -62,8 +62,8 @@ export async function onRequestGet({ request, params, env }) {
       <div class="form__row">
         <label class="form__label" for="attempts">HOW MANY SHOWS HAVE YOU ATTENDED? <span>OPTIONAL</span></label>
         <input class="form__input" id="attempts" name="attempts" type="number"
-               inputmode="numeric" min="1" max="${String(ATTEMPTS_MAX)}" step="1"
-               autocomplete="off" placeholder="1" value="${val(v.attempts)}">
+               inputmode="numeric" min="0" max="${String(ATTEMPTS_MAX)}" step="1"
+               autocomplete="off" placeholder="0" value="${val(v.attempts)}">
       </div>
 
       <div class="form__row">
@@ -123,7 +123,7 @@ export async function onRequestGet({ request, params, env }) {
           ${raw(['CITIZEN', 'ESCAPEE', 'BANDITO'].map((f) => {
             const on = normalizeFaction(v.faction) === f ? ' checked' : '';
             return `<input type="radio" name="faction" id="f-${f.toLowerCase()}" value="${f}"${on}>`
-                 + `<label for="f-${f.toLowerCase()}">${f}</label>`;
+                 + `<label for="f-${f.toLowerCase()}" data-f="${f}"><span>${f}</span></label>`;
           }).join(''))}
         </div>
       </fieldset>

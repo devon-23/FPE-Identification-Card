@@ -13,7 +13,8 @@ export async function onRequestGet({ request, env }) {
   ).all();
 
   const all = results || [];
-  const claimed = all.filter((r) => r.status === 'ESCAPED').length;
+  const cards = all.filter((r) => r.n <= SET_SIZE);
+  const claimed = cards.filter((r) => r.status === 'ESCAPED').length;
   const withPhoto = all.filter((r) => r.photo_key).length;
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
   const throttled = (await getSetting(env.DB, 'surrender_throttle', '1')) === '1';
@@ -71,6 +72,27 @@ export async function onRequestGet({ request, env }) {
     <p class="note">THE LIMIT IS THREE PROVISIONAL DESIGNATIONS AN HOUR PER ADDRESS.
       TURN IT OFF TO TEST, BACK ON BEFORE THE DOORS.</p>
 
+    <div class="purge">
+      <h2 class="purge__head">BEFORE THE KEYS GO OUT</h2>
+
+      <form class="purge__form" method="POST" action="/admin/act"
+            onsubmit="return confirm('Release every issued card? All ${String(claimed)} claimed numbered records go back to unregistered and their photos are deleted. This cannot be undone.')">
+        <input type="hidden" name="do" value="release">
+        <input class="form__input" name="confirm" placeholder="TYPE RELEASE" aria-label="Type RELEASE to confirm"
+               autocapitalize="characters" autocomplete="off" spellcheck="false">
+        <button class="button button--danger">RELEASE ${String(claimed)} CARD${raw(claimed === 1 ? '' : 'S')}</button>
+      </form>
+      <p class="note">EVERY NUMBERED CARD GOES BACK TO UNREGISTERED: THE EDIT TOKEN ON THE ROW
+        DIES, THE PHOTO GOES, AND THE TAG WORKS AGAIN FOR WHOEVER TAPS IT NEXT. RUN THIS AFTER
+        TESTING THE TAGS AND BEFORE HANDING THEM OUT. THE SELF-FILED X/Y/Z RECORDS ARE LEFT ALONE.</p>
+
+      <button class="button button--quiet" type="button" data-forget>FORGET THIS DEVICE
+        (<span data-forget-n>0</span>)</button>
+      <p class="note">THE LOCK IS NOT A COOKIE THE SERVER CAN CLEAR — IT IS AN EDIT TOKEN SITTING
+        IN THE TAPPER&rsquo;S OWN BROWSER, MATCHED AGAINST A HASH ON THE ROW. RELEASING THE CARDS
+        ABOVE KILLS THE HASHES; THIS CLEARS THE TOKENS THIS PHONE IS STILL CARRYING.</p>
+    </div>
+
     <p class="note">VENUE: ${EVENT.venue}, ${EVENT.city} &middot; ${EVENT.dateDisplay}</p>
 
     <form class="search" method="GET" action="/admin">
@@ -84,7 +106,8 @@ export async function onRequestGet({ request, env }) {
     <div class="alist">${raw(list || '<p class="note">NOTHING MATCHES.</p>')}</div>
 
     <form method="POST" action="/admin/logout"><button class="button button--quiet">LOG OUT</button></form>
-  </main>`;
+  </main>
+  <script src="/forget.js" defer></script>`;
 
   return htmlResponse(layout({
     title: `ADMIN — ${claimed}/${SET_SIZE}`,

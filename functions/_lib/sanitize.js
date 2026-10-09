@@ -51,6 +51,6 @@ export function cleanFirstShow(input) {
 }
 export function cleanAttempts(input) {
   const n = parseInt(String(input == null ? '' : input).trim(), 10);
-  if (!Number.isFinite(n) || n < 1) return null;
+  if (!Number.isFinite(n) || n < 0) return null;
   return Math.min(n, ATTEMPTS_MAX);
 }
