@@ -4,6 +4,7 @@ import { HOMETOWN_MAX } from './_lib/sanitize.js';
 import { getSetting } from './_lib/db.js';
 import { normalizeId } from './_lib/record.js';
 import { heldBlock } from './_lib/held.js';
+import { banditoName } from './_lib/lore.js';
 
 // the big landscape one, for a laptop. same data as /map, read differently
 // the horseshoe itself, not the city. the old pair was downtown Columbus,
@@ -58,7 +59,7 @@ export async function onRequestGet({ env, request }) {
         away: distance(DESTINATION, { lat: r.lat, lon: r.lon }),
       });
     }
-    byPlace.get(key).people.push({ id: r.id, name: r.name || `SUBJECT ${r.id}` });
+    byPlace.get(key).people.push({ id: r.id, name: r.name || banditoName(r.id) });
   }
 
   const pins = [...byPlace.values()];

@@ -7,6 +7,7 @@ import { readJpeg, putPhoto } from '../../_lib/photo.js';
 import { getRecord, getSetting } from '../../_lib/db.js';
 import { EVENT } from '../../_lib/config.js';
 import { sameOrigin } from '../../_lib/origin.js';
+import { firstIndecent } from '../../_lib/decency.js';
 import { lookup } from '../../_lib/geo.js';
 
 const json = (data, status = 200) =>
@@ -45,6 +46,16 @@ export async function onRequestPost({ request, params, env, waitUntil }) {
   const firstShow = cleanFirstShow(form.get('firstShow'));
   const lyric = cleanLyric(form.get('lyric'));
   const bishop = cleanBishop(form.get('bishop'), BISHOPS);
+
+  // nothing that would not survive being read out. the list will never be
+  // complete -- the delete button in /admin is the real backstop
+  const rude = firstIndecent({
+    NAME: name, HANDLE: handle, HOMETOWN: hometown, STATEMENT: bio, LINE: lyric,
+  });
+  if (rude) {
+    return json({ error: `THAT ${rude} WILL NOT BE PRINTED. CHOOSE DIFFERENT WORDING.` }, 422);
+  }
+
   const attending = form.get('attending') === '1' ? 1 : 0;
   const token = newToken();
   const now = new Date().toISOString();

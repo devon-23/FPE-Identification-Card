@@ -16,17 +16,33 @@ export const EVENT = {
 // box cannot read "i was there" the whole time. columbus keeps us eastern,
 // and the show day itself is the one that matters -- not utc, which rolls
 // over while the encore is still going
-function showDay() {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
-  }).format(new Date());
+function eastern() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const get = (t) => (parts.find((p) => p.type === t) || {}).value;
+  return { date: `${get('year')}-${get('month')}-${get('day')}`, hour: Number(get('hour')) };
 }
 
 export function showTense() {
-  const today = showDay();
-  if (today < EVENT.date) return 'before';
-  if (today > EVENT.date) return 'after';
+  const { date } = eastern();
+  if (date < EVENT.date) return 'before';
+  if (date > EVENT.date) return 'after';
   return 'during';
+}
+
+const nextDay = (iso) => new Date(Date.parse(`${iso}T12:00:00Z`) + 86400000)
+  .toISOString().slice(0, 10);
+
+// whether somebody filing right now is almost certainly in the room, or was
+// an hour ago. the calendar day is not enough on its own -- the show ends
+// near eleven and a lot of this gets filled in on the way home, by which
+// point the date has already rolled over
+export function duringShowWindow() {
+  const { date, hour } = eastern();
+  if (date === EVENT.date) return true;
+  return date === nextDay(EVENT.date) && hour < 6;
 }
 
 // what the checkbox calls itself, in whichever tense is true today

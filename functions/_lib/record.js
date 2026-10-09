@@ -1,6 +1,6 @@
 import { h, raw, layout } from './html.js';
 import {
-  generate, assignedDesignation, ledgerRef,
+  generate, banditoName, ledgerRef,
   registryFile, docType, association, fileNotes, remark, recommendation, sighting, BISHOPS,
 } from './lore.js';
 import { renderCard, normalizeFaction, REDACTED } from './card.js';
@@ -43,7 +43,7 @@ function dossier(rec, rank) {
   // laid out like the character cards: label column, value column, rules
   // between the groups
   const g = generate(rec.id);
-  const name = rec.name || assignedDesignation(rec.id);
+  const name = rec.name || banditoName(rec.id);
   const faction = normalizeFaction(rec.faction);
   const bishop = rec.bishop && BISHOPS.indexOf(rec.bishop) !== -1 ? rec.bishop : g.bishop;
 
@@ -171,7 +171,7 @@ export function renderUnregistered(id, { claimingOpen = true, key = null, keyOk 
 
 function civilNotice(rec) {
   // tnotice
-  const name = rec.name || assignedDesignation(rec.id);
+  const name = rec.name || banditoName(rec.id);
   const ref = ledgerRef(rec.id);
   return h`<section class="notice">
       <p class="notice__body"><b>CIVIL NOTICE:</b> in accordance with Dema Law Sec. A-77.03: All
@@ -209,7 +209,7 @@ function sightingLog(rec, others) {
 }
 
 export function renderRecord(rec, { rank = null, others = 0, origin = '', tapped = false } = {}) {
-  const name = rec.name || assignedDesignation(rec.id);
+  const name = rec.name || banditoName(rec.id);
   const card = renderCard(rec);
 
   const assignedNote = rec.name_assigned

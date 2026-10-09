@@ -8,3 +8,4 @@ keys.sql
 NFC-GUIDE.md
 schema.sql
 .migrations/*
+decency.js

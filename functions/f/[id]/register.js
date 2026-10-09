@@ -5,7 +5,7 @@ import { BISHOPS, generate } from '../../_lib/lore.js';
 import { getRecord, getSetting } from '../../_lib/db.js';
 import { keyMatches } from '../../_lib/auth.js';
 import { NAME_MAX, HANDLE_MAX, HOMETOWN_MAX, BIO_MAX, ATTEMPTS_MAX, LYRIC_MAX, FIRST_SHOW_MIN, FIRST_SHOW_MAX } from '../../_lib/sanitize.js';
-import { SET_SIZE, FORM, showPledge } from '../../_lib/config.js';
+import { SET_SIZE, FORM, showPledge, duringShowWindow } from '../../_lib/config.js';
 
 export async function onRequestGet({ request, params, env }) {
   const id = normalizeId(params.id);
@@ -37,7 +37,15 @@ export async function onRequestGet({ request, params, env }) {
   // somebody holding one of the hundred cards was there -- i put it in their
   // hand. somebody who found the link was not, until they say otherwise
   const provisional = isSelfRegistered(id);
-  const attending = claimed ? rec.attending !== 0 : !provisional;
+
+  // somebody holding one of the hundred was there -- i put it in their hand.
+  // somebody who found the link was not, unless it is the night itself, in
+  // which case they are almost certainly standing in the room. getting this
+  // backwards quietly keeps an attendee out of the archive, so it leans the
+  // way the day does
+  const attending = claimed
+    ? rec.attending !== 0
+    : (!provisional || duringShowWindow());
 
   const assigned = generate(id).bishop;
   const chosen = (claimed && rec.bishop) || assigned;

@@ -6,6 +6,7 @@ import { HOMETOWN_MAX } from './_lib/sanitize.js';
 import { getSetting } from './_lib/db.js';
 import { normalizeId } from './_lib/record.js';
 import { heldBlock } from './_lib/held.js';
+import { banditoName } from './_lib/lore.js';
 
 // where everyone came from, and the one place they all ended up
 // the horseshoe itself, not the city. the old pair was downtown Columbus,
@@ -28,7 +29,7 @@ export async function onRequestGet({ env, request }) {
     if (!byPlace.has(key)) {
       byPlace.set(key, { lat: r.lat, lon: r.lon, town: r.hometown, people: [] });
     }
-    byPlace.get(key).people.push({ id: r.id, name: r.name || `SUBJECT ${r.id}` });
+    byPlace.get(key).people.push({ id: r.id, name: r.name || banditoName(r.id) });
   }
   const pins = [...byPlace.values()];
   const plotted = (results || []).length;

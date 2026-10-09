@@ -1,6 +1,6 @@
 
 import { h, raw, spread } from './html.js';
-import { generate, assignedDesignation, citizenId, BISHOPS } from './lore.js';
+import { generate, banditoName, citizenId, BISHOPS } from './lore.js';
 import { cityMark } from './glyph.js';
 import { EVENT, FORM, demaDate } from './config.js';
 
@@ -45,7 +45,7 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
   const faction = normalizeFaction(rec.faction);
   const claimed = rec.status === 'ESCAPED';
 
-  const name = claimed ? (rec.name || assignedDesignation(id)) : 'UNREGISTERED';
+  const name = claimed ? (rec.name || banditoName(id)) : 'UNREGISTERED';
   const src = photoSrc || (rec.photo_key ? `/p/${id}.jpg` : null);
   const plate = src ? h`<img class="card__photo" src="${src}" alt="">` : raw(SILHOUETTE);
 

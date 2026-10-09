@@ -93,6 +93,14 @@ export async function onRequestGet({ request, env }) {
         ABOVE KILLS THE HASHES; THIS CLEARS THE TOKENS THIS PHONE IS STILL CARRYING.</p>
     </div>
 
+    <form class="switch" method="POST" action="/admin/act">
+      <input type="hidden" name="do" value="pins">
+      <span>TOWNS WITH NO PIN YET</span>
+      <button class="button">PLACE THEM</button>
+    </form>
+    <p class="note">A TOWN ONLY GETS LOOKED UP ONCE, AND A BUSY NIGHT CAN MEAN THE LOOKUP
+      NEVER LANDED. THIS RETRIES TEN AT A TIME. SAFE TO RUN OVER AND OVER.</p>
+
     <p class="note">VENUE: ${EVENT.venue}, ${EVENT.city} &middot; ${EVENT.dateDisplay}</p>
 
     <form class="search" method="GET" action="/admin">

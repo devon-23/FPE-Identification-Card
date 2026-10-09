@@ -17,6 +17,10 @@ export async function lookup(db, hometown) {
   if (cached) return cached.lat == null ? null : cached;
 
   let lat = null; let lon = null; let label = null;
+  // did nominatim actually answer? a 429 or a dropped connection is not the
+  // same as "no such town", and writing it down as one strands the pin for
+  // good -- nothing ever looks a cached town up again
+  let answered = false;
   try {
     const url = new URL('https://nominatim.openstreetmap.org/search');
     url.searchParams.set('q', q);
@@ -27,6 +31,7 @@ export async function lookup(db, hometown) {
 
     const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/json' } });
     if (res.ok) {
+      answered = true;
       const hits = await res.json();
       if (Array.isArray(hits) && hits[0]) {
         lat = parseFloat(hits[0].lat);
@@ -39,10 +44,14 @@ export async function lookup(db, hometown) {
     // a town without a pin is fine. the record is not affected either way
   }
 
-  // write the miss too, so a nonsense town is not looked up again every claim
-  await db.prepare(
-    'INSERT OR REPLACE INTO places (q, lat, lon, label, tried) VALUES (?, ?, ?, ?, 1)'
-  ).bind(q, lat, lon, label).run();
+  // a miss it actually gave us is worth remembering, so a nonsense town is
+  // not looked up again on every claim. a failure is not -- leave no row at
+  // all and the next claim for that town, or the admin sweep, tries again
+  if (answered) {
+    await db.prepare(
+      'INSERT OR REPLACE INTO places (q, lat, lon, label, tried) VALUES (?, ?, ?, ?, 1)'
+    ).bind(q, lat, lon, label).run();
+  }
 
   return lat == null ? null : { lat, lon };
 }

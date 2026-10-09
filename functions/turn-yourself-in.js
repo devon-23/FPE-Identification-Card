@@ -6,6 +6,7 @@ import { getSetting } from './_lib/db.js';
 import { sameOrigin } from './_lib/origin.js';
 import { ipHash } from './_lib/session.js';
 import { cleanHometown } from './_lib/sanitize.js';
+import { indecent } from './_lib/decency.js';
 import { banditoName, assignedFaction } from './_lib/lore.js';
 import { heldBlock } from './_lib/held.js';
 import { lookup } from './_lib/geo.js';
@@ -74,6 +75,9 @@ export async function onRequestPost({ request, env }) {
   try {
     const form = await request.formData();
     hometown = cleanHometown(form.get('hometown'));
+    if (indecent(hometown, { gentle: true })) {
+      return htmlResponse(page('THAT ORIGIN WILL NOT BE PRINTED. TRY THE REAL ONE.'), { status: 422 });
+    }
     attending = form.get('attending') === '1' ? 1 : 0;
     const said = parseInt(String(form.get('seq') || '0'), 10);
     seq = Number.isFinite(said) && said > 0 ? Math.min(said, 9) : 0;

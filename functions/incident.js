@@ -1,6 +1,7 @@
 import { h, raw, layout, htmlResponse, spread } from './_lib/html.js';
 import { SET_SIZE, FORM, EVENT, demaDate } from './_lib/config.js';
 import { cityMark } from './_lib/glyph.js';
+import { banditoName } from './_lib/lore.js';
 
 const PAGE = 100;
 
@@ -46,7 +47,7 @@ export async function onRequestGet({ request, env }) {
     const taken = r.status === 'ESCAPED';
     const side = taken ? String(r.faction || '').toLowerCase() : '';
     const cls = `cell${taken ? ' cell--taken' : ''}${side === 'escapee' || side === 'bandito' ? ` cell--${side}` : ''}`;
-    const who = taken ? h`<span class="cell__who">${r.name || 'FILED'}</span>` : '';
+    const who = taken ? h`<span class="cell__who">${r.name || banditoName(r.id)}</span>` : '';
     const mark = taken ? ` data-f="${side || 'citizen'}"` : '';
     return h`<a class="${raw(cls)}"${raw(mark)} href="/f/${r.id}"><span class="cell__n">${r.id}</span>${raw(who)}</a>`;
   }

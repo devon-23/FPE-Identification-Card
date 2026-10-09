@@ -1,5 +1,6 @@
 import { sameOrigin } from '../_lib/origin.js';
 import { SET_SIZE } from '../_lib/config.js';
+import { lookup } from '../_lib/geo.js';
 
 const back = (request, message) => {
   const url = new URL('/admin', request.url);
@@ -61,6 +62,32 @@ export async function onRequestPost({ request, env }) {
       .bind(SET_SIZE).run();
 
     return back(request, `${hit.length} CARD${hit.length === 1 ? '' : 'S'} RELEASED`);
+  }
+
+  // towns that never got looked up -- nominatim was rate limiting, or the
+  // request fell over. a handful at a time, a second apart, because their
+  // policy is about one a second and this is somebody else's free service
+  if (action === 'pins') {
+    const { results } = await env.DB.prepare(`
+      SELECT DISTINCT UPPER(TRIM(r.hometown)) AS q
+        FROM records r
+        LEFT JOIN places p ON p.q = UPPER(TRIM(r.hometown))
+       WHERE r.status = 'ESCAPED' AND r.attending = 1
+         AND r.hometown IS NOT NULL AND TRIM(r.hometown) <> ''
+         AND p.q IS NULL
+       LIMIT 10
+    `).all();
+
+    const todo = (results || []).map((r) => r.q).filter(Boolean);
+    if (!todo.length) return back(request, 'EVERY TOWN IS LOOKED UP');
+
+    let found = 0;
+    for (let i = 0; i < todo.length; i++) {
+      if (i) await new Promise((r) => setTimeout(r, 1000));
+      try { if (await lookup(env.DB, todo[i])) found++; } catch {  }
+    }
+
+    return back(request, `${found} OF ${todo.length} PLACED \u2014 RUN IT AGAIN FOR MORE`);
   }
 
   // matched against the table rather than parsed, so a row left behind by an

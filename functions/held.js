@@ -1,5 +1,5 @@
 import { normalizeId } from './_lib/record.js';
-import { assignedDesignation } from './_lib/lore.js';
+import { banditoName } from './_lib/lore.js';
 
 // names for the designations a browser says it is holding, so the page can
 // list them as something other than four characters. everything here is
@@ -22,7 +22,7 @@ export async function onRequestGet({ request, env }) {
   const found = new Map((results || []).map((r) => [r.id, r]));
   return json(asked.filter((id) => found.has(id)).map((id) => {
     const r = found.get(id);
-    return { id, name: r.name || assignedDesignation(id), hometown: r.hometown || null };
+    return { id, name: r.name || banditoName(id), hometown: r.hometown || null };
   }));
 }
 

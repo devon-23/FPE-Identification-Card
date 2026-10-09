@@ -173,6 +173,9 @@ export function sighting(id, { hometown, others = 0 } = {}) {
   return parts.join(' ');
 }
 
+// not used any more -- a blank name falls back to banditoName now, which is
+// the thing people actually want printed on a card. this is a designation,
+// not a name, so it is kept apart rather than folded in
 export function assignedDesignation(id) {
   const letters = 'ABCDEFGHJKLMNPRSTVWXYZ';
   return `SUBJECT ${id}-${letters[hash('desA' + id) % letters.length]}${letters[hash('desB' + id) % letters.length]}`;
