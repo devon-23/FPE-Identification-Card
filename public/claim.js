@@ -167,6 +167,21 @@
   paintWhen();
   if (attendingEl) attendingEl.addEventListener('change', paintWhen);
 
+  // the tickbox is a long way up the form by the time anybody reads the
+  // public-record warning, so this reaches up and flips it for them
+  var optout = document.querySelector('[data-optout]');
+  if (optout && attendingEl) {
+    optout.querySelector('[data-action="optout"]').addEventListener('click', function () {
+      attendingEl.checked = false;
+      attendingEl.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    // only on offer while they are still on the register. ticking the box
+    // back on up the form brings it back
+    var paintOptout = function () { optout.hidden = !attendingEl.checked; };
+    attendingEl.addEventListener('change', paintOptout);
+    paintOptout();
+  }
+
   nameEl.addEventListener('input', paintName);
   attemptsEl.addEventListener('input', paintAttempts);
   bishopEl.addEventListener('change', paintBishop);
@@ -262,6 +277,71 @@
 
   function say(msg) { status.textContent = msg; }
 
+  // a name the register will not take does not have to mean no card. the
+  // row they were allocated is still UNREGISTERED and nothing has been
+  // written, so it goes back in the pool on its own -- they just walk off
+  // with the picture
+  var unfiled = null;
+  function offerUnfiled() {
+    if (unfiled) { unfiled.hidden = false; return; }
+
+    unfiled = document.createElement('div');
+    unfiled.className = 'unfiled';
+
+    var note = document.createElement('p');
+    note.textContent = 'NOTHING HAS BEEN SAVED. YOU CAN STILL TAKE THE CARD \u2014 IT JUST WILL '
+      + 'NOT APPEAR IN THE REGISTER, AND THIS DESIGNATION GOES BACK IN THE POOL.';
+    unfiled.appendChild(note);
+
+    var take = document.createElement('button');
+    take.type = 'button';
+    take.className = 'button';
+    take.textContent = 'TAKE THE CARD UNFILED';
+    take.addEventListener('click', function () {
+      take.disabled = true;
+      var was = take.textContent;
+      take.textContent = 'PREPARING…';
+      loadExporter()
+        .then(function () { return window.FPECard.save(card, 'FPE-' + id + '.png'); })
+        .then(function (how) {
+          take.textContent = how === 'cancelled' ? was : 'SAVED';
+          take.disabled = false;
+        })
+        .catch(function () {
+          take.textContent = 'COULD NOT SAVE — SCREENSHOT INSTEAD';
+          take.disabled = false;
+        });
+    });
+    unfiled.appendChild(take);
+
+    var change = document.createElement('button');
+    change.type = 'button';
+    change.className = 'button button--quiet';
+    change.textContent = 'CHANGE IT AND FILE PROPERLY';
+    change.addEventListener('click', function () {
+      unfiled.hidden = true;
+      say('');
+      nameEl.focus();
+      nameEl.scrollIntoView({ block: 'center' });
+    });
+    unfiled.appendChild(change);
+
+    status.parentNode.insertBefore(unfiled, status.nextSibling);
+  }
+
+  var exporting = null;
+  function loadExporter() {
+    exporting = exporting || new Promise(function (resolve, reject) {
+      if (window.FPECard) return resolve();
+      var el = document.createElement('script');
+      el.src = '/cardimage.js';
+      el.onload = resolve;
+      el.onerror = reject;
+      document.head.appendChild(el);
+    });
+    return exporting;
+  }
+
   form.addEventListener('submit', function (ev) {
     // a photo with the consent box unticked is never attached to the request. it goes to localStorage and nowhere else
     ev.preventDefault();
@@ -302,6 +382,7 @@
       if (!r.ok) {
         say(r.data.error || 'SUBMISSION REFUSED.');
         submitBtn.disabled = false;
+        if (r.data.unfiled) offerUnfiled();
         if (r.data.claimed) {
           setTimeout(function () { location.href = '/f/' + id; }, 2200);
         }

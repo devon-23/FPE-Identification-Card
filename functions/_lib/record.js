@@ -5,6 +5,7 @@ import {
 } from './lore.js';
 import { renderCard, normalizeFaction, REDACTED } from './card.js';
 import { EVENT, SET_SIZE, FORM, demaDate, SHARE_TAGS } from './config.js';
+import { ABOUT } from './about.js';
 import { spread } from './html.js';
 
 const padId = (n) => String(n).padStart(4, '0');
@@ -33,8 +34,8 @@ export function normalizeId(input) {
 
 export const isSelfRegistered = (id) => /^[XYZ]\d{3,5}$/.test(String(id || ''));
 
-function field(label, value) {
-  return h`<div class="rf"><dt>${label}</dt><dd>${value}</dd></div>`;
+function field(label, value, cls = '') {
+  return h`<div class="rf"><dt${raw(cls ? ` class="${cls}"` : '')}>${label}</dt><dd>${value}</dd></div>`;
 }
 
 const group = (rows) => `<div class="rf__group">${rows.filter(Boolean).join('')}</div>`;
@@ -48,7 +49,7 @@ function dossier(rec, rank) {
   const bishop = rec.bishop && BISHOPS.indexOf(rec.bishop) !== -1 ? rec.bishop : g.bishop;
 
   const registry = group([
-    field('REGISTRY FILE', registryFile(rec.id)),
+    field('REGISTRY FILE', registryFile(rec.id), 'rf__lead'),
     field('DESIGNATION', `FPE-${rec.id}`),
     field('DOCUMENT TYPE', docType(rec.id)),
   ]);
@@ -126,8 +127,9 @@ const escapeAttr = (v) => String(v == null ? '' : v)
 // same banner as the front page, dropped in above the back link
 function restrictedBanner() {
   return h`<aside class="restricted restricted--inline">
+      <a class="restricted__link" href="/incident" aria-label="Incident report ${FORM.statute}">
       <img class="restricted__img" src="/images/restricted.webp"
-           alt="RESTRICTED CONTENT. VIOLATION CODE ${FORM.violation}." width="1027" height="167">
+           alt="RESTRICTED CONTENT. VIOLATION CODE ${FORM.violation}." width="1027" height="167"></a>
       <p class="restricted__foot spread" data-plain="${FORM.benediction}">${raw(spread(FORM.benediction))}</p>
     </aside>`;
 }
@@ -241,13 +243,27 @@ export function renderRecord(rec, { rank = null, others = 0, origin = '', tapped
       <a class="button button--primary button--flash" data-yours-go href="/turn-yourself-in">MAKE YOUR IDENTIFICATION CARD</a>
     </section>` : '';
 
+  // the one record that is mine. anybody who taps somebody else's card ends
+  // up reading one of these, so it may as well say who put it there
+  const archivist = `FPE-${rec.id}` === String(ABOUT.designation || '').toUpperCase()
+    ? h`<a class="archivist" href="/about">
+      <span><b>${ABOUT.station}</b>
+      <span>${ABOUT.name} PUT THIS ARCHIVE TOGETHER. SEE THE FULL FILE.</span></span>
+      <i>&mdash;&mdash;&gt;</i>
+    </a>`
+    : '';
+
   const body = h`  <main class="stage" data-fpe="${rec.id}" data-share="${caption}" data-tags="${SHARE_TAGS.join(',')}">
     ${raw(card)}
+    ${raw(String(archivist))}
     ${raw(assignedNote)}
 
     ${raw(civilNotice(rec))}
     ${raw(String(sightingLog(rec, others)))}
     ${raw(dossier(rec, rank))}
+
+    <p class="tagline" data-tagline hidden>POSTING IT? TAG IT
+      ${raw(SHARE_TAGS.map((t) => `<b>#${t}</b>`).join(' '))} &mdash; TAP TO COPY.</p>
 
     <p class="actions">
       <button class="button" type="button" data-action="save">SAVE CARD &amp; FILE</button>

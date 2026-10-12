@@ -100,9 +100,11 @@ export async function onRequestGet({ request, params, env }) {
           <input type="checkbox" id="attending" name="attending"${raw(attending ? ' checked' : '')}>
           <span>${showPledge()}</span>
         </label>
+        <!-- the tickbox says it well enough on its own
         <p class="form__hint">THE ARCHIVE IS THE COLUMBUS ROOM. LEAVE THIS UNTICKED AND YOU
           STILL GET A CARD AND A RECORD OF YOUR OWN AT THIS ADDRESS &mdash; IT JUST STAYS OFF
           THE REGISTER, OFF THE PLOT AND OUT OF THE COUNT.</p>
+        -->
       </div>
 
       <div class="form__row">
@@ -162,6 +164,13 @@ export async function onRequestGet({ request, params, env }) {
 
       <p class="warning">THIS RECORD IS PUBLIC. ANYONE WHO TAPS THIS CARD — OR TYPES ITS
         NUMBER — WILL SEE WHAT YOU ENTER HERE. USE AN ALIAS IF YOU PREFER.</p>
+
+      <!-- a second way at the tickbox, down where somebody is actually thinking
+           about it. two lines saying the same thing read like nagging
+      <p class="optout" data-optout>WANT THE CARD BUT NOT THE ARCHIVE?
+        <button type="button" class="linky" data-action="optout">KEEP ME OFF THE REGISTER</button>
+        — YOU STILL GET YOUR CARD AND YOUR OWN PAGE.</p>
+      -->
 
       <p class="form__status" role="status" aria-live="polite"></p>
 

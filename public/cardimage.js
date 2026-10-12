@@ -21,6 +21,16 @@
     sheet: { citizen: 80, escapee: 80, bandito: 24 },
   };
 
+  // how far down the mark starts. the bandito glyph carries its weight low,
+  // so at the same offset it sits noticeably further down the card than the
+  // two round ones do
+  var DROP = { citizen: 12, escapee: 12, bandito: 2 };
+
+  // the attached file is the same width as the card but barely three
+  // quarters as tall, which makes it read as a squat wide thing next to it.
+  // narrower, and the notes wrap into the height instead
+  var SHEET_W = 300;
+
   var C = {};
 
   function readTheme() {
@@ -260,7 +270,18 @@
   // ---- the attached file ----------------------------------------------
   // same idea as the card: read what is on screen rather than rebuilding it
 
-  var LABEL_W = 120;
+  // measured off the longest label on the sheet rather than fixed, so the
+  // values sit just after the colon instead of out in the middle
+  function labelWidth(ctx, d) {
+    var all = d.tail.slice();
+    for (var g = 0; g < d.groups.length; g++) all = all.concat(d.groups[g]);
+    var w = 0;
+    for (var i = 0; i < all.length; i++) {
+      ctx.font = display(all[i].lead ? '700' : '400', 8);
+      w = Math.max(w, ctx.measureText(all[i].label + ':').width);
+    }
+    return w / S + 8;
+  }
 
   function readSheet(sheet) {
     var groups = [];
@@ -285,23 +306,33 @@
       out.push({
         label: rs[i].querySelector('dt').textContent.trim().replace(/:$/, ''),
         value: rs[i].querySelector('dd').textContent.trim(),
+        ruled: rs[i].querySelector('dt').classList.contains('rf__u'),
+        lead: rs[i].querySelector('dt').classList.contains('rf__lead'),
       });
     }
     return out;
   }
 
-  function sheetRow(ctx, r, x, y, valueW, draw) {
+  function sheetRow(ctx, r, x, y, valueW, draw, labelW) {
     // the value wraps, the label never does. returns the height either way
-    var lines = wrap(ctx, r.value, px(valueW), 9, '400');
+    var lines = wrap(ctx, r.value, px(valueW), 10, '400');
     if (draw) {
       ctx.textAlign = 'left';
       ctx.fillStyle = C.ink;
-      ctx.font = display('400', 8);
-      ctx.fillText(r.label + ':', x, y + px(8));
+      // only the registry line is set bold -- it heads the document
+      ctx.font = display(r.lead ? '700' : '400', 8);
+      var text = r.label + ':';
+      ctx.fillText(text, x, y + px(8));
+      if (r.ruled) {
+        var lw = ctx.measureText(text).width;
+        ctx.beginPath();
+        ctx.moveTo(x, y + px(10.5)); ctx.lineTo(x + lw, y + px(10.5));
+        ctx.lineWidth = Math.max(1, px(0.5)); ctx.strokeStyle = C.ink; ctx.stroke();
+      }
       ctx.fillStyle = r.value === '[REDACTED]' ? C.faint : C.ink;
-      ctx.font = display('400', 9);
+      ctx.font = display('400', 10);
       for (var i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i], x + px(LABEL_W), y + px(8 + i * 13.5));
+        ctx.fillText(lines[i], x + px(labelW), y + px(8 + i * 13.5));
       }
     }
     return px(6 + Math.max(11, lines.length * 13.5));
@@ -311,27 +342,34 @@
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
     var B = 13;                        // the frame, same as the css
-    var inner = CW - B * 2;
+    var inner = SHEET_W - B * 2;
     var padX = 12;
     var rowX = px(B + padX);
-    var valueW = inner - padX * 2 - LABEL_W;
 
     // measure first, then size the canvas and draw it all again
-    canvas.width = px(CW); canvas.height = px(2400);
+    canvas.width = px(SHEET_W); canvas.height = px(2400);
     ctx = canvas.getContext('2d');
+
+    var labelW = labelWidth(ctx, d);
+    var valueW = inner - padX * 2 - labelW;
+
+    // the gap above a group and the gap under it, before the rule. these
+    // were both 10 and the sheet read as a stack of loose blocks
+    var LEAD = 6;
+    var TRAIL = 8;
 
     var h = px(B);
     for (var g = 0; g < d.groups.length; g++) {
-      h += px(10);
-      for (var i = 0; i < d.groups[g].length; i++) h += sheetRow(ctx, d.groups[g][i], 0, 0, valueW, false);
-      h += px(10) + px(1);
+      h += px(LEAD);
+      for (var i = 0; i < d.groups[g].length; i++) h += sheetRow(ctx, d.groups[g][i], 0, 0, valueW, false, labelW);
+      h += px(TRAIL) + px(1);
     }
     var bodyLines = wrap(ctx, d.body, px(inner - padX * 2), 9, '400');
     h += px(12) + px(8 + 8) + bodyLines.length * px(16) + px(12);
-    for (var k = 0; k < d.tail.length; k++) h += sheetRow(ctx, d.tail[k], 0, 0, valueW, false) + px(2);
+    for (var k = 0; k < d.tail.length; k++) h += sheetRow(ctx, d.tail[k], 0, 0, valueW, false, labelW) + px(2);
     h += px(12) + px(B);
 
-    canvas.width = px(CW);
+    canvas.width = px(SHEET_W);
     canvas.height = Math.round(h);
     ctx = canvas.getContext('2d');
 
@@ -340,11 +378,11 @@
 
     var y = px(B);
     for (var g2 = 0; g2 < d.groups.length; g2++) {
-      y += px(10);
+      y += px(LEAD);
       for (var i2 = 0; i2 < d.groups[g2].length; i2++) {
-        y += sheetRow(ctx, d.groups[g2][i2], rowX, y, valueW, true);
+        y += sheetRow(ctx, d.groups[g2][i2], rowX, y, valueW, true, labelW);
       }
-      y += px(10);
+      y += px(TRAIL);
       ctx.strokeStyle = C.ink;
       ctx.lineWidth = Math.max(1, px(1));
       ctx.beginPath();
@@ -355,7 +393,7 @@
     y += px(12);
     ctx.textAlign = 'left';
     ctx.fillStyle = C.ink;
-    ctx.font = display('400', 8);
+    ctx.font = display('700', 8);
     ctx.fillText(d.heading, rowX, y + px(8));
     // the underline the css puts under it
     var hw = ctx.measureText(d.heading).width;
@@ -371,13 +409,16 @@
     y += bodyLines.length * px(16) + px(12);
 
     for (var t = 0; t < d.tail.length; t++) {
-      y += sheetRow(ctx, d.tail[t], rowX, y, valueW, true) + px(2);
+      y += sheetRow(ctx, d.tail[t], rowX, y, valueW, true, labelW) + px(2);
     }
 
     if (badge) {
-      var bw = px(160);
+      // the mark is sized against the card. the sheet is narrower now, so
+      // it has to come down with it or it swallows half the values
+      var k = SHEET_W / CW;
+      var bw = px(160 * k);
       var hang = HANG.sheet[d.faction] || 80;
-      var off = px(80 - hang);
+      var off = px((80 - hang) * k);
       var edge = canvas.width - px(B);
       ctx.save();
       ctx.beginPath();
@@ -664,7 +705,7 @@
       var off = px(80 - hang);
       ctx.globalAlpha = d.faction === 'bandito' ? 0.7 : 0.5;
       ctx.drawImage(tinted(badge, bw, bw, C.mark[d.faction] || C.ink),
-        edge - off - bw / 2, px(12), bw, bw);
+        edge - off - bw / 2, px(DROP[d.faction] == null ? 12 : DROP[d.faction]), bw, bw);
       ctx.restore();
     }
 

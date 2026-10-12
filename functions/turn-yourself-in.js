@@ -27,7 +27,7 @@ const ABANDONED_SECONDS = 20 * 60; // how long it sits unregistered
 function page(message, open = true) {
   const body = h`  <main class="stage doc">
     <p class="doc__letterhead spread" data-plain="${FORM.letterhead}">${raw(spread(FORM.letterhead))}</p>
-    <div class="doc__seal">${raw(cityMark(0, { allLit: true }))}</div>
+    <div class="doc__seal"><a href="/incident" aria-label="Incident report">${raw(cityMark(0, { allLit: true }))}</a></div>
 
     <h1 class="doc__title">VOLUNTARY SURRENDER</h1>
     <p class="doc__date">FORM ${FORM.code}-B</p>

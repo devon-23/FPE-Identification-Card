@@ -65,6 +65,19 @@ export function onRequestGet() {
         <ol class="steps">${raw((a.howto || []).map((t) => h`<li>${t}</li>`).join(''))}</ol>
       </section>` : '')}
 
+      <section class="sources">
+        <h2>IF YOU LIKED THIS</h2>
+        <p class="sources__note">I made the whole thing myself, for nothing, because I
+          wanted to. If it got a smile out of you, come and say so &mdash; and show me your
+          card. I would genuinely love to see every one of them.</p>
+        <p class="follow">
+          ${raw(a.contact && a.contact.href ? h`<a class="button button--primary" href="${a.contact.href}"
+             rel="noopener noreferrer" target="_blank">FOLLOW ${a.contact.handle}</a>` : '')}
+          ${raw(a.support && a.support.href ? h`<a class="button" href="${a.support.href}"
+             rel="noopener noreferrer" target="_blank">${a.support.label}</a>` : '')}
+        </p>
+      </section>
+
       ${raw(a.contact && a.contact.handle ? h`<section class="sources">
         <h2>AMENDMENTS &middot; REMOVAL &middot; QUESTIONS</h2>
         <p class="sources__note">Want something changed, or your record taken down

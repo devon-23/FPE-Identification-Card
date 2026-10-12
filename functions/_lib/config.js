@@ -55,7 +55,7 @@ export function showPledge() {
 
 // what rides along on a share. no leading hashes -- the intent link wants
 // them bare and the share sheet gets them added back
-export const SHARE_TAGS = ['IdentificationCard', 'osuTOP', 'TwentyOnePilots'];
+export const SHARE_TAGS = ['FPECard'];
 
 export const SET_SIZE = 100;
 

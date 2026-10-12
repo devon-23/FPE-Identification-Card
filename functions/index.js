@@ -18,7 +18,7 @@ export async function onRequestGet({ env }) {
 
   const body = h`  <main class="stage doc gate">
     <p class="doc__letterhead spread" data-plain="${FORM.letterhead}">${raw(spread(FORM.letterhead))}</p>
-    <div class="doc__seal">${raw(cityMark(0, { allLit: true }))}</div>
+    <div class="doc__seal"><a href="/incident" aria-label="Incident report">${raw(cityMark(0, { allLit: true }))}</a></div>
 
     <h1 class="doc__title">IDENTIFY</h1>
 
@@ -42,8 +42,9 @@ export async function onRequestGet({ env }) {
     </a>
 
     <aside class="restricted">
+      <a class="restricted__link" href="/incident" aria-label="Incident report ${FORM.statute}">
       <img class="restricted__img" src="/images/restricted.webp"
-           alt="RESTRICTED CONTENT. VIOLATION CODE ${FORM.violation}." width="1027" height="167">
+           alt="RESTRICTED CONTENT. VIOLATION CODE ${FORM.violation}." width="1027" height="167"></a>
       <p class="restricted__foot spread" data-plain="${FORM.benediction}">${raw(spread(FORM.benediction))}</p>
     </aside>
   </main>

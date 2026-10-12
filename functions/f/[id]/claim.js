@@ -53,7 +53,12 @@ export async function onRequestPost({ request, params, env, waitUntil }) {
     NAME: name, HANDLE: handle, HOMETOWN: hometown, STATEMENT: bio, LINE: lyric,
   });
   if (rude) {
-    return json({ error: `THAT ${rude} WILL NOT BE PRINTED. CHOOSE DIFFERENT WORDING.` }, 422);
+    // not filed, but not confiscated either -- they can still walk off with
+    // the card, it just never reaches the register
+    return json({
+      error: `THAT ${rude} WILL NOT GO IN THE REGISTER.`,
+      unfiled: true,
+    }, 422);
   }
 
   const attending = form.get('attending') === '1' ? 1 : 0;

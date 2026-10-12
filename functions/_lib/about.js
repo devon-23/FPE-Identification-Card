@@ -20,6 +20,11 @@ export const ABOUT = {
     { label: 'TWITTER', value: '@devonisreallyco', href: 'https://x.com/devonisreallyco' }
   ],
 
+  support: {
+    href: 'https://buymeacoffee.com/chnpy6w8fv4',
+    label: 'BUY ME A COFFEE',
+  },
+
   howto: [
     'Tap the card against the back of your phone. The record opens on its own. On an iPhone you have to tap the banner that slides down.',
     'If nobody has claimed it, hit REGISTER THIS ID and fill in as much or as little as you want. Everything except the number is optional, and anything you skip reads [REDACTED].',

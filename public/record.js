@@ -110,6 +110,7 @@
           : 'SAVED';
         button.disabled = false;
         if (how !== 'cancelled') {
+          if (tagline) tagline.hidden = false;
           setTimeout(function () { button.textContent = original; }, 2500);
         }
       }).catch(function () {
@@ -117,6 +118,22 @@
         button.disabled = false;
         setTimeout(function () { button.textContent = original; }, 3500);
       });
+    });
+  }
+
+  // shown once the picture exists, not before -- nobody needs hashtags
+  // suggested at them for a thing they have not made yet
+  var tagline = stage.querySelector('[data-tagline]');
+  if (tagline) {
+    tagline.addEventListener('click', function () {
+      var tags = (stage.getAttribute('data-tags') || '').split(',').filter(Boolean)
+        .map(function (t) { return '#' + t; }).join(' ');
+      if (!tags || !navigator.clipboard) return;
+      navigator.clipboard.writeText(tags).then(function () {
+        var was = tagline.innerHTML;
+        tagline.textContent = 'COPIED.';
+        setTimeout(function () { tagline.innerHTML = was; }, 1500);
+      }).catch(function () {  });
     });
   }
 
