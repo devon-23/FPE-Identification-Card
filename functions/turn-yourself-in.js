@@ -132,30 +132,36 @@ export async function onRequestPost({ request, env }) {
                     WHERE n > ? AND n <= ? AND status = 'UNREGISTERED'
                       AND (updated_at IS NULL OR updated_at < ?)
                     ORDER BY n LIMIT 1)
+         AND (updated_at IS NULL OR updated_at < ?)
       RETURNING id
-    `).bind(hash, stamp, base, top, cutoff).first();
+    `).bind(hash, stamp, base, top, cutoff, cutoff).first();
     if (reused) id = reused.id;
   }
 
-  // the unique index on n is what settles a tie, so retry rather than lock
+  // reading MAX then inserting is a race -- fifty people at once and a third
+  // of them collide. this works the number out inside the insert, so sqlite
+  // settles it and nobody has to retry. HAVING is what says "block is full"
   for (let b = 0; b < blocks.length && !id; b++) {
     which = blocks[b];
     base = blockBase(which);
     top = blockTop(which);
 
     for (let attempt = 0; attempt < 5 && !id; attempt++) {
-      const highest = await env.DB
-        .prepare('SELECT MAX(n) AS top FROM records WHERE n > ? AND n <= ?')
-        .bind(base, top).first();
-      const next = ((highest && highest.top) || base) + 1;
-      if (next > top) break;              // that block is full, try the next one
       try {
-        await env.DB.prepare(
-          "INSERT INTO records (id, n, status, claim_key_hash, updated_at) VALUES (?, ?, 'UNREGISTERED', ?, ?)"
-        ).bind(label(next, which), next, hash, stamp).run();
-        id = label(next, which);
+        const row = await env.DB.prepare(`
+          INSERT INTO records (id, n, status, claim_key_hash, updated_at)
+          SELECT ? || printf('%03d', COALESCE(MAX(n), ?) + 1 - ?),
+                 COALESCE(MAX(n), ?) + 1, 'UNREGISTERED', ?, ?
+            FROM records WHERE n > ? AND n <= ?
+          HAVING COALESCE(MAX(n), ?) + 1 <= ?
+          RETURNING id
+        `).bind(
+          LETTERS[which], base, base, base, hash, stamp, base, top, base, top
+        ).first();
+        if (row && row.id) id = row.id;
+        else break;                       // that block is full, try the next one
       } catch {
-        // somebody else took that number between the read and the write and idk what to do with that soooo
+        // two writes landed on the same number anyway. go round again
       }
     }
   }
