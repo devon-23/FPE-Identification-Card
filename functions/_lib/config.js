@@ -57,6 +57,10 @@ export function showPledge() {
 // them bare and the share sheet gets them added back
 export const SHARE_TAGS = ['FPECard'];
 
+// crawlers will not resolve a relative image, and the request origin is
+// no good either -- a preview deploy would hand out its own url
+export const SITE = 'https://fpe-archive.pages.dev';
+
 export const SET_SIZE = 100;
 
 export const FORM = {

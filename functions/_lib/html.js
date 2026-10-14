@@ -1,4 +1,4 @@
-import { FORM } from './config.js';
+import { FORM, SITE } from './config.js';
 
 function escapeHtml(value) {
   return String(value == null ? '' : value)
@@ -31,7 +31,34 @@ export function spread(text) {
     .join('');
 }
 
-export function layout({ title, body, bodyClass = '', back = true, head = '' }) {
+// what a link to this site unfurls into, in a tweet or a group chat. a page
+// overrides any of it; most do not need to
+const CARD = {
+  title: 'FR\u00d8M HERE \u2014\u2014\u2014> T\u00d8 HERE',
+  description: 'Make your own identification card and put yourself on the map. '
+    + 'Every subject who got out of Dema, and where they came from.',
+  image: '/images/og.png',
+};
+
+// `index` is off everywhere by default -- the record pages carry people's
+// names. the front door has nothing on it worth hiding, and a page nobody
+// can index is a page nobody can preview either
+export function layout({
+  title, body, bodyClass = '', back = true, head = '', social = {}, index = false,
+}) {
+  const card = { ...CARD, ...social };
+  const abs = (u) => (/^https?:/.test(u) ? u : SITE + u);
+  const meta = `<meta property="og:type" content="website">
+<meta property="og:site_name" content="DEMA ARCHIVES">
+<meta property="og:title" content="${escapeHtml(card.title)}">
+<meta property="og:description" content="${escapeHtml(card.description)}">
+<meta property="og:image" content="${escapeHtml(abs(card.image))}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${escapeHtml(card.title)}">
+<meta name="twitter:description" content="${escapeHtml(card.description)}">
+<meta name="twitter:image" content="${escapeHtml(abs(card.image))}">
+`;
+
   const home = back
     ? `<p class="colophon__back"><a href="/incident">&larr; INCIDENT REPORT ${FORM.statute}</a></p>`
     : '';
@@ -41,10 +68,10 @@ export function layout({ title, body, bodyClass = '', back = true, head = '' }) 
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex">
+${index ? '' : '<meta name="robots" content="noindex">\n'}
 <meta name="color-scheme" content="dark">
 <title>${escapeHtml(title)}</title>
-${head}<link rel="stylesheet" href="/styles.css">
+${meta}${head}<link rel="stylesheet" href="/styles.css">
 </head>
 <body class="${escapeHtml(bodyClass)}">
 <div class="sheet">

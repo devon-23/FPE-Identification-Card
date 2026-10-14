@@ -26,7 +26,7 @@
     var destMarker = L.circleMarker([dest.lat, dest.lon], {
       radius: 11, color: '#a3281f', weight: 3, fill: false, className: 'pin pin--dest',
     }).addTo(map);
-    destMarker.bindPopup('<b>TO HERE</b><br>' + dest.label);
+    destMarker.bindPopup('<b>T\u00d8 HERE</b><br>' + dest.label);
 
     var bounds = [[dest.lat, dest.lon]];
 

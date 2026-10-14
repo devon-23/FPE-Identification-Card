@@ -104,7 +104,7 @@ export async function onRequestGet({ env, request }) {
 
     <div class="fh__plot">
       <div class="fh__map" id="map" role="application" aria-label="Map of subject origins"></div>
-      <p class="fh__tohere"><button type="button" class="fh__recentre" data-recentre>&mdash;&mdash;&mdash;&gt; TO HERE</button></p>
+      <p class="fh__tohere"><button type="button" class="fh__recentre" data-recentre>&mdash;&mdash;&mdash;&gt; T&Oslash; HERE</button></p>
     </div>
 
     ${raw(filed ? h`<p class="fh__filed" data-just-filed>FILED AS <b>FPE-${filed}</b>. THAT IS YOUR RECORD &mdash;

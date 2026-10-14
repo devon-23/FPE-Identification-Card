@@ -224,14 +224,13 @@ export function renderRecord(rec, { rank = null, others = 0, origin = '', tapped
 
   // a pasted link should show something. the photo is already public if they
   // consented to it; otherwise the banner does the job
-  // crawlers will not resolve a relative one, so these have to be absolute
-  const og = origin + (rec.photo_key ? `/p/${rec.id}.jpg` : '/images/restricted.webp');
-  const head = `<meta property="og:title" content="${escapeAttr(`FPE-${rec.id} \u2014 ${name}`)}">
-<meta property="og:description" content="${escapeAttr(caption)}">
-<meta property="og:image" content="${escapeAttr(og)}">
-<meta property="og:url" content="${escapeAttr(`${origin}/f/${rec.id}`)}">
-<meta name="twitter:card" content="${rec.photo_key ? 'summary_large_image' : 'summary'}">
-`;
+  // their own photo if they published one, otherwise the site's card
+  const social = {
+    title: `FPE-${rec.id} \u2014 ${name}`,
+    description: caption,
+    ...(rec.photo_key ? { image: `/p/${rec.id}.jpg` } : {}),
+  };
+  const head = `<meta property="og:url" content="${escapeAttr(`${origin}/f/${rec.id}`)}">\n`;
 
   // only somebody who physically tapped the card gets told whose it is. the
   // key only exists on the tag, so a link off the register or out of a tweet
@@ -278,7 +277,7 @@ export function renderRecord(rec, { rank = null, others = 0, origin = '', tapped
   <script src="/record.js" defer></script>`;
 
   return layout({
-    title: `FPE-${rec.id} — ${name}`, body, bodyClass: 'page-record', head,
+    title: `FPE-${rec.id} — ${name}`, body, bodyClass: 'page-record', head, social,
   });
 }
 

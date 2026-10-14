@@ -54,5 +54,6 @@ export async function onRequestGet({ env }) {
     title: `DMAORG — SUBJECT INTAKE ${FORM.code}`,
     body,
     bodyClass: 'page-gate',
+    index: true,
   }), { headers: { 'cache-control': 'public, max-age=30' } });
 }

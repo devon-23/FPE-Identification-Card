@@ -48,7 +48,7 @@
     // to here, drawn last so it sits over everything
     L.circleMarker([dest.lat, dest.lon], {
       radius: 12, color: '#231f20', weight: 4, fill: false,
-    }).addTo(map).bindPopup('<b>TO HERE</b><br>' + esc(dest.label));
+    }).addTo(map).bindPopup('<b>T\u00d8 HERE</b><br>' + esc(dest.label));
 
     function home() {
       map.setView([dest.lat, dest.lon], map.getSize().x < 500 ? 3 : 4);
