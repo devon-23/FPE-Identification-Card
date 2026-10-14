@@ -9,8 +9,6 @@ import { heldBlock } from './_lib/held.js';
 import { banditoName } from './_lib/lore.js';
 
 // where everyone came from, and the one place they all ended up
-// the horseshoe itself, not the city. the old pair was downtown Columbus,
-// three miles southeast of where anybody actually stood
 const DESTINATION = { lat: 40.0016458, lon: -83.0197374, label: EVENT.venue };
 
 export async function onRequestGet({ env, request }) {

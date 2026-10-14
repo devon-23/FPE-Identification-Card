@@ -8,8 +8,7 @@ const back = (request, message) => {
   return new Response(null, { status: 303, headers: { location: url.toString(), 'cache-control': 'no-store' } });
 };
 
-// every column a claim writes. the one-card reset and the bulk release both
-// run this, so they cannot quietly drift apart
+// every column a claim writes. shared so reset and release cannot drift
 const BLANK = `status = 'UNREGISTERED', name = NULL, name_assigned = 0,
        faction = 'CITIZEN', handle = NULL, hometown = NULL, bio = NULL, attempts = NULL,
        first_show = NULL, lyric = NULL, bishop = NULL,
@@ -41,10 +40,8 @@ export async function onRequestPost({ request, env }) {
     return back(request, next === '1' ? 'SURRENDER LIMIT ON' : 'SURRENDER LIMIT OFF');
   }
 
-  // after testing the tags, every one of them is locked to the phone that
-  // tested it -- the token hash on the row is what says who may amend. this
-  // drops all hundred back to unregistered so the next tap claims them
-  // properly. the provisional X/Y/Z rows are real people, so they stay
+  // after testing, every tag is locked to the phone that tested it. this
+  // hands all hundred back. the X/Y/Z rows are real people, they stay
   if (action === 'release') {
     if (String(form.get('confirm') || '').trim().toUpperCase() !== 'RELEASE') {
       return back(request, 'TYPE RELEASE TO CONFIRM');
@@ -64,9 +61,8 @@ export async function onRequestPost({ request, env }) {
     return back(request, `${hit.length} CARD${hit.length === 1 ? '' : 'S'} RELEASED`);
   }
 
-  // towns that never got looked up -- nominatim was rate limiting, or the
-  // request fell over. a handful at a time, a second apart, because their
-  // policy is about one a second and this is somebody else's free service
+  // towns nominatim never answered for. ten at a time, a second apart --
+  // it is somebody else's free service
   if (action === 'pins') {
     const { results } = await env.DB.prepare(`
       SELECT DISTINCT UPPER(TRIM(r.hometown)) AS q

@@ -1,8 +1,6 @@
 (function () {
-  // the other half of releasing the cards. the server can drop the token
-  // hashes off the rows, but it cannot reach into this phone and take the
-  // tokens themselves -- so after testing a hundred tags, this browser still
-  // thinks it holds a hundred records. this is the broom for that
+  // releasing the cards drops the hashes server side, but this phone still
+  // thinks it holds a hundred records. broom for that
   var button = document.querySelector('[data-forget]');
   if (!button) return;
 

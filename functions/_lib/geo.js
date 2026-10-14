@@ -17,9 +17,8 @@ export async function lookup(db, hometown) {
   if (cached) return cached.lat == null ? null : cached;
 
   let lat = null; let lon = null; let label = null;
-  // did nominatim actually answer? a 429 or a dropped connection is not the
-  // same as "no such town", and writing it down as one strands the pin for
-  // good -- nothing ever looks a cached town up again
+  // a 429 is not "no such town". cache that and the pin is gone for good,
+  // because nothing ever looks a cached town up twice
   let answered = false;
   try {
     const url = new URL('https://nominatim.openstreetmap.org/search');
@@ -44,9 +43,8 @@ export async function lookup(db, hometown) {
     // a town without a pin is fine. the record is not affected either way
   }
 
-  // a miss it actually gave us is worth remembering, so a nonsense town is
-  // not looked up again on every claim. a failure is not -- leave no row at
-  // all and the next claim for that town, or the admin sweep, tries again
+  // only remember a miss it actually gave us. a failure leaves no row, so
+  // the next claim or the admin sweep can try again
   if (answered) {
     await db.prepare(
       'INSERT OR REPLACE INTO places (q, lat, lon, label, tried) VALUES (?, ?, ?, ?, 1)'

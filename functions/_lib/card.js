@@ -57,9 +57,8 @@ export function renderCard(rec, { photoSrc = null, preview = false } = {}) {
     : g.bishopIdx;
   const bishop = BISHOPS[bishopIdx];
 
-  // only the ones who were in the room get the night printed on them.
-  // the preview keeps the element and hides it, so ticking the box can
-  // bring it back without a reload
+  // only the ones who were there get the night on them. hidden not dropped,
+  // so ticking the box brings it straight back
   const wasThere = rec.attending !== 0;
 
   const venue = rec.location || EVENT.venue;

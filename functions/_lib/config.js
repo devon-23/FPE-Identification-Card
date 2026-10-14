@@ -12,10 +12,6 @@ export const EVENT = {
   get dateDisplay() { return demaDate(`${this.date}T00:00:00Z`); },
 };
 
-// the link goes out weeks before the doors and stays up for good, so the
-// box cannot read "i was there" the whole time. columbus keeps us eastern,
-// and the show day itself is the one that matters -- not utc, which rolls
-// over while the encore is still going
 function eastern() {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/New_York',
@@ -35,10 +31,8 @@ export function showTense() {
 const nextDay = (iso) => new Date(Date.parse(`${iso}T12:00:00Z`) + 86400000)
   .toISOString().slice(0, 10);
 
-// whether somebody filing right now is almost certainly in the room, or was
-// an hour ago. the calendar day is not enough on its own -- the show ends
-// near eleven and a lot of this gets filled in on the way home, by which
-// point the date has already rolled over
+// the show ends near eleven and half of this gets filled in on the bus home,
+// by which point the date has rolled over. so the window runs past midnight
 export function duringShowWindow() {
   const { date, hour } = eastern();
   if (date === EVENT.date) return true;
@@ -53,12 +47,10 @@ export function showPledge() {
   return 'I WAS AT THE OSU SHOW.';
 }
 
-// what rides along on a share. no leading hashes -- the intent link wants
-// them bare and the share sheet gets them added back
+// no leading hashes, the share sheet adds them back
 export const SHARE_TAGS = ['FPECard'];
 
-// crawlers will not resolve a relative image, and the request origin is
-// no good either -- a preview deploy would hand out its own url
+// og:image has to be absolute, and the request origin would leak preview urls
 export const SITE = 'https://fpe-archive.pages.dev';
 
 export const SET_SIZE = 100;

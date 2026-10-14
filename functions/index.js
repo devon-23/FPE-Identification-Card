@@ -8,11 +8,6 @@ import { getSetting } from './_lib/db.js';
 export async function onRequestGet({ env }) {
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
 
-  // the same door twice. held.js shows the form to anybody with nothing on
-  // file, so one tap puts them straight into the card, and leaves the link
-  // up for anybody who already has a record -- that page lists what they
-  // have instead of quietly filing them a second time. no script, no form:
-  // the extra tap is the safe way round
   const door = h`<b>MAKE YOUR IDENTIFICATION CARD</b>
       <span>NAME, ALLEGIANCE, BISHOP, PHOTOGRAPH. YOURS TO KEEP AND TO SAVE.</span>`;
 

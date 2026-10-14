@@ -31,8 +31,7 @@ export function spread(text) {
     .join('');
 }
 
-// what a link to this site unfurls into, in a tweet or a group chat. a page
-// overrides any of it; most do not need to
+// what a link unfurls into. a page can override any of it
 const CARD = {
   title: 'FR\u00d8M HERE \u2014\u2014\u2014> T\u00d8 HERE',
   description: 'Make your own identification card and put yourself on the map. '
@@ -40,9 +39,8 @@ const CARD = {
   image: '/images/og.png',
 };
 
-// `index` is off everywhere by default -- the record pages carry people's
-// names. the front door has nothing on it worth hiding, and a page nobody
-// can index is a page nobody can preview either
+// noindex everywhere by default, records carry people's names. the front
+// door opts in -- a page nobody can index is a page nobody can preview
 export function layout({
   title, body, bodyClass = '', back = true, head = '', social = {}, index = false,
 }) {

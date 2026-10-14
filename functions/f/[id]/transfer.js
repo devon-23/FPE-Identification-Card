@@ -10,14 +10,11 @@ const json = (data, status = 200) =>
     headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
   });
 
-// somebody filed a provisional record off a link, then turned up and was
-// handed one of the hundred cards. this moves what they already wrote onto
-// the card and takes the provisional one away, so they are in the register
-// once rather than twice.
+// filed online, then handed a real card at the show. moves what they wrote
+// onto the card so they are in the register once, not twice.
 //
-// [id] is the card. two proofs are needed and neither is enough on its own:
-// the key printed on the card, so it has to be in their hand, and the edit
-// token for the old record, so it has to be theirs to move
+// needs both proofs: the key printed on the card, and the old record's edit
+// token. one without the other is not enough
 export async function onRequestPost({ request, params, env }) {
   const id = normalizeId(params.id);
   if (!id) return json({ error: 'NO SUCH RECORD' }, 404);

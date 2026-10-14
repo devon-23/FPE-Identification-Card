@@ -21,14 +21,10 @@
     sheet: { citizen: 80, escapee: 80, bandito: 24 },
   };
 
-  // how far down the mark starts. the bandito glyph carries its weight low,
-  // so at the same offset it sits noticeably further down the card than the
-  // two round ones do
+  // how far down the mark starts. bandito hangs low so it needs lifting
   var DROP = { citizen: 12, escapee: 12, bandito: 2 };
 
-  // the attached file is the same width as the card but barely three
-  // quarters as tall, which makes it read as a squat wide thing next to it.
-  // narrower, and the notes wrap into the height instead
+  // same width as the card but far shorter, so it read squat. narrower now
   var SHEET_W = 300;
 
   var C = {};
@@ -85,9 +81,7 @@
     ctx.textAlign = 'center'; ctx.fillText(text, cx, y); 
   }
 
-  // centred but with tracking, to match a letter-spaced line in the css.
-  // ctx.letterSpacing would do it in one go, and is missing on exactly the
-  // older iphones that turn up at a show
+  // centred with tracking. ctx.letterSpacing is missing on older iphones
   function tracked(ctx, text, cx, y, space) {
     var chars = String(text).split('');
     var widths = [];
@@ -270,8 +264,7 @@
   // ---- the attached file ----------------------------------------------
   // same idea as the card: read what is on screen rather than rebuilding it
 
-  // measured off the longest label on the sheet rather than fixed, so the
-  // values sit just after the colon instead of out in the middle
+  // measured off the longest label, so values sit just after the colon
   function labelWidth(ctx, d) {
     var all = d.tail.slice();
     for (var g = 0; g < d.groups.length; g++) all = all.concat(d.groups[g]);
@@ -353,8 +346,7 @@
     var labelW = labelWidth(ctx, d);
     var valueW = inner - padX * 2 - labelW;
 
-    // the gap above a group and the gap under it, before the rule. these
-    // were both 10 and the sheet read as a stack of loose blocks
+    // both were 10 and the sheet read as a stack of loose blocks
     var LEAD = 6;
     var TRAIL = 8;
 
@@ -413,8 +405,7 @@
     }
 
     if (badge) {
-      // the mark is sized against the card. the sheet is narrower now, so
-      // it has to come down with it or it swallows half the values
+      // sized against the card, so it has to shrink with the narrower sheet
       var k = SHEET_W / CW;
       var bw = px(160 * k);
       var hang = HANG.sheet[d.faction] || 80;
@@ -731,8 +722,7 @@
       var file = new File([blob], filename, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         var payload = { files: [file] };
-        // some targets drop a share that carries text they cannot take, so
-        // only attach it where the browser says it will go through
+        // some targets drop a share carrying text they cannot take
         if (text && navigator.canShare({ files: [file], text: text })) payload.text = text;
         return navigator.share(payload)
           .then(function () { return 'shared'; })
@@ -745,9 +735,7 @@
     });
   }
 
-  // save/saveSheet hand back a single file. the record page builds its own
-  // now so it can put the card and the attached file in one share, but these
-  // still work and the maker may want one again
+  // save/saveSheet do one file. the record page builds its own pair now
   window.FPECard = {
     render: function (card) {
       readTheme();
