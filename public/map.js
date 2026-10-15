@@ -17,9 +17,14 @@
     var dest = JSON.parse(document.getElementById('dest').textContent || '{}');
 
     var map = L.map('map', { scrollWheelZoom: false, attributionControl: true });
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '&copy; OpenStreetMap',
+    // openstreetmap's own tile servers are run by volunteers for small use,
+    // and a night like this is not that -- they blocked us and started
+    // serving an "access blocked" tile to everybody. esri's grey canvas is
+    // keyless, goes deeper than we need, and suits the washed-out look.
+    // note the {y}/{x} order, esri is the other way round to osm
+    L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 16,
+      attribution: 'Tiles &copy; Esri, HERE, Garmin, &copy; OpenStreetMap contributors',
     }).addTo(map);
 
     // the destination gets a ring instead of a dot so it reads as different
