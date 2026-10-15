@@ -1,7 +1,7 @@
 import { h, raw, layout, htmlResponse, spread } from './_lib/html.js';
 import { SET_SIZE, FORM, EVENT, demaDate } from './_lib/config.js';
 import { cityMark } from './_lib/glyph.js';
-import { banditoName } from './_lib/lore.js';
+import { banditoName, BISHOPS } from './_lib/lore.js';
 
 const PAGE = 100;
 
@@ -13,6 +13,13 @@ export async function onRequestGet({ request, env }) {
   const shown = Number.isFinite(asked) ? Math.min(Math.max(asked, PAGE), 20000) : PAGE;
   const q = (url.searchParams.get('q') || '').trim().slice(0, 40);
 
+  // narrow the walk-ins without wading through thousands of squares
+  const FACTIONS = ['CITIZEN', 'ESCAPEE', 'BANDITO'];
+  const side = FACTIONS.includes((url.searchParams.get('f') || '').toUpperCase())
+    ? url.searchParams.get('f').toUpperCase() : '';
+  const bishop = BISHOPS.includes((url.searchParams.get('b') || '').toUpperCase())
+    ? url.searchParams.get('b').toUpperCase() : '';
+
   // the hundred issued cards. always all of them, it is a hundred rows
   const { results } = await env.DB
     .prepare('SELECT id, status, faction, name, n FROM records WHERE n <= ? ORDER BY n')
@@ -23,11 +30,20 @@ export async function onRequestGet({ request, env }) {
 
   // the walk-ins are a page at a time. there could be thousands of them and
   // reading every row on every front page load is how you burn a day's quota
-  const like = `%${q.toUpperCase()}%`;
-  const filter = q
-    ? "AND (UPPER(id) LIKE ? OR UPPER(COALESCE(name, '')) LIKE ?)"
-    : '';
-  const args = q ? [SET_SIZE, like, like] : [SET_SIZE];
+  // the search also looks at the town, which is as close to "by city" as
+  // the register gets without a second table
+  const clauses = [];
+  const args = [SET_SIZE];
+  if (q) {
+    const like = `%${q.toUpperCase()}%`;
+    clauses.push("AND (UPPER(id) LIKE ? OR UPPER(COALESCE(name, '')) LIKE ?"
+      + " OR UPPER(COALESCE(hometown, '')) LIKE ?)");
+    args.push(like, like, like);
+  }
+  if (side) { clauses.push('AND faction = ?'); args.push(side); }
+  if (bishop) { clauses.push('AND UPPER(COALESCE(bishop, \'\')) = ?'); args.push(bishop); }
+  const filter = clauses.join(' ');
+  const narrowed = !!(q || side || bishop);
 
   const tally = await env.DB
     .prepare(`SELECT count(*) AS n FROM records
@@ -84,20 +100,43 @@ export async function onRequestGet({ request, env }) {
     <h2 class="doc__sub">IDENTIFIED PERSONNEL:</h2>
     <div class="grid">${raw(cells)}</div>
 
-    ${raw(walkInTotal || q ? h`<h2 class="doc__sub" id="unidentified">UNIDENTIFIED PERSONNEL:</h2>
+    ${raw(walkInTotal || narrowed ? h`<h2 class="doc__sub" id="unidentified">UNIDENTIFIED PERSONNEL:</h2>
     <p class="doc__aside">Provisional designations. No card was issued; these subjects
       presented themselves.</p>
 
-    ${raw(walkInTotal > PAGE || q ? h`<form class="find" method="GET" action="/incident">
+    ${raw(walkInTotal > PAGE || narrowed ? h`<form class="find" method="GET" action="/incident">
       <label class="form__label" for="q">FIND A SUBJECT</label>
       <div class="find__row">
         <input class="form__input" id="q" name="q" type="search" value="${q}"
                maxlength="40" autocomplete="off" autocapitalize="characters"
-               placeholder="NUMBER OR NAME" enterkeyhint="search">
+               placeholder="NUMBER, NAME OR TOWN" enterkeyhint="search">
         <button class="button" type="submit">SEARCH</button>
+        <button class="button find__toggle" type="button" data-filters
+                aria-expanded="${raw(side || bishop ? 'true' : 'false')}"
+                aria-controls="filters" aria-label="Filters"><span></span><span></span><span></span></button>
       </div>
-      ${raw(q ? h`<p class="find__clear"><a href="/incident#unidentified">CLEAR THE SEARCH</a></p>` : '')}
-    </form>` : '')}
+
+      <div class="find__filters" id="filters"${raw(side || bishop ? '' : ' hidden')}>
+        <label class="form__label" for="f">ALLEGIANCE</label>
+        <select class="form__input form__select" id="f" name="f">
+          <option value="">ANY</option>
+          ${raw(FACTIONS.map((x) => `<option value="${x}"${x === side ? ' selected' : ''}>${x}</option>`).join(''))}
+        </select>
+
+        <label class="form__label" for="b">BISHOP</label>
+        <select class="form__input form__select" id="b" name="b">
+          <option value="">ANY</option>
+          ${raw(BISHOPS.map((x) => `<option value="${x}"${x === bishop ? ' selected' : ''}>${x}</option>`).join(''))}
+        </select>
+
+        <button class="button" type="submit">APPLY</button>
+      </div>
+
+      ${raw(narrowed ? h`<p class="find__clear">
+        <span>${String(walkInTotal)} MATCH${raw(walkInTotal === 1 ? '' : 'ES')}</span>
+        <a href="/incident#unidentified">CLEAR IT</a></p>` : '')}
+    </form>
+    <script src="/filters.js" defer></script>` : '')}
 
     ${raw(walkIns.length
       ? h`<div class="grid">${raw(walkIns.map(cell).join(''))}</div>`
@@ -109,6 +148,7 @@ export async function onRequestGet({ request, env }) {
     </p>` : raw(walkInTotal > PAGE ? h`<p class="more"><span>SHOWING ALL ${String(walkInTotal)}</span></p>` : ''))}` : '')}
 
     <a class="sighting" href="/from-here">BANDITO SIGHTINGS &mdash;&mdash;&mdash;&gt;</a>
+    <a class="sighting" href="/lines">LINES ON FILE &mdash;&mdash;&mdash;&gt;</a>
 
     <aside class="restricted">
       <img class="restricted__img" src="/images/restricted.webp"

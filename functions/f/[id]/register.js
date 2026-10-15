@@ -148,7 +148,7 @@ export async function onRequestGet({ request, params, env }) {
         <div class="consent" hidden>
           ${raw(canPublishPhotos ? `
           <label class="consent__box">
-            <input type="checkbox" id="consent">
+            <input type="checkbox" id="consent"${raw(v.photo_key ? ' checked' : '')}>
             <span>I CONSENT TO PUBLICATION OF THIS IMAGE IN THE PUBLIC ARCHIVE.</span>
           </label>
           <p class="consent__note">IF UNCHECKED, THE IMAGE IS HELD ON THIS DEVICE ONLY AND IS

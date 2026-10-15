@@ -350,6 +350,12 @@
 
     var consented = !!(photoBlob && consentEl && consentEl.checked);
 
+    // picking a photo and leaving the box clear used to do nothing, quietly,
+    // and still report SAVED. say it instead
+    if (photoBlob && consentEl && !consentEl.checked && !removePhoto) {
+      say('TICK THE CONSENT BOX OR THE NEW PHOTO STAYS ON THIS DEVICE ONLY.');
+    }
+
     var body = new FormData();
     body.append('name', nameEl.value);
     body.append('faction', form.querySelector('input[name="faction"]:checked').value);

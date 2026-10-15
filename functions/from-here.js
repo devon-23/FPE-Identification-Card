@@ -5,6 +5,7 @@ import { getSetting } from './_lib/db.js';
 import { normalizeId } from './_lib/record.js';
 import { heldBlock } from './_lib/held.js';
 import { banditoName } from './_lib/lore.js';
+import { usState, country, US_STATES } from './_lib/places.js';
 
 // the big landscape one, for a laptop. same data as /map, read differently
 // the horseshoe itself, not the city. the old pair was downtown Columbus,
@@ -23,13 +24,6 @@ function distance(a, b) {
 }
 
 const miles = (n) => Math.round(n).toLocaleString('en-US');
-
-// nominatim hands back "Toronto, Golden Horseshoe, Ontario, Canada"
-function country(label) {
-  if (!label) return null;
-  const parts = String(label).split(',').map((x) => x.trim()).filter(Boolean);
-  return parts.length ? parts[parts.length - 1].toUpperCase() : null;
-}
 
 function stat(label, value, note) {
   return h`<div class="fh__stat">
@@ -70,6 +64,13 @@ export async function onRequestGet({ env, request }) {
 
   const countries = new Set(pins.map((p) => country(p.label)).filter(Boolean));
 
+  // the fifty is a collection, so it wants a score and a shortfall
+  const states = new Set(pins.map((p) => usState(p.label)).filter(Boolean));
+  const missing = US_STATES.filter((st) => !states.has(st));
+
+  const closest = pins.slice().sort((a, b) => a.away - b.away)[0];
+  const haul = rows.length ? travelled / rows.length : 0;
+
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
   const filed = normalizeId(new URL(request.url).searchParams.get('new'));
 
@@ -93,6 +94,17 @@ export async function onRequestGet({ env, request }) {
 
     stat('DISTANCE COVERED', h`${miles(travelled)} MI`,
       raw('EVERY SUBJECT, EVERY MILE, ADDED UP')),
+
+    stat('STATES COLLECTED', h`${String(states.size)}/50`,
+      missing.length
+        ? h`STILL MISSING ${missing.slice(0, 6).join(' \u00b7 ')}${raw(missing.length > 6 ? ` +${missing.length - 6} MORE` : '')}`
+        : raw('ALL FIFTY. THE WHOLE COUNTRY GOT OUT')),
+
+    rows.length ? stat('AVERAGE HAUL', h`${miles(haul)} MI`,
+      raw('PER SUBJECT, DOOR TO DOOR')) : '',
+
+    closest ? stat('NEAREST ORIGIN', h`${miles(closest.away)} MI`,
+      h`${closest.town}`) : '',
   ].filter(Boolean).join('');
 
   const body = h`  <main class="fh">
@@ -136,7 +148,8 @@ export async function onRequestGet({ env, request }) {
     <noscript><p class="fh__note">THIS PLOT REQUIRES SCRIPTING.</p></noscript>
 
     <p class="fh__links">
-      <a href="/map">THE SMALL PLOT</a>
+      <a href="/lines">LINES ON FILE</a>
+      <a href="/stats">STATS FOR NERDS</a>
     </p>
   </main>
 

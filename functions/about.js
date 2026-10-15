@@ -67,9 +67,8 @@ export function onRequestGet() {
 
       <section class="sources">
         <h2>IF YOU LIKED THIS</h2>
-        <p class="sources__note">I made the whole thing myself, for nothing, because I
-          wanted to. If it got a smile out of you, come and say so &mdash; and show me your
-          card. I would genuinely love to see every one of them.</p>
+        <p class="sources__note">If it got a smile out of you, come and say so &mdash; and show me your
+          card. I would genuinely love to see every one of them. I'll be in the back of the OSU pit so come dance with me!</p>
         <p class="follow">
           ${raw(a.contact && a.contact.href ? h`<a class="button button--primary" href="${a.contact.href}"
              rel="noopener noreferrer" target="_blank">FOLLOW ${a.contact.handle}</a>` : '')}

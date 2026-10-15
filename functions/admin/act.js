@@ -70,7 +70,7 @@ export async function onRequestPost({ request, env }) {
         LEFT JOIN places p ON p.q = UPPER(TRIM(r.hometown))
        WHERE r.status = 'ESCAPED' AND r.attending = 1
          AND r.hometown IS NOT NULL AND TRIM(r.hometown) <> ''
-         AND p.q IS NULL
+         AND (p.q IS NULL OR p.lat IS NULL)
        LIMIT 10
     `).all();
 
@@ -80,6 +80,8 @@ export async function onRequestPost({ request, env }) {
     let found = 0;
     for (let i = 0; i < todo.length; i++) {
       if (i) await new Promise((r) => setTimeout(r, 1000));
+      // clear the old blank first, or lookup just reads it back
+      try { await env.DB.prepare('DELETE FROM places WHERE q = ? AND lat IS NULL').bind(todo[i]).run(); } catch {  }
       try { if (await lookup(env.DB, todo[i])) found++; } catch {  }
     }
 

@@ -46,7 +46,7 @@
     });
 
     // to here, drawn last so it sits over everything
-    L.circleMarker([dest.lat, dest.lon], {
+    var destMarker = L.circleMarker([dest.lat, dest.lon], {
       radius: 12, color: '#231f20', weight: 4, fill: false,
     }).addTo(map).bindPopup('<b>T\u00d8 HERE</b><br>' + esc(dest.label));
 
@@ -63,13 +63,14 @@
       home();
     }
 
-    // the TO HERE line puts you back over the stadium after you have been
-    // dragging around looking at everybody else
+    // the TØ HERE line drops you onto the horseshoe itself, not the country.
+    // the opening view is the wide one -- this is the other end of the trip
     var recentre = document.querySelector('[data-recentre]');
     if (recentre) {
       recentre.addEventListener('click', function () {
         map.closePopup();
-        home();
+        map.flyTo([dest.lat, dest.lon], 16, { duration: 1.6 });
+        destMarker.openPopup();
       });
     }
   }

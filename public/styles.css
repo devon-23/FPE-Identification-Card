@@ -526,7 +526,7 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 .form__row { margin: 0 0 1.25rem; display: grid; gap: 0.5rem; }
 .form__fieldset { border: 0; padding: 0; min-width: 0; }
 
-.form__label { display: block; padding: 0; font-size: 0.5rem; letter-spacing: 0.2em; color: var(--ink-faint); }
+.form__label { display: block; padding: 0; font-size: 0.625rem; letter-spacing: 0.18em; color: var(--ink-faint); }
 .form__label span { opacity: .75; }
 
 .form__input {
@@ -726,6 +726,134 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 
 .restricted__link { display: block; }
 .restricted__link:active { opacity: 0.8; }
+
+/* the filter row under the register search */
+.find__filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 0.5rem;
+  align-items: end;
+  margin-top: 0.75rem;
+}
+
+.find__filters .button { grid-column: 1 / -1; width: 100%; margin-top: 0.25rem; }
+.find__filters[hidden] { display: none; }
+
+/* the three bars, sharing the row with SEARCH */
+.find__toggle {
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+  width: auto;
+  min-width: 3rem;
+  padding: 0 0.875rem;
+}
+
+.find__toggle span {
+  display: block;
+  width: 1rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.find__toggle[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
+.find__clear { display: flex; justify-content: space-between; gap: 0.75rem; }
+
+/* ---------- lines on file ---------- */
+
+.lines__list { margin: 1.5rem 0 0; padding: 0; list-style: none; }
+
+/* a fixed height per slot, or the whole column jumps every time one of
+   them changes to a line of a different length */
+.lines__line {
+  display: flex;
+  align-items: center;
+  min-height: 4.25rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--hair);
+}
+
+.lines__line a {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  text-decoration: none;
+  opacity: 1;
+  transition: opacity 0.7s ease;
+}
+
+.lines__line.is-going a { opacity: 0; }
+.lines__line a:active { color: var(--red); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lines__line a { transition: none; }
+}
+
+.lines__more { margin: 1.25rem 0 0; }
+.lines__more .button { width: 100%; }
+
+/* ---------- stats for nerds ---------- */
+
+.nerd__bigs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  margin: 1.25rem 0 0;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+}
+
+.nerd__big { background: var(--paper); padding: 0.75rem 0.5rem; text-align: center; }
+.nerd__big b { display: block; font-size: 1.375rem; line-height: 1.1; color: var(--ink); }
+.nerd__big span { font-size: 0.4375rem; letter-spacing: 0.16em; color: var(--ink-faint); }
+
+.nerd { margin: 1.75rem 0 0; }
+
+.nerd__head {
+  margin: 0 0 0.625rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--red);
+}
+
+.nerd__row {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr auto;
+  gap: 0 0.5rem;
+  align-items: center;
+  padding: 0.1875rem 0;
+}
+
+.nerd__label {
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* the bar is the whole point -- a column of numbers says far less */
+.nerd__track { height: 0.5rem; background: #f0f0f0; border: 1px solid var(--hair); }
+.nerd__track span { display: block; height: 100%; width: var(--w); background: var(--red); }
+
+.nerd__n { font-size: 0.5rem; letter-spacing: 0.06em; color: var(--ink); min-width: 2.5rem; text-align: right; }
+.nerd__n i { font-style: normal; color: var(--ink-faint); }
+
+.nerd__note {
+  margin: 0.625rem 0 0;
+  font-size: 0.4375rem;
+  line-height: 1.8;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 22rem) {
+  .nerd__row { grid-template-columns: 5.5rem 1fr auto; }
+}
 
 /* the way out when the register will not take a name */
 .unfiled {
