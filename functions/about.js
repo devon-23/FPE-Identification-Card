@@ -77,7 +77,14 @@ export function onRequestGet() {
         </p>
       </section>
 
-      ${raw(a.contact && a.contact.handle ? h`<section class="sources">
+      ${raw((a.faq || []).length ? h`<section class="sources">
+        <h2>QUESTIONS PEOPLE ACTUALLY ASK</h2>
+        <dl class="faq">
+          ${raw((a.faq || []).map((x) => h`<dt>${x.q}</dt><dd>${x.a}</dd>`).join(''))}
+        </dl>
+      </section>` : '')}
+
+      ${raw(false /* the faq says all this now */ ? h`<section class="sources">
         <h2>AMENDMENTS &middot; REMOVAL &middot; QUESTIONS</h2>
         <p class="sources__note">Want something changed, or your record taken down
           altogether? Ask and it is done. Reach out to me on twitter. Same address for

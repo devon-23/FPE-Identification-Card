@@ -759,6 +759,25 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 .find__toggle[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
 .find__clear { display: flex; justify-content: space-between; gap: 0.75rem; }
 
+/* the faq on my own page */
+.faq { margin: 0.75rem 0 0; }
+
+.faq dt {
+  margin-top: 0.875rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.faq dd {
+  margin: 0.3125rem 0 0;
+  font-size: 0.625rem;
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  color: var(--ink-dim);
+}
+
 /* ---------- lines on file ---------- */
 
 .lines__list { margin: 1.5rem 0 0; padding: 0; list-style: none; }
