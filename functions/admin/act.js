@@ -1,6 +1,7 @@
 import { sameOrigin } from '../_lib/origin.js';
 import { SET_SIZE } from '../_lib/config.js';
 import { lookup } from '../_lib/geo.js';
+import { getSetting } from '../_lib/db.js';
 
 const back = (request, message) => {
   const url = new URL('/admin', request.url);
@@ -86,6 +87,35 @@ export async function onRequestPost({ request, env }) {
     }
 
     return back(request, `${found} OF ${todo.length} PLACED \u2014 RUN IT AGAIN FOR MORE`);
+  }
+
+  // the short list on the register. stored as a settings string so there is
+  // no migration to run, and a designation that does not exist is simply
+  // skipped when the page renders
+  if (action === 'notable') {
+    const list = String(await getSetting(env.DB, 'notable', ''))
+      .split(',').map((x) => x.trim().toUpperCase()).filter(Boolean);
+
+    const who = String(form.get('who') || '').trim().toUpperCase();
+    if (!/^[A-Z0-9]{1,12}$/.test(who)) return back(request, 'NO SUCH DESIGNATION');
+
+    const drop = String(form.get('drop') || '') === '1';
+    let next;
+    if (drop) {
+      next = list.filter((x) => x !== who);
+      if (next.length === list.length) return back(request, `${who} WAS NOT ON THE LIST`);
+    } else {
+      const rec = await env.DB.prepare("SELECT id FROM records WHERE id = ? AND status = 'ESCAPED'")
+        .bind(who).first();
+      if (!rec) return back(request, `${who} HAS NO FILED RECORD`);
+      if (list.includes(who)) return back(request, `${who} IS ALREADY ON THE LIST`);
+      next = list.concat(who).slice(0, 24);
+    }
+
+    await env.DB.prepare(
+      "INSERT INTO settings (key, value) VALUES ('notable', ?) ON CONFLICT(key) DO UPDATE SET value = ?"
+    ).bind(next.join(','), next.join(',')).run();
+    return back(request, drop ? `${who} REMOVED` : `${who} ADDED`);
   }
 
   // matched against the table rather than parsed, so a row left behind by an

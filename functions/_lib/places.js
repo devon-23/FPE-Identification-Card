@@ -33,3 +33,13 @@ export function country(label) {
   const parts = String(label).split(',').map((x) => x.trim()).filter(Boolean);
   return parts.length ? parts[parts.length - 1].toUpperCase() : null;
 }
+
+// nominatim labels run long -- "Columbus, Franklin County, Ohio, United
+// States" is not a thing to put in a list. first part plus whatever places
+// it, deduped so "Ohio, United States" does not come out as "Ohio, Ohio"
+export function shortPlace(label) {
+  const parts = String(label || '').split(',').map((x) => x.trim()).filter(Boolean);
+  if (parts.length <= 1) return parts[0] || '';
+  const where = usState(label) || parts[parts.length - 1];
+  return parts[0] === where ? parts[0] : `${parts[0]}, ${where}`;
+}

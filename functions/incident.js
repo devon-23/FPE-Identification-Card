@@ -2,6 +2,7 @@ import { h, raw, layout, htmlResponse, spread } from './_lib/html.js';
 import { SET_SIZE, FORM, EVENT, demaDate } from './_lib/config.js';
 import { cityMark } from './_lib/glyph.js';
 import { banditoName, BISHOPS } from './_lib/lore.js';
+import { getSetting } from './_lib/db.js';
 
 const PAGE = 100;
 
@@ -70,6 +71,22 @@ export async function onRequestGet({ request, env }) {
 
   const cells = all.map(cell).join('');
 
+  // a handful of designations singled out from /admin. empty by default and
+  // the whole section stays off until somebody is on it
+  const flagged = String(await getSetting(env.DB, 'notable', ''))
+    .split(',').map((x) => x.trim().toUpperCase()).filter(Boolean).slice(0, 24);
+
+  let notable = [];
+  if (flagged.length) {
+    const marks = flagged.map(() => '?').join(',');
+    const got = await env.DB
+      .prepare(`SELECT id, status, faction, name, n FROM records
+                 WHERE id IN (${marks}) AND status = 'ESCAPED'`)
+      .bind(...flagged).all();
+    const found = new Map((got.results || []).map((r) => [r.id, r]));
+    notable = flagged.map((id) => found.get(id)).filter(Boolean);
+  }
+
   const report = `At approximately 21:14 L.M.T, on the 17th day of October, 2026_moon (Revised Dema Calendar),
     Municipal Sensors registered a thermal disturbance at Grid Section OS-North, outside Perimeter Sector
     Thoroughfare. On-site response units discovered an unsanctioned assembly of
@@ -99,6 +116,10 @@ export async function onRequestGet({ request, env }) {
 
     <h2 class="doc__sub">IDENTIFIED PERSONNEL:</h2>
     <div class="grid">${raw(cells)}</div>
+
+    ${raw(notable.length ? h`<h2 class="doc__sub" id="interest">PERSONS OF INTEREST:</h2>
+    <p class="doc__aside">Subjects the council has taken a particular interest in.</p>
+    <div class="grid">${raw(notable.map(cell).join(''))}</div>` : '')}
 
     ${raw(walkInTotal || narrowed ? h`<h2 class="doc__sub" id="unidentified">UNIDENTIFIED PERSONNEL:</h2>
     <p class="doc__aside">Provisional designations. No card was issued; these subjects
@@ -139,12 +160,14 @@ export async function onRequestGet({ request, env }) {
     <script src="/filters.js" defer></script>` : '')}
 
     ${raw(walkIns.length
-      ? h`<div class="grid">${raw(walkIns.map(cell).join(''))}</div>`
+      ? h`<div class="grid">${raw(walkIns.map((r, i) => (i === shown - PAGE
+          ? String(cell(r)).replace('<a ', `<a id="from${shown - PAGE}" `)
+          : String(cell(r)))).join(''))}</div>`
       : h`<p class="note">NOTHING IN THE REGISTER MATCHES THAT.</p>`)}
 
     ${raw(walkInTotal > walkIns.length ? h`<p class="more">
       <span>SHOWING ${String(walkIns.length)} OF ${String(walkInTotal)}</span>
-      <a class="button" href="/incident?u=${String(shown + PAGE)}${raw(q ? `&q=${encodeURIComponent(q)}` : '')}#unidentified">LOAD NEXT ${String(PAGE)}</a>
+      <a class="button" href="/incident?u=${String(shown + PAGE)}${raw(q ? `&q=${encodeURIComponent(q)}` : '')}#from${String(shown)}">LOAD NEXT ${String(PAGE)}</a>
     </p>` : raw(walkInTotal > PAGE ? h`<p class="more"><span>SHOWING ALL ${String(walkInTotal)}</span></p>` : ''))}` : '')}
 
     <a class="sighting" href="/from-here">BANDITO SIGHTINGS &mdash;&mdash;&mdash;&gt;</a>
@@ -173,6 +196,7 @@ export async function onRequestGet({ request, env }) {
   </main>`;
 
   return htmlResponse(layout({
+    foot: '<p class="colophon__back"><a href="/f/random">RANDOM SUBJECT &mdash;&gt;</a></p>',
     title: `DMAORG — INCIDENT RPT ${FORM.statute}`,
     body,
     bodyClass: 'page-index',

@@ -78,13 +78,13 @@
         map.closePopup();
         var wide = map.getSize().x < 500 ? 3 : 4;
         if (map.getZoom() > wide + 1) {
-          map.flyTo([dest.lat, dest.lon], wide, { duration: 1.2 });
+          map.flyTo([dest.lat, dest.lon], wide, { duration: 2.2 });
           map.once('moveend', function () {
-            map.flyTo([dest.lat, dest.lon], 16, { duration: 2 });
+            map.flyTo([dest.lat, dest.lon], 16, { duration: 3.4 });
             map.once('moveend', function () { destMarker.openPopup(); });
           });
         } else {
-          map.flyTo([dest.lat, dest.lon], 16, { duration: 2 });
+          map.flyTo([dest.lat, dest.lon], 16, { duration: 3 });
           map.once('moveend', function () { destMarker.openPopup(); });
         }
       });
@@ -112,7 +112,7 @@
       } else {
         mine.addEventListener('click', function () {
           map.closePopup();
-          map.flyTo([ours.lat, ours.lon], 11, { duration: 2 });
+          map.flyTo([ours.lat, ours.lon], 11, { duration: 3 });
           map.once('moveend', function () {
             if (ours.marker) ours.marker.openPopup();
           });

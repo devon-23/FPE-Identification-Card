@@ -1,17 +1,22 @@
 import { h, raw, layout, htmlResponse, spread } from './_lib/html.js';
 import { FORM, SET_SIZE } from './_lib/config.js';
 import { cityMark } from './_lib/glyph.js';
-import { usState, US_STATES } from './_lib/places.js';
+import { usState, US_STATES, shortPlace } from './_lib/places.js';
+import { generate } from './_lib/lore.js';
 
 // everything here is one pass over the register, grouped in sql rather than
 // in js, so a big night does not mean reading every row into memory
 
 const pc = (n, of) => (of ? Math.round((n / of) * 100) : 0);
 
+const SIDES = { CITIZEN: 'citizen', ESCAPEE: 'escapee', BANDITO: 'bandito' };
+
 function bar(label, n, of, note) {
+  // an allegiance bar wears its own colour, the same three as the cards
+  const side = SIDES[String(label).toUpperCase()];
   return h`<div class="nerd__row">
       <div class="nerd__label">${label}</div>
-      <div class="nerd__track"><span style="--w:${String(pc(n, of))}%"></span></div>
+      <div class="nerd__track"><span class="${raw(side ? `is-${side}` : '')}" style="--w:${String(pc(n, of))}%"></span></div>
       <div class="nerd__n">${String(n)}${raw(note ? h` <i>${note}</i>` : '')}</div>
     </div>`;
 }
@@ -39,12 +44,13 @@ export async function onRequestGet({ env }) {
                 sum(CASE WHEN n<=${SET_SIZE} THEN 1 ELSE 0 END) cards
            FROM records WHERE ${FILED}`).first(),
     all(`SELECT faction k, count(*) n FROM records WHERE ${FILED} GROUP BY faction ORDER BY n DESC`).all(),
-    all(`SELECT COALESCE(bishop,'[REDACTED]') k, count(*) n FROM records WHERE ${FILED} GROUP BY k ORDER BY n DESC`).all(),
+    all(`SELECT id, bishop FROM records WHERE ${FILED}`).all(),
     all(`SELECT first_show k, count(*) n FROM records WHERE ${FILED} AND first_show IS NOT NULL GROUP BY k ORDER BY k`).all(),
     all(`SELECT attempts k, count(*) n FROM records WHERE ${FILED} AND attempts IS NOT NULL GROUP BY k ORDER BY n DESC LIMIT 10`).all(),
-    all(`SELECT UPPER(TRIM(hometown)) k, count(*) n FROM records
-          WHERE ${FILED} AND hometown IS NOT NULL AND trim(hometown)<>''
-          GROUP BY k ORDER BY n DESC LIMIT 12`).all(),
+    all(`SELECT p.label k, count(*) n FROM records r
+           JOIN places p ON p.q = UPPER(TRIM(r.hometown))
+          WHERE r.${FILED} AND p.lat IS NOT NULL
+          GROUP BY p.label ORDER BY n DESC LIMIT 12`).all(),
     all(`SELECT p.label, count(*) n FROM records r
            JOIN places p ON p.q = UPPER(TRIM(r.hometown))
           WHERE r.${FILED} AND p.label IS NOT NULL GROUP BY p.label`).all(),
@@ -52,6 +58,18 @@ export async function onRequestGet({ env }) {
 
   const t = tally || {};
   const filed = t.filed || 0;
+
+  // somebody who only plotted a town never picked a bishop, but one was
+  // assigned to them and it is on their card. count that, not a blank
+  const byBishop = new Map();
+  for (const r of bishops.results || []) {
+    const b = r.bishop || generate(r.id).bishop;
+    byBishop.set(b, (byBishop.get(b) || 0) + 1);
+  }
+  const bishopRows = [...byBishop.entries()]
+    .map(([k, n]) => ({ k, n })).sort((a, b) => b.n - a.n);
+
+  const townRows = (towns.results || []).map((r) => ({ k: shortPlace(r.k), n: r.n }));
 
   // states have to be counted here -- the state is buried in a free-text
   // label and sqlite is in no position to dig it out
@@ -80,7 +98,7 @@ export async function onRequestGet({ env }) {
     <div class="nerd__bigs">${raw(headline)}</div>
 
     ${raw(String(table('ALLEGIANCE DECLARED', factions.results || [], filed)))}
-    ${raw(String(table('ASSIGNED BISHOP', bishops.results || [], filed)))}
+    ${raw(String(table('ASSIGNED BISHOP', bishopRows, filed)))}
 
     <section class="nerd">
       <h2 class="nerd__head">WHAT PEOPLE FILLED IN</h2>
@@ -98,7 +116,7 @@ export async function onRequestGet({ env }) {
         : raw('<p class="nerd__note">ALL FIFTY STATES ACCOUNTED FOR.</p>'))}
     </section>` : '')}
 
-    ${raw(String(table('BIGGEST ORIGINS', towns.results || [], (towns.results || [])[0] ? towns.results[0].n : 1)))}
+    ${raw(String(table('BIGGEST ORIGINS', townRows, townRows[0] ? townRows[0].n : 1)))}
     ${raw(String(table('FIRST SHOW', (years.results || []).map((r) => ({ k: String(r.k), n: r.n })),
       Math.max(1, ...(years.results || []).map((r) => r.n)))))}
     ${raw(String(table('SHOWS ATTENDED', (attempts.results || []).map((r) => ({ k: String(r.k), n: r.n })),

@@ -7,7 +7,7 @@ import { sameOrigin } from './_lib/origin.js';
 import { ipHash } from './_lib/session.js';
 import { cleanHometown } from './_lib/sanitize.js';
 import { indecent } from './_lib/decency.js';
-import { banditoName, assignedFaction } from './_lib/lore.js';
+import { banditoName, assignedFaction, generate } from './_lib/lore.js';
 import { heldBlock } from './_lib/held.js';
 import { lookup } from './_lib/geo.js';
 
@@ -183,11 +183,11 @@ export async function onRequestPost({ request, env }) {
     const token = newToken();
     await env.DB.prepare(`
       UPDATE records
-         SET status = 'ESCAPED', name = ?, name_assigned = 1, faction = ?,
+         SET status = 'ESCAPED', name = ?, name_assigned = 1, faction = ?, bishop = ?,
              hometown = ?, attending = ?, token_hash = ?, claimed_at = ?, updated_at = ?,
              location = ?, city = ?, event_date = ?
        WHERE id = ?
-    `).bind(banditoName(id), assignedFaction(id), hometown, attending, await hashToken(token), stamp, stamp, EVENT.venue, EVENT.city, EVENT.date, id).run();
+    `).bind(banditoName(id), assignedFaction(id), generate(id).bishop, hometown, attending, await hashToken(token), stamp, stamp, EVENT.venue, EVENT.city, EVENT.date, id).run();
 
     // awaited, not deferred
     if (attending) await lookup(env.DB, hometown);

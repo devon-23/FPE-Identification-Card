@@ -18,6 +18,8 @@ export async function onRequestGet({ request, env }) {
   const withPhoto = all.filter((r) => r.photo_key).length;
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
   const throttled = (await getSetting(env.DB, 'surrender_throttle', '1')) === '1';
+  const notable = String(await getSetting(env.DB, 'notable', ''))
+    .split(',').map((x) => x.trim().toUpperCase()).filter(Boolean);
 
   let rows = all;
   if (filter === 'claimed') rows = rows.filter((r) => r.status === 'ESCAPED');
@@ -100,6 +102,30 @@ export async function onRequestGet({ request, env }) {
     </form>
     <p class="note">A TOWN ONLY GETS LOOKED UP ONCE, AND A BUSY NIGHT CAN MEAN THE LOOKUP
       NEVER LANDED. THIS RETRIES TEN AT A TIME. SAFE TO RUN OVER AND OVER.</p>
+
+    <div class="purge purge--quiet">
+      <h2 class="purge__head">PERSONS OF INTEREST</h2>
+      <p class="note" style="margin-top:0">A SHORT LIST SHOWN UNDER IDENTIFIED PERSONNEL ON THE
+        REGISTER. THE SECTION IS HIDDEN ENTIRELY WHILE THIS IS EMPTY. THE SUBJECT HAS TO HAVE
+        FILED A RECORD FIRST.</p>
+
+      ${raw(notable.length ? h`<ul class="held__list">${raw(notable.map((id) => h`<li>
+        <b>FPE-${id}</b>
+        <form method="POST" action="/admin/act">
+          <input type="hidden" name="do" value="notable">
+          <input type="hidden" name="drop" value="1">
+          <input type="hidden" name="who" value="${id}">
+          <button class="mini mini--warn">REMOVE</button>
+        </form>
+      </li>`).join(''))}</ul>` : '<p class="note">NOBODY ON THE LIST.</p>')}
+
+      <form class="purge__form" method="POST" action="/admin/act">
+        <input type="hidden" name="do" value="notable">
+        <input class="form__input" name="who" placeholder="DESIGNATION, E.G. 0042"
+               autocapitalize="characters" autocomplete="off" spellcheck="false">
+        <button class="button">ADD</button>
+      </form>
+    </div>
 
     <p class="note">VENUE: ${EVENT.venue}, ${EVENT.city} &middot; ${EVENT.dateDisplay}</p>
 

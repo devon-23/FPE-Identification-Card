@@ -42,7 +42,7 @@ const CARD = {
 // noindex everywhere by default, records carry people's names. the front
 // door opts in -- a page nobody can index is a page nobody can preview
 export function layout({
-  title, body, bodyClass = '', back = true, head = '', social = {}, index = false,
+  title, body, bodyClass = '', back = true, head = '', social = {}, index = false, foot = '',
 }) {
   const card = { ...CARD, ...social };
   const abs = (u) => (/^https?:/.test(u) ? u : SITE + u);
@@ -75,7 +75,7 @@ ${meta}${head}<link rel="stylesheet" href="/styles.css">
 <div class="sheet">
 ${body}
   <footer class="colophon">
-    ${home}<p class="colophon__who"><a href="/about">WHO FILED THIS &mdash;&gt;</a></p>
+    ${foot || home}<p class="colophon__who"><a href="/about">WHO FILED THIS &mdash;&gt;</a></p>
   </footer>
 </div>
 </body>

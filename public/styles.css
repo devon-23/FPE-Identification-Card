@@ -901,6 +901,9 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 /* the bar is the whole point -- a column of numbers says far less */
 .nerd__track { height: 0.5rem; background: #f0f0f0; border: 1px solid var(--hair); }
 .nerd__track span { display: block; height: 100%; width: var(--w); background: var(--red); }
+.nerd__track span.is-citizen { background: var(--ink); }
+.nerd__track span.is-escapee { background: var(--red); }
+.nerd__track span.is-bandito { background: var(--fh-yellow); }
 
 .nerd__n { font-size: 0.5rem; letter-spacing: 0.06em; color: var(--ink); min-width: 2.5rem; text-align: right; }
 .nerd__n i { font-style: normal; color: var(--ink-faint); }
@@ -1116,6 +1119,9 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 .button--danger:active { background: var(--red); color: var(--paper); }
 
 .purge .note:last-child { margin-bottom: 0; }
+.purge--quiet { border-color: var(--hair); }
+.purge--quiet .purge__head { color: var(--ink); }
+.purge--quiet .held__list { margin: 0.75rem 0; }
 .purge [data-forget] { margin-top: 1rem; }
 .purge [data-forget][disabled] { opacity: 0.4; }
 
