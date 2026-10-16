@@ -47,6 +47,7 @@
         }).join('<br>')
       );
 
+      p.marker = pin;   // so FRØM HERE can open yours
       if (focus && p.lat === focus.lat && p.lon === focus.lon) marked = pin;
     });
 
@@ -68,15 +69,55 @@
       home();
     }
 
-    // the TØ HERE line drops you onto the horseshoe itself, not the country.
-    // the opening view is the wide one -- this is the other end of the trip
+    // TØ HERE is meant to read as the journey, so it pulls back to see the
+    // whole country first and then crosses to the horseshoe, rather than
+    // teleporting. flyTo on its own cuts the corner and loses the distance
     var recentre = document.querySelector('[data-recentre]');
     if (recentre) {
       recentre.addEventListener('click', function () {
         map.closePopup();
-        map.flyTo([dest.lat, dest.lon], 16, { duration: 1.6 });
-        destMarker.openPopup();
+        var wide = map.getSize().x < 500 ? 3 : 4;
+        if (map.getZoom() > wide + 1) {
+          map.flyTo([dest.lat, dest.lon], wide, { duration: 1.2 });
+          map.once('moveend', function () {
+            map.flyTo([dest.lat, dest.lon], 16, { duration: 2 });
+            map.once('moveend', function () { destMarker.openPopup(); });
+          });
+        } else {
+          map.flyTo([dest.lat, dest.lon], 16, { duration: 2 });
+          map.once('moveend', function () { destMarker.openPopup(); });
+        }
       });
+    }
+
+    // FRØM HERE goes the other way: down onto whichever pin is yours. the
+    // only thing we know about "yours" is what this browser is carrying,
+    // and the town has to already be on the plot for there to be a pin
+    var mine = document.querySelector('[data-mine]');
+    if (mine) {
+      // match on the designation, not the town. two people typing Columbus
+      // differently land on the same pin, and p.town is only whichever
+      // spelling got there first -- string matching missed everyone else
+      var held = (window.FPEHeld && window.FPEHeld.ids()) || [];
+      var ours = null;
+      for (var i = 0; i < pins.length && !ours; i++) {
+        for (var j = 0; j < pins[i].people.length; j++) {
+          if (held.indexOf(pins[i].people[j].id) !== -1) { ours = pins[i]; break; }
+        }
+      }
+
+      // nothing of theirs on the plot, so the title is just a title
+      if (!ours) {
+        mine.disabled = true;
+      } else {
+        mine.addEventListener('click', function () {
+          map.closePopup();
+          map.flyTo([ours.lat, ours.lon], 11, { duration: 2 });
+          map.once('moveend', function () {
+            if (ours.marker) ours.marker.openPopup();
+          });
+        });
+      }
     }
   }
 

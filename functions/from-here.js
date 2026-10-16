@@ -6,6 +6,7 @@ import { normalizeId } from './_lib/record.js';
 import { heldBlock } from './_lib/held.js';
 import { banditoName } from './_lib/lore.js';
 import { usState, country, US_STATES } from './_lib/places.js';
+import { continentOf } from './_lib/continent.js';
 
 // the big landscape one, for a laptop. same data as /map, read differently
 // the horseshoe itself, not the city. the old pair was downtown Columbus,
@@ -68,7 +69,7 @@ export async function onRequestGet({ env, request }) {
   const states = new Set(pins.map((p) => usState(p.label)).filter(Boolean));
   const missing = US_STATES.filter((st) => !states.has(st));
 
-  const closest = pins.slice().sort((a, b) => a.away - b.away)[0];
+  const continents = new Set(pins.map((p) => continentOf(p.lat, p.lon)).filter(Boolean));
   const haul = rows.length ? travelled / rows.length : 0;
 
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
@@ -83,8 +84,16 @@ export async function onRequestGet({ env, request }) {
     stat('SUBJECTS PLOTTED', h`${String(rows.length)}`,
       h`FROM ${String(pins.length)} SEPARATE ORIGIN${raw(pins.length === 1 ? '' : 'S')}`),
 
-    stat('COUNTRIES ON FILE', h`${String(countries.size)}`,
-      countries.size ? h`${[...countries].sort().join(' · ')}` : null),
+    countries.size ? h`<div class="fh__stat">
+        <dd>${String(countries.size)}</dd>
+        <dt>COUNTRIES ON FILE</dt>
+        <details class="fh__all"><summary>SEE THEM ALL</summary>
+          <p>${[...countries].sort().join(' · ')}</p>
+        </details>
+      </div>` : '',
+
+    stat('CONTINENTS', h`${String(continents.size)}/7`,
+      continents.size ? h`${[...continents].sort().join(' · ')}` : null),
 
     biggest ? stat('BIGGEST ORIGIN', h`${biggest.town}`,
       h`${String(biggest.people.length)} SUBJECT${raw(biggest.people.length === 1 ? '' : 'S')} ON ONE PIN`) : '',
@@ -103,14 +112,13 @@ export async function onRequestGet({ env, request }) {
     rows.length ? stat('AVERAGE HAUL', h`${miles(haul)} MI`,
       raw('PER SUBJECT, DOOR TO DOOR')) : '',
 
-    closest ? stat('NEAREST ORIGIN', h`${miles(closest.away)} MI`,
-      h`${closest.town}`) : '',
   ].filter(Boolean).join('');
 
   const body = h`  <main class="fh">
     <header class="fh__head">
       <p class="fh__kicker">DEMA ARCHIVES &middot; INCIDENT ${FORM.statute}</p>
-      <h1 class="fh__title">FR&Oslash;M HERE</h1>
+      <h1 class="fh__title"><button type="button" class="fh__mine" data-mine
+        title="Go to your own origin">FR&Oslash;M HERE</button></h1>
       <p class="fh__sub">${EVENT.venue} &middot; ${EVENT.city} &middot; ${demaDate(`${EVENT.date}T00:00:00Z`)}</p>
     </header>
 
@@ -160,8 +168,8 @@ export async function onRequestGet({ env, request }) {
   }))))}</script>
   <script id="dest" type="application/json">${raw(JSON.stringify(DESTINATION))}</script>
   <script id="focus" type="application/json">${raw(JSON.stringify(focus ? { lat: focus.lat, lon: focus.lon } : null))}</script>
-  <script src="/fromhere.js" defer></script>
-  <script src="/held.js" defer></script>`;
+  <script src="/held.js" defer></script>
+  <script src="/fromhere.js" defer></script>`;
 
   return htmlResponse(layout({
     title: 'FRØM HERE — DEMA ARCHIVES',

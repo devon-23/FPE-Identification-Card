@@ -62,7 +62,7 @@ export function layout({
     : '';
 
   return `<!doctype html>
-<html lang="en">
+<html lang="en" data-page="${escapeHtml(bodyClass)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

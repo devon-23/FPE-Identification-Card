@@ -67,6 +67,13 @@
   --rough: "Bellfort", var(--display);
 }
 
+/* everything on the site is sized in rem, so the whole thing scales from
+   here. 109% puts 1rem at about 17.4px instead of 16 */
+html { font-size: 109%; }
+
+/* the big plot was drawn at the old size and reads better that way */
+html[data-page="page-fromhere"] { font-size: 100%; }
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
@@ -758,6 +765,42 @@ details.dossier .fields { padding-bottom: 0.75rem; }
 
 .find__toggle[aria-expanded="true"] { background: var(--ink); color: var(--paper); }
 .find__clear { display: flex; justify-content: space-between; gap: 0.75rem; }
+
+/* the title doubles as "take me to my own pin" */
+.fh__mine {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.fh__mine:disabled { cursor: default; }
+
+/* seventy countries will not fit in a stat card, so they fold away */
+.fh__all { margin-top: 0.5rem; }
+
+.fh__all summary {
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  color: var(--fh-yellow);
+  cursor: pointer;
+  list-style: none;
+}
+
+.fh__all summary::-webkit-details-marker { display: none; }
+.fh__all summary::after { content: " \25BE"; }
+.fh__all[open] summary::after { content: " \25B4"; }
+
+.fh__all p {
+  margin: 0.5rem 0 0;
+  font-size: 0.625rem;
+  line-height: 1.9;
+  letter-spacing: 0.06em;
+  color: var(--fh-bone);
+}
 
 /* the faq on my own page */
 .faq { margin: 0.75rem 0 0; }

@@ -7,7 +7,7 @@ export const BIO_MAX      = 90;
 export const ATTEMPTS_MAX = 9999;
 export const LYRIC_MAX    = 60;
 export const FIRST_SHOW_MIN = 2009;
-export const FIRST_SHOW_MAX = 2030;
+export const FIRST_SHOW_MAX = 2026;
 
 function isForbidden(cp) {
   // bidi overrides can visually reverse a name. not having that on a card
