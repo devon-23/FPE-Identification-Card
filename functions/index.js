@@ -8,7 +8,11 @@ import { getSetting } from './_lib/db.js';
 export async function onRequestGet({ env }) {
   const open = (await getSetting(env.DB, 'claiming_open', '0')) === '1';
 
-  const door = h`<b>MAKE YOUR IDENTIFICATION CARD</b>
+  const sides = ['citizen', 'escapee', 'bandito'];
+  const side = sides[Math.floor(Math.random() * sides.length)];
+
+  const door = h`<span class="gate__mark" data-f="${side}" aria-hidden="true"></span>
+      <b>MAKE YOUR IDENTIFICATION CARD</b>
       <span>NAME, ALLEGIANCE, BISHOP, PHOTOGRAPH. YOURS TO KEEP AND TO SAVE.</span>`;
 
   const body = h`  <main class="stage doc gate">
@@ -26,14 +30,15 @@ export async function onRequestGet({ env }) {
 
     ${raw(open ? h`<form method="POST" action="/turn-yourself-in" data-gate-new hidden>
       <input type="hidden" name="seq" value="0" data-seq>
-      <button class="gate__door" type="submit">${raw(String(door))}</button>
+      <button class="gate__door gate__door--card" type="submit">${raw(String(door))}</button>
     </form>` : '')}
 
-    <a class="gate__door" href="/turn-yourself-in" data-gate-held>${raw(String(door))}</a>
+    <a class="gate__door gate__door--card" href="/turn-yourself-in" data-gate-held>${raw(String(door))}</a>
 
-    <a class="gate__door" href="/from-here">
-      <b>BANDITO SIGHTINGS</b>
-      <span>EVERY ORIGIN ON FILE, AND THE ONE PLACE THEY ALL ENDED UP.</span>
+    <a class="gate__door gate__door--plot" href="/from-here">
+      <b>FR&Oslash;M HERE</b>
+      <i>&mdash;&mdash;&mdash;&gt; T&Oslash; HERE</i>
+      <span>THE MAP. EVERY ORIGIN ON FILE, AND THE ONE PLACE THEY ALL ENDED UP.</span>
     </a>
 
     <aside class="restricted">
