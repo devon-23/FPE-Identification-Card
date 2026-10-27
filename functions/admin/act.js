@@ -118,6 +118,67 @@ export async function onRequestPost({ request, env }) {
     return back(request, drop ? `${who} REMOVED` : `${who} ADDED`);
   }
 
+  // move a provisional record onto one of the hundred, the way the subject
+  // would have from their own phone. plenty of people took a tag at the show
+  // and never did it themselves, and only i can do it for them now -- their
+  // edit token lives in their browser, not here.
+  //
+  // the new token is thrown away deliberately: whoever holds the card can
+  // claim an edit token by tapping it, and the old browser keeps pointing at
+  // a designation that no longer exists
+  if (action === 'move') {
+    const from = String(form.get('from') || '').trim().toUpperCase();
+    const onto = String(form.get('onto') || '').trim().toUpperCase();
+
+    if (!/^[XYZ][0-9]{3,5}$/.test(from)) return back(request, 'SOURCE MUST BE AN X, Y OR Z');
+    if (!/^[0-9]{4}$/.test(onto)) return back(request, 'TARGET MUST BE A NUMBERED CARD');
+
+    const source = await env.DB.prepare("SELECT * FROM records WHERE id = ? AND status = 'ESCAPED'")
+      .bind(from).first();
+    if (!source) return back(request, `${from} HAS NO FILED RECORD`);
+
+    const target = await env.DB.prepare('SELECT id, n, status FROM records WHERE id = ?')
+      .bind(onto).first();
+    if (!target) return back(request, `${onto} DOES NOT EXIST`);
+    if (target.n > SET_SIZE) return back(request, `${onto} IS NOT ONE OF THE HUNDRED`);
+    if (target.status === 'ESCAPED') return back(request, `${onto} IS ALREADY CLAIMED — RESET IT FIRST`);
+
+    let photoKey = null;
+    if (source.photo_key && env.PHOTOS) {
+      try {
+        const obj = await env.PHOTOS.get(source.photo_key);
+        if (obj) {
+          await env.PHOTOS.put(`${onto}.jpg`, obj.body, { httpMetadata: { contentType: 'image/jpeg' } });
+          photoKey = `${onto}.jpg`;
+        }
+      } catch {  }
+    }
+
+    const now = new Date().toISOString();
+    const res = await env.DB.prepare(`
+      UPDATE records
+         SET status = 'ESCAPED', name = ?, name_assigned = ?, faction = ?,
+             handle = ?, hometown = ?, bio = ?, attempts = ?, first_show = ?, lyric = ?, bishop = ?,
+             attending = ?, photo_key = ?, token_hash = NULL, claimed_at = ?, updated_at = ?
+       WHERE id = ? AND status = 'UNREGISTERED'
+    `).bind(
+      source.name, source.name_assigned, source.faction,
+      source.handle, source.hometown, source.bio, source.attempts, source.first_show,
+      source.lyric, source.bishop, source.attending, photoKey,
+      source.claimed_at || now, now, onto
+    ).run();
+
+    if (!res.meta || res.meta.changes !== 1) {
+      if (photoKey && env.PHOTOS) { try { await env.PHOTOS.delete(photoKey); } catch {  } }
+      return back(request, `${onto} WAS CLAIMED WHILE THAT RAN`);
+    }
+
+    if (source.photo_key && env.PHOTOS) { try { await env.PHOTOS.delete(source.photo_key); } catch {  } }
+    await env.DB.prepare('DELETE FROM records WHERE id = ?').bind(from).run();
+
+    return back(request, `${from} MOVED ONTO ${onto}`);
+  }
+
   // matched against the table rather than parsed, so a row left behind by an
   // older numbering scheme is still something you can get rid of
   const typed = String(form.get('id') || '').trim().toUpperCase();

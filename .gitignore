@@ -9,3 +9,5 @@ NFC-GUIDE.md
 schema.sql
 .migrations/*
 decency.js
+# database exports -- these hold every subject's name, town and handle
+backups/

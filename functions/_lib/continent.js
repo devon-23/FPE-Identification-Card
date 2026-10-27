@@ -8,12 +8,17 @@
 const BOXES = [
   // checked in order, first hit wins
   ['ANTARCTICA',    -90,  -60, -180,  180],
+  ['SOUTH AMERICA',  -2,    2,  -92,  -88],  // galápagos, which is ecuador
   ['SOUTH AMERICA', -56,   13,  -82,  -34],
   ['NORTH AMERICA',   7,   84, -170,  -52],
   ['OCEANIA',       -50,    0,  110,  180],
-  ['OCEANIA',       -50,    0, -180, -130],  // the pacific, east of the dateline
+  ['OCEANIA',       -50,    0, -180,  -95],  // the pacific, out as far as easter island
   ['EUROPE',         36,   72,  -25,   40],
-  ['AFRICA',        -35,   37,  -18,   52],
+  // the middle east before africa, or the africa box swallows the levant
+  // and the gulf -- israel, jordan, syria and qatar all sit inside it
+  ['ASIA',           29,   43,   34,   63],   // levant, iraq, iran
+  ['ASIA',           12,   32,   42,   63],   // arabian peninsula
+  ['AFRICA',        -35,   37,  -18,   58],
   ['ASIA',          -11,   82,   25,  180],
 ];
 

@@ -104,6 +104,23 @@ export async function onRequestGet({ request, env }) {
       NEVER LANDED. THIS RETRIES TEN AT A TIME. SAFE TO RUN OVER AND OVER.</p>
 
     <div class="purge purge--quiet">
+      <h2 class="purge__head">MOVE A RECORD ONTO A CARD</h2>
+      <p class="note" style="margin-top:0">FOR SOMEBODY WHO TOOK A TAG AT THE SHOW AND NEVER
+        TRANSFERRED THEIR OWN RECORD. EVERYTHING MOVES &mdash; NAME, PHOTO, TOWN, THE LOT &mdash;
+        AND THE PROVISIONAL ONE IS DELETED. THE CARD IS LEFT UNLOCKED, SO WHOEVER TAPS IT
+        NEXT BECOMES ITS OWNER.</p>
+      <form class="purge__form" method="POST" action="/admin/act"
+            onsubmit="return confirm('Move that record onto the card? The provisional one is deleted.')">
+        <input type="hidden" name="do" value="move">
+        <input class="form__input" name="from" placeholder="FROM, E.G. X0042"
+               autocapitalize="characters" autocomplete="off" spellcheck="false">
+        <input class="form__input" name="onto" placeholder="ONTO, E.G. 0007"
+               autocapitalize="characters" autocomplete="off" spellcheck="false">
+        <button class="button">MOVE</button>
+      </form>
+    </div>
+
+    <div class="purge purge--quiet">
       <h2 class="purge__head">PERSONS OF INTEREST</h2>
       <p class="note" style="margin-top:0">A SHORT LIST SHOWN UNDER IDENTIFIED PERSONNEL ON THE
         REGISTER. THE SECTION IS HIDDEN ENTIRELY WHILE THIS IS EMPTY. THE SUBJECT HAS TO HAVE
