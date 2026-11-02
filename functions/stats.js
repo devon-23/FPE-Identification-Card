@@ -132,5 +132,5 @@ export async function onRequestGet({ env }) {
   return htmlResponse(layout({
     title: 'STATS FOR NERDS — DEMA ARCHIVES',
     body, bodyClass: 'page-stats',
-  }), { headers: { 'cache-control': 'public, max-age=120' } });
+  }), { headers: { 'cache-control': 'public, max-age=900' } });
 }

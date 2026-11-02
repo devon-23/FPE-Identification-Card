@@ -196,7 +196,7 @@ export async function onRequestGet({ request, env }) {
   </main>`;
 
   return htmlResponse(layout({
-    foot: '<p class="colophon__back"><a href="/f/random">RANDOM SUBJECT &mdash;&gt;</a></p>',
+    foot: '<p class="colophon__back"><a href="/f/random" rel="nofollow">RANDOM SUBJECT &mdash;&gt;</a></p>',
     title: `DMAORG — INCIDENT RPT ${FORM.statute}`,
     body,
     bodyClass: 'page-index',

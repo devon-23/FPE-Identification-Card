@@ -1,0 +1,16 @@
+# Everything is welcome except the two routes that cost a database read
+# per hit and have nothing worth indexing anyway. /f/random redirects
+# somewhere different every time, which a crawler reads as an endless
+# supply of new pages.
+
+User-agent: *
+Disallow: /f/random
+Disallow: /admin
+Allow: /
+
+# the card crawlers, so a shared link still previews
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /

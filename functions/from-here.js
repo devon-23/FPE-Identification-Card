@@ -175,5 +175,5 @@ export async function onRequestGet({ env, request }) {
     title: 'FRØM HERE — DEMA ARCHIVES',
     body,
     bodyClass: 'page-fromhere',
-  }), { headers: { 'cache-control': filed ? 'no-store' : 'public, max-age=60' } });
+  }), { headers: { 'cache-control': filed ? 'no-store' : 'public, max-age=600' } });
 }
